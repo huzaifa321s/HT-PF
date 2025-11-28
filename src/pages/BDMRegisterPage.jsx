@@ -32,12 +32,16 @@ import { showToast } from "../utils/toastSlice";
 const BDMRegisterPage = () => {
   const [bdms, setBdms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [editId, setEditId] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [error, setError] = useState("");
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
   // pagination state
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -46,7 +50,9 @@ const dispatch = useDispatch();
   const fetchBDMs = async (p = 1) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get(`/api/bdms/get-all-bdms?page=${p}&limit=${limit}`);
+      const res = await axiosInstance.get(
+        `/api/bdms/get-all-bdms?page=${p}&limit=${limit}`
+      );
       setBdms(res.data.bdms || []);
       setPage(res.data.page || p);
       setPages(res.data.pages || 1);
@@ -84,12 +90,22 @@ const dispatch = useDispatch();
           email: formData.email,
           ...(formData.password && { password: formData.password }),
         });
-        dispatch(showToast({ message: `BDM <b>${formData.name}</b> has been successfully updated.`, severity: 'success' }));
+        dispatch(
+          showToast({
+            message: `BDM <b>${formData.name}</b> has been successfully updated.`,
+            severity: "success",
+          })
+        );
 
         // after update, refetch current page
         fetchBDMs(page);
       } else {
-        dispatch(showToast({ message: `BDM <b>${formData.name}</b> has been registered.`, severity: 'success' }));
+        dispatch(
+          showToast({
+            message: `BDM <b>${formData.name}</b> has been registered.`,
+            severity: "success",
+          })
+        );
         // Create new BDM -> after create go to first page (new item will be at top)
         await axiosInstance.post("/api/bdms/register-bdm", formData);
         fetchBDMs(1);
@@ -98,8 +114,13 @@ const dispatch = useDispatch();
       setEditId(null);
       setError("");
     } catch (error) {
-      dispatch(showToast({ message: error.response?.data?.message || "Failed to save BDM.", severity: 'error' }));
-      setError(error.response?.data?.message || "Failed to save BDM.");
+      dispatch(
+        showToast({
+          message: error.response?.data?.message || "Failed to save BDO.",
+          severity: "error",
+        })
+      );
+      setError(error.response?.data?.message || "Failed to save BDO.");
     }
   };
 
@@ -107,6 +128,10 @@ const dispatch = useDispatch();
     setEditId(bdm._id);
     setFormData({ name: bdm.name, email: bdm.email, password: "" });
     setError("");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleDelete = (id) => {
@@ -117,7 +142,12 @@ const dispatch = useDispatch();
   const confirmDelete = async () => {
     try {
       await axiosInstance.delete(`/api/bdms/delete-bdm/${deleteId}`);
-dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 'success' }));
+      dispatch(
+        showToast({
+          message: `BDO has been deleted successfully.`,
+          severity: "success",
+        })
+      );
       // after delete, refetch current page (if current page becomes empty and page>1, go to previous page)
       const newTotalOnPage = bdms.length - 1;
       if (newTotalOnPage === 0 && page > 1) {
@@ -150,6 +180,12 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
         minHeight: "100vh",
         py: 8,
         px: { xs: 2, sm: 3, md: 4 },
+        width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
       }}
     >
       <Box sx={{ maxWidth: 1200, mx: "auto" }}>
@@ -181,9 +217,12 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                 letterSpacing: "-0.5px",
               }}
             >
-              Manage BDMs
+              Manage BDOs
             </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", mt: 0.5 }}
+            >
               Register, edit, or delete Business Development Managers.
             </Typography>
           </Box>
@@ -223,8 +262,11 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
             },
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#667eea", mb: 3 }}>
-            {editId ? "Edit BDM" : "Register New BDM"}
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: "#667eea", mb: 3 }}
+          >
+            {editId ? "Edit BDO" : "Register New BDO"}
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
@@ -320,10 +362,12 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                   textTransform: "none",
                   fontSize: "1rem",
                   fontWeight: 600,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                    background:
+                      "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
                     transform: "translateY(-2px)",
                     boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
                   },
@@ -395,8 +439,11 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
             },
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#667eea", mb: 3 }}>
-            BDM List
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: "#667eea", mb: 3 }}
+          >
+            BDO List
           </Typography>
           <Divider sx={{ mb: 4, bgcolor: "rgba(102, 126, 234, 0.3)" }} />
 
@@ -411,12 +458,13 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                 sx={{
                   color: "text.secondary",
                   fontWeight: 600,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                No BDMs Found
+                No BDOs Found
               </Typography>
             </Box>
           ) : (
@@ -455,11 +503,16 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                         }}
                       >
                         <TableCell>
-                          <Typography fontWeight={500} sx={{ color: "text.primary" }}>
+                          <Typography
+                            fontWeight={500}
+                            sx={{ color: "text.primary" }}
+                          >
                             {bdm.name}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ color: "text.primary" }}>{bdm.email}</TableCell>
+                        <TableCell sx={{ color: "text.primary" }}>
+                          {bdm.email}
+                        </TableCell>
                         <TableCell align="center">
                           <Tooltip title="Edit" arrow>
                             <IconButton
@@ -498,14 +551,23 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
 
               {/* Pagination */}
               <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                <Pagination count={pages} page={page} onChange={handlePageChange} color="primary" />
+                <Pagination
+                  count={pages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                />
               </Box>
             </>
           )}
         </Paper>
 
         {/* Delete Confirmation Modal */}
-        <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} closeAfterTransition>
+        <Modal
+          open={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          closeAfterTransition
+        >
           <Fade in={deleteModalOpen}>
             <Box
               sx={{
@@ -516,17 +578,21 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                 width: { xs: "90%", sm: 400 },
                 bgcolor: "linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%)",
                 borderRadius: 3,
-                background:'#fff',
+                background: "#fff",
                 boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
                 p: 4,
                 outline: "none",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#667eea", mb: 2 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, color: "#667eea", mb: 2 }}
+              >
                 Confirm Delete
               </Typography>
               <Typography variant="body1" sx={{ color: "text.primary", mb: 3 }}>
-                Are you sure you want to delete this BDM? This action cannot be undone.
+                Are you sure you want to delete this BDO? This action cannot be
+                undone.
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                 <Button
@@ -560,9 +626,11 @@ dispatch(showToast({ message: `BDM has been deleted successfully.`, severity: 's
                     textTransform: "none",
                     fontSize: "1rem",
                     fontWeight: 600,
-                    background: "linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)",
+                    background:
+                      "linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%)",
+                      background:
+                        "linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%)",
                       transform: "translateY(-2px)",
                       boxShadow: "0 12px 32px rgba(211, 47, 47, 0.5)",
                     },

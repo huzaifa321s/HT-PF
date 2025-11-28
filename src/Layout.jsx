@@ -8,7 +8,6 @@ import { useSelector } from "react-redux";
 import { setLoaderCallbacks } from "./utils/axiosInstance";
 import { useLoading } from "./context/LoadingContext";
 import LoaderOverlay from "./components/LoaderOverlay";
-import TokenAlert from "./components/TokenAlert";
 import { Font } from "@react-pdf/renderer";
 
 // Liberation Serif – 100% working links (November 2025)
@@ -28,6 +27,7 @@ Font.register({
   family: "Oswald",
   fonts: [
     { src: "/fonts/degular.otf" ,fontWeight: 700},
+    { src: "/fonts/Degular-Bold.otf" ,fontWeight: 800},
   ],
 });
 

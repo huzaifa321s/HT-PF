@@ -10,35 +10,50 @@ const defaultPackage = {
 
 };
 
-const initialState = {
+
+const modeDefaults = {
   pageTitle: 'Service Packages & Quotation',
   heading: 'Performance Marketing Packages',
   subheading: "Maximize Your Brand's Impact with Our Performance Marketing Packages.\nTailored for Startups, Scaling Brands, & Market Leaders ready to Dominate with Precision.",
-  elements: [],      // text, mainHeading, standalone package
-  gridPackages: [],  // 2-3 column packages
-  currentPages: 1
+  elements: [],
+  gridPackages: [],
+  currentPages: 1,
+  includeInPdf: true,
+}
+
+const initialState = {
+  currentMode: "create", // ✅ Track current mode
+  create: { ...modeDefaults },
+  edit: { ...modeDefaults },
 };
+
 
 const pricingSlice = createSlice({
   name: 'pricing',
   initialState,
   reducers: {
-
+    setMode3: (state, action) => {
+      state.currentMode = action.payload; // "create" or "edit"
+    },
     // ========== PAGE TEXT ==========
     updatePageTitle: (state, action) => {
-      state.pageTitle = action.payload;
+      const mode = state.currentMode;
+      state[mode].pageTitle = action.payload;
     },
     updateHeading: (state, action) => {
-      state.heading = action.payload;
+      const mode = state.currentMode;
+      state[mode].heading = action.payload;
     },
     updateSubheading: (state, action) => {
-      state.subheading = action.payload;
+      const mode = state.currentMode;
+      state[mode].subheading = action.payload;
     },
 
     // ========== GRID PACKAGES ==========
     addGridPackage: (state) => {
       const newId = Date.now();
-      state.gridPackages.push({
+      const mode = state.currentMode;
+      state[mode].gridPackages.push({
         id: newId,
         ...defaultPackage,
       });
@@ -46,55 +61,65 @@ const pricingSlice = createSlice({
 
     updateGridPackage: (state, action) => {
       const { id, field, value } = action.payload;
-      const pkg = state.gridPackages.find(p => p.id === id);
+      const mode = state.currentMode;
+      const pkg = state[mode].gridPackages.find(p => p.id === id);
       if (pkg) pkg[field] = value;
     },
 
     updateGridPackageItem: (state, action) => {
       const { pkgId, index, value } = action.payload;
-      const pkg = state.gridPackages.find(p => p.id === pkgId);
+      const mode = state.currentMode;
+      const pkg = state[mode].gridPackages.find(p => p.id === pkgId);
       if (pkg && pkg.items[index] !== undefined) {
         pkg.items[index] = value;
       }
     },
     setCurrentPages: (state, action) => {
-      state.currentPages = action.payload.currentPages
+      const mode = state.currentMode;
+      state[mode].currentPages = action.payload.currentPages
     },
 
     addItemToGridPackage: (state, action) => {
       const { pkgId } = action.payload;
-      const pkg = state.gridPackages.find(p => p.id === pkgId);
+      const mode = state.currentMode;
+      const pkg = state[mode].gridPackages.find(p => p.id === pkgId);
       if (pkg) pkg.items.push('New Feature');
     },
 
     deleteItemFromGridPackage: (state, action) => {
       const { pkgId, index } = action.payload;
-      const pkg = state.gridPackages.find(p => p.id === pkgId);
+      const mode = state.currentMode;
+      const pkg = state[mode].gridPackages.find(p => p.id === pkgId);
       if (pkg) pkg.items.splice(index, 1);
     },
 
     deleteGridPackage: (state, action) => {
       const { pkgId } = action.payload;
-      state.gridPackages = state.gridPackages.filter(p => p.id !== pkgId);
+                  const mode = state.currentMode;
+
+      state[mode].gridPackages = state[mode].gridPackages.filter(p => p.id !== pkgId);
     },
 
     // ========== ELEMENTS (text, heading, standalone package) ==========
     addElement: (state, action) => {
       const { type } = action.payload;
       const newId = `el-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const mode = state.currentMode;
 
       if (type === 'mainHeading') {
-        state.elements.push({ id: newId, type: 'mainHeading', content: 'New Main Heading' });
+        state[mode].elements.push({ id: newId, type: 'mainHeading', content: 'New Main Heading' });
       } else if (type === 'text') {
-        state.elements.push({ id: newId, type: 'text', content: 'New paragraph text...' });
+        state[mode].elements.push({ id: newId, type: 'text', content: 'New paragraph text...' });
       } else if (type === 'package') {
-        state.elements.push({ id: newId, type: 'package', ...defaultPackage });
+        state[mode].elements.push({ id: newId, type: 'package', ...defaultPackage });
       }
     },
 
     updateElementContent: (state, action) => {
       const { id, content } = action.payload;
-      const el = state.elements.find(e => e.id === id);
+                  const mode = state.currentMode;
+
+      const el = state[mode].elements.find(e => e.id === id);
       if (el && (el.type === 'mainHeading' || el.type === 'text')) {
         el.content = content;
       }
@@ -102,13 +127,17 @@ const pricingSlice = createSlice({
 
     updateStandalonePackage: (state, action) => {
       const { id, field, value } = action.payload;
-      const el = state.elements.find(e => e.id === id && e.type === 'package');
+                  const mode = state.currentMode;
+
+      const el = state[mode].elements.find(e => e.id === id && e.type === 'package');
       if (el) el[field] = value;
     },
 
     updateStandalonePackageItem: (state, action) => {
       const { elementId, index, value } = action.payload;
-      const el = state.elements.find(e => e.id === elementId && e.type === 'package');
+                  const mode = state.currentMode;
+
+      const el = state[mode].elements.find(e => e.id === elementId && e.type === 'package');
       if (el && el.items[index] !== undefined) {
         el.items[index] = value;
       }
@@ -116,40 +145,54 @@ const pricingSlice = createSlice({
 
     addItemToStandalonePackage: (state, action) => {
       const { elementId } = action.payload;
-      const el = state.elements.find(e => e.id === elementId && e.type === 'package');
+                  const mode = state.currentMode;
+
+      const el = state[mode].elements.find(e => e.id === elementId && e.type === 'package');
       if (el) el.items.push('New Feature');
     },
 
     deleteItemFromStandalonePackage: (state, action) => {
       const { elementId, index } = action.payload;
-      const el = state.elements.find(e => e.id === elementId && e.type === 'package');
+                  const mode = state.currentMode;
+
+      const el = state[mode].elements.find(e => e.id === elementId && e.type === 'package');
       if (el) el.items.splice(index, 1);
     },
 
     deleteElement: (state, action) => {
       const { elementId } = action.payload;
-      state.elements = state.elements.filter(el => el.id !== elementId);
+                  const mode = state.currentMode;
+
+      state[mode].elements = state[mode].elements.filter(el => el.id !== elementId);
     },
 
     // ========== DRAG & DROP REORDER (only elements + grid packages together) ==========
     reorderElements: (state, action) => {
       const { activeId, overId } = action.payload;
+            const mode = state.currentMode;
 
       // Find in elements
-      const elIndex = state.elements.findIndex(e => e.id === activeId);
-      const gridIndex = state.gridPackages.findIndex(p => p.id === activeId);
+      const elIndex = state[mode].elements.findIndex(e => e.id === activeId);
+      const gridIndex = state[mode].gridPackages.findIndex(p => p.id === activeId);
 
       if (elIndex !== -1) {
-        const [moved] = state.elements.splice(elIndex, 1);
-        const targetIndex = state.elements.findIndex(e => e.id === overId);
-        state.elements.splice(targetIndex === -1 ? state.elements.length : targetIndex, 0, moved);
+        const [moved] = state[mode].elements.splice(elIndex, 1);
+        const targetIndex = state[mode].elements.findIndex(e => e.id === overId);
+        state[mode].elements.splice(targetIndex === -1 ? state[mode].elements.length : targetIndex, 0, moved);
       } else if (gridIndex !== -1) {
-        const [moved] = state.gridPackages.splice(gridIndex, 1);
-        const targetIndex = state.gridPackages.findIndex(p => p.id === overId);
-        state.gridPackages.splice(targetIndex === -1 ? state.gridPackages.length : targetIndex, 0, moved);
+        const [moved] = state[mode].gridPackages.splice(gridIndex, 1);
+        const targetIndex = state[mode].gridPackages.findIndex(p => p.id === overId);
+        state[mode].gridPackages.splice(targetIndex === -1 ? state[mode].gridPackages.length : targetIndex, 0, moved);
       }
     },
+    togglePricingPageInclusion: (state) => {
+                  const mode = state.currentMode;
 
+      state[mode].includeInPdf = !state[mode].includeInPdf;
+    },
+    setDBDataPricing: (state, action) => {
+     state.edit = { ...action.payload };
+    },
     // ========== RESET ==========
     resetPageData: () => initialState,
   },
@@ -165,6 +208,7 @@ export const {
   addItemToGridPackage,
   deleteItemFromGridPackage,
   deleteGridPackage,
+  togglePricingPageInclusion,
   addElement,
   updateElementContent,
   updateStandalonePackage,
@@ -173,7 +217,9 @@ export const {
   deleteItemFromStandalonePackage,
   deleteElement,
   reorderElements,
+  setMode3,
   resetPageData,
+  setDBDataPricing,
   setCurrentPages
 } = pricingSlice.actions;
 

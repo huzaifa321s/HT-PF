@@ -42,9 +42,9 @@ import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
 
-const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" }) => {
+const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
   const dispatch = useDispatch();
-  const page3 = useSelector((s) => s.page3);
+  const page3 = mode === 'edit-doc' ? useSelector((s) => s.page3.edit) : useSelector((s) => s.page3.create);
 
   const [data, setData] = useState(page3);
   const [edit, setEdit] = useState(null);
@@ -135,7 +135,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" }) => {
           },
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent={'center'}>
           <Description sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={900}>

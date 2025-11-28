@@ -18,6 +18,7 @@ import {
   Tooltip,
   Divider,
   Alert,
+  useMediaQuery,
 } from "@mui/material";
 
 import {
@@ -46,9 +47,13 @@ import {
 import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 
-const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) => {
+const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
   const dispatch = useDispatch();
-  const paymentTerms = useSelector((s) => s.paymentTerms);
+  const paymentTerms = mode === 'edit-doc' ? useSelector((s) => s.paymentTerms.edit) : useSelector((s) => s.paymentTerms.create);
+
+  // ✅ Hooks sab se pehle - top level pe
+  const isSmallScreen = useMediaQuery("(max-width:600px)");
+  const isVerySmall = useMediaQuery("(max-width:400px)");
 
   const [title, setTitle] = useState("Payment Terms");
   const [terms, setTerms] = useState([]);
@@ -112,15 +117,24 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, height: "100%", display: "flex", flexDirection: "column" ,overflowY:'auto'}}>
-      <Stack spacing={4} sx={{ flex: 1}}>
+    <Box
+      sx={{
+        p: { xs: 2, sm: 3, md: 4 },
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflowY: "auto",
+        overflowX: "hidden",
+      }}
+    >
+      <Stack spacing={{ xs: 3, sm: 4 }} sx={{ flex: 1 }}>
 
         {/* Premium Gradient Header */}
         <Paper
           elevation={10}
           sx={{
-            p: 4,
-            borderRadius: 5,
+            p: { xs: 3, sm: 4 },
+            borderRadius: { xs: 3, md: 5 },
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             position: "relative",
@@ -134,10 +148,18 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
             },
           }}
         >
-          <Typography variant="h4" fontWeight={900} gutterBottom>
+          <Typography
+            variant={{ xs: "h5", sm: "h4" }}
+            fontWeight={900}
+            gutterBottom
+            sx={{ fontSize: { xs: "1.7rem", sm: "2.2rem" } }}
+          >
             Payment Terms Editor
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>
+          <Typography
+            variant={{ xs: "body1", sm: "h6" }}
+            sx={{ opacity: 0.9, fontWeight: 500, fontSize: { xs: "0.95rem", sm: "1.1rem" } }}
+          >
             Define clear payment conditions — updates instantly in your PDF
           </Typography>
         </Paper>
@@ -146,15 +168,15 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
         <Paper
           elevation={6}
           sx={{
-            p: 3,
-            borderRadius: 5,
+            p: { xs: 2.5, sm: 3 },
+            borderRadius: { xs: 3, md: 5 },
             background: "linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%)",
             border: "1px solid rgba(102,126,234,0.2)",
           }}
         >
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            spacing={3}
+            spacing={{ xs: 2, sm: 3 }}
             justifyContent="space-between"
             alignItems="center"
           >
@@ -165,13 +187,15 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                 bgcolor: "rgba(102,126,234,0.15)",
                 color: "#667eea",
                 fontWeight: 700,
-                fontSize: "1rem",
-                height: 40,
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                height: { xs: 36, sm: 40 },
+                width: { xs: "100%", sm: "auto" },
               }}
             />
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} sx={{ width: { xs: "100%", sm: "auto" } }}>
               <Button
+                fullWidth={isSmallScreen}
                 variant="outlined"
                 startIcon={<RefreshOutlined />}
                 onClick={() => setShowResetDialog(true)}
@@ -180,7 +204,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                   border: "2px solid #667eea",
                   color: "#667eea",
                   fontWeight: 600,
-                  px: 4,
+                  px: { xs: 3, sm: 4 },
                   py: 1.5,
                   "&:hover": {
                     borderColor: "#764ba2",
@@ -192,20 +216,21 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
               </Button>
 
               <Button
+                fullWidth={isSmallScreen}
                 variant="contained"
                 startIcon={<Add />}
                 onClick={() => setShowAddDialog(true)}
                 sx={{
                   borderRadius: 4,
-                  px: 6,
-                  py: 1.8,
+                  px: { xs: 4, sm: 6 },
+                  py: 1,
                   fontWeight: 700,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "1rem", sm: "0.7rem" },
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   boxShadow: "0 8px 25px rgba(102,126,234,0.4)",
                   "&:hover": {
                     background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                    transform: "translateY(-3px)",
+                    transform: "translateY(-2px)",
                     boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
                   },
                 }}
@@ -220,13 +245,13 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
         <Card
           elevation={8}
           sx={{
-            borderRadius: 5,
+            borderRadius: { xs: 3, md: 5 },
             border: "1px solid rgba(102,126,234,0.15)",
             transition: "0.3s",
             "&:hover": { boxShadow: "0 12px 32px rgba(102,126,234,0.18)" },
           }}
         >
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography
                 variant="h6"
@@ -235,6 +260,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
+                  fontSize: { xs: "1.1rem", sm: "1.25rem" },
                 }}
               >
                 Page Title
@@ -242,10 +268,10 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
 
               {editTitleMode ? (
                 <Stack direction="row" spacing={1}>
-                  <IconButton color="success" onClick={saveTitle} sx={{ bgcolor: "rgba(76,175,80,0.15)" }}>
+                  <IconButton color="success" onClick={saveTitle} size={isVerySmall ? "small" : "medium"}>
                     <Save />
                   </IconButton>
-                  <IconButton onClick={() => { setEditTitleMode(false); setTitle(paymentTerms.title); }}>
+                  <IconButton onClick={() => { setEditTitleMode(false); setTitle(paymentTerms.title); }} size="small">
                     <Cancel />
                   </IconButton>
                 </Stack>
@@ -270,7 +296,16 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 4, bgcolor: "white" } }}
               />
             ) : (
-              <Typography variant="h4" fontWeight={700} sx={{ fontFamily: selectedFont, mt: 1 }}>
+              <Typography
+                variant={{ xs: "h5", sm: "h4" }}
+                fontWeight={700}
+                sx={{
+                  fontFamily: selectedFont,
+                  mt: 1,
+                  fontSize: { xs: "1.6rem", sm: "2rem" },
+                  wordBreak: "break-word",
+                }}
+              >
                 {title}
               </Typography>
             )}
@@ -284,28 +319,29 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
               bgcolor: "rgba(102,126,234,0.15)",
               color: "#667eea",
               fontWeight: 700,
+              fontSize: { xs: "0.85rem", sm: "1rem" },
             }}
           />
         </Divider>
 
         {/* Terms List */}
-        <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
-          <Stack spacing={3}>
+        <Box sx={{ flex: 1, overflowY: "auto", pr: { xs: 0, sm: 1 }, pb: 2 }}>
+          <Stack spacing={{ xs: 2.5, sm: 3 }}>
             {terms.length === 0 ? (
               <Paper
                 sx={{
-                  p: 10,
+                  p: { xs: 6, sm: 10 },
                   textAlign: "center",
                   border: "2px dashed rgba(102,126,234,0.3)",
                   borderRadius: 5,
                   bgcolor: "rgba(102,126,234,0.02)",
                 }}
               >
-                <Info sx={{ fontSize: 80, color: "#667eea", opacity: 0.4, mb: 3 }} />
-                <Typography variant="h5" color="text.secondary" fontWeight={600}>
+                <Info sx={{ fontSize: { xs: 60, sm: 80 }, color: "#667eea", opacity: 0.4, mb: 3 }} />
+                <Typography variant={{ xs: "h6", sm: "h5" }} color="text.secondary" fontWeight={600}>
                   No payment terms added yet
                 </Typography>
-                <Typography variant="body1" color="text.secondary" mt={1}>
+                <Typography variant="body2" color="text.secondary" mt={1} px={2}>
                   Click "Add New Term" to define your payment conditions
                 </Typography>
               </Paper>
@@ -315,13 +351,13 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                   key={i}
                   elevation={8}
                   sx={{
-                    borderRadius: 5,
+                    borderRadius: { xs: 3, md: 5 },
                     border: "1px solid rgba(102,126,234,0.15)",
                     transition: "0.3s",
                     "&:hover": { boxShadow: "0 16px 40px rgba(102,126,234,0.2)" },
                   }}
                 >
-                  <CardContent sx={{ p: 4 }}>
+                  <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
                       <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
                         Term #{i + 1}
@@ -329,7 +365,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                       <Stack direction="row" spacing={1}>
                         {editIndex === i ? (
                           <>
-                            <IconButton color="success" onClick={saveTerm} sx={{ bgcolor: "rgba(76,175,80,0.15)" }}>
+                            <IconButton color="success" onClick={saveTerm}>
                               <Save />
                             </IconButton>
                             <IconButton onClick={() => setEditIndex(null)}>
@@ -338,16 +374,10 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                           </>
                         ) : (
                           <>
-                            <IconButton
-                              onClick={() => startEditTerm(i)}
-                              sx={{ bgcolor: "rgba(102,126,234,0.1)", color: "#667eea" }}
-                            >
+                            <IconButton onClick={() => startEditTerm(i)} sx={{ bgcolor: "rgba(102,126,234,0.1)", color: "#667eea" }}>
                               <Edit />
                             </IconButton>
-                            <IconButton
-                              onClick={() => deleteSingleTerm(i)}
-                              sx={{ bgcolor: "rgba(244,67,54,0.1)", color: "#f44336" }}
-                            >
+                            <IconButton onClick={() => deleteSingleTerm(i)} sx={{ bgcolor: "rgba(244,67,54,0.1)", color: "#f44336" }}>
                               <Delete />
                             </IconButton>
                           </>
@@ -359,7 +389,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                       <TextField
                         fullWidth
                         multiline
-                        rows={6}
+                        rows={{ xs: 5, sm: 6 }}
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                         autoFocus
@@ -371,9 +401,10 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
                         sx={{
                           fontFamily: selectedFont,
                           lineHeight: 1.9,
-                          fontSize: "1.05rem",
+                          fontSize: { xs: "1rem", sm: "1.05rem" },
                           color: "text.primary",
                           whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
                         }}
                       >
                         {t}
@@ -395,18 +426,19 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
             bgcolor: "rgba(76,175,80,0.1)",
             border: "1px solid rgba(76,175,80,0.3)",
             fontWeight: 600,
+            mt: 2,
           }}
         >
           All changes are saved automatically and appear instantly in your proposal PDF.
         </Alert>
       </Stack>
 
-      {/* Add Term Dialog */}
-      <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} maxWidth="md" fullWidth>
+      {/* Dialogs — Mobile Optimized */}
+      <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} maxWidth="md" fullWidth fullScreen={isSmallScreen}>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
           Add New Payment Term
         </DialogTitle>
-        <DialogContent sx={{ pt: 4 }}>
+        <DialogContent sx={{ pt: 4, pb: 2 ,mt:3}}>
           <TextField
             fullWidth
             multiline
@@ -418,14 +450,15 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 4, bgcolor: "white" } }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button onClick={() => setShowAddDialog(false)} size="large">
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+          <Button onClick={() => setShowAddDialog(false)} size="large" fullWidth={isSmallScreen}>
             Cancel
           </Button>
           <Button
             onClick={addNewTerm}
             variant="contained"
             size="large"
+            fullWidth={isSmallScreen}
             sx={{
               px: 6,
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -437,11 +470,9 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
         </DialogActions>
       </Dialog>
 
-      {/* Reset Confirmation Dialog */}
-      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth fullScreen={isSmallScreen}>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
-          <WarningAmber sx={{ mr: 1 }} />
-          Reset Payment Terms Page?
+          <WarningAmber sx={{ mr: 1 }} /> Reset Payment Terms Page?
         </DialogTitle>
         <DialogContent sx={{ pt: 4 }}>
           <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
@@ -451,8 +482,8 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
             All custom payment terms and title will be permanently deleted and restored to default.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button onClick={() => setShowResetDialog(false)} size="large">
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+          <Button onClick={() => setShowResetDialog(false)} size="large" fullWidth={isSmallScreen}>
             Cancel
           </Button>
           <Button
@@ -460,6 +491,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" }) =
             variant="contained"
             color="error"
             size="large"
+            fullWidth={isSmallScreen}
             sx={{ px: 5, fontWeight: 700 }}
           >
             Yes, Reset Page

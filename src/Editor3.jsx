@@ -1,6 +1,5 @@
 // src/components/editors/PdfPageEditor2.jsx
-
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
@@ -35,6 +34,7 @@ import {
   TableRow,
   Tabs,
   Tab,
+  ButtonGroup,
 } from "@mui/material";
 import {
   Add,
@@ -52,8 +52,8 @@ import {
   ArrowDownward,
   TableChart,
   AddCircleOutline,
+  ViewColumn,
 } from "@mui/icons-material";
-
 import {
   addSection,
   updateSection,
@@ -67,29 +67,42 @@ import {
   deleteTableRow,
   updateTableHeaders,
   deleteTable,
-  updatePageHeader, // ← New action for header
-} from "../src/utils/page2Slice"; // ← Apna correct path
+  updatePageHeader,
+} from "../src/utils/page2Slice";
 import { showToast } from "../src/utils/toastSlice";
 
-const PdfPageEditor2 = () => {
+const PdfPageEditor2 = ({mode}) => {
   const dispatch = useDispatch();
+  console.log('mode 2222222222',mode)
 
   // Redux State
-  const sections = useSelector((state) => state.page2?.orderedSections || []);
-  const tables = useSelector((state) => state.page2?.tables || []);
-  const header = useSelector((state) => state.page2?.header || { pageTitle: "", heading: "", subheading: "" });
-
+  const sections = useSelector((state) => mode === 'edit-doc' ? state.page2?.edit?.orderedSections || [] :state.page2?.create?.orderedSections || []  );
+  const tables = useSelector((state) => mode === 'edit-doc' ? state.page2?.edit?.tables || [] : state.page2?.create?.tables || [] );
+  const header = useSelector((state) => state.page2?.header || {
+    pageTitle: "",
+    heading: "",
+    subheading: ""
+  });
+console.log('section',sections)
   // Local States
   const [tabValue, setTabValue] = useState(0);
-  const [newSection, setNewSection] = useState({ type: "title", title: "", content: "" });
+  const [newSection, setNewSection] = useState({
+    type: "title",
+    title: "",
+    content: ""
+  });
   const [editingId, setEditingId] = useState(null);
-  const [editValues, setEditValues] = useState({ type: "title", title: "", content: "" });
+  const [editValues, setEditValues] = useState({
+    type: "title",
+    title: "",
+    content: ""
+  });
   const [showSuccess, setShowSuccess] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
-
+const containerRef = useRef();
   // Table editing
   const [editingRow, setEditingRow] = useState({ tableId: null, rowId: null });
-  const [rowForm, setRowForm] = useState({ col1: "", col2: "" });
+  const [rowForm, setRowForm] = useState({ col1: "", col2: "", col3: "" });
   const [editingHeaders, setEditingHeaders] = useState({});
 
   // === SECTION HANDLERS ===
@@ -103,13 +116,11 @@ const PdfPageEditor2 = () => {
       dispatch(showToast({ message: "Content is required", severity: "warning" }));
       return;
     }
-
     dispatch(addSection({
       type: newSection.type,
       title: isPlainOrNumbered ? "" : newSection.title.trim(),
       content: newSection.content.trim(),
     }));
-
     setNewSection({ type: "title", title: "", content: "" });
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
@@ -118,14 +129,17 @@ const PdfPageEditor2 = () => {
 
   const startEditSection = (sec) => {
     setEditingId(sec.id);
-    setEditValues({ type: sec.type, title: sec.title || "", content: sec.content || "" });
+    setEditValues({
+      type: sec.type,
+      title: sec.title || "",
+      content: sec.content || ""
+    });
   };
 
   const saveEditSection = () => {
     const isPlainOrNumbered = ["plain", "numbered"].includes(editValues.type);
     if (!isPlainOrNumbered && !editValues.title.trim()) return;
     if (!editValues.content.trim()) return;
-
     dispatch(updateSection({
       id: editingId,
       type: editValues.type,
@@ -143,29 +157,78 @@ const PdfPageEditor2 = () => {
   };
 
   // === TABLE HANDLERS ===
-  const handleAddTable = () => {
-    dispatch(addTable());
-    dispatch(showToast({ message: "New table added!", severity: "success" }));
+  const handleAddTable = (columnCount = 2) => {
+    dispatch(addTable({ columnCount }));
+    dispatch(showToast({ message: `New ${columnCount}-column table added!`, severity: "success" }));
+
   };
 
-  const startEditRow = (tableId, row) => {
+  const startEditRow = (tableId, row, columnCount) => {
     setEditingRow({ tableId, rowId: row.id });
-    setRowForm({ col1: row.col1, col2: row.col2 });
+    setRowForm({
+      col1: row.col1,
+      col2: row.col2,
+      col3: columnCount === 3 ? (row.col3 || "") : ""
+    });
   };
 
   const saveEditRow = () => {
     if (!rowForm.col1.trim()) {
-      dispatch(showToast({ message: "Item is required", severity: "warning" }));
+      dispatch(showToast({ message: "First column is required", severity: "warning" }));
       return;
     }
-    dispatch(updateTableRow({
+    console.log('rowForm',rowForm)
+    const table = tables.find(t => t.id === editingRow.tableId);
+    const updatePayload = {
       tableId: editingRow.tableId,
       rowId: editingRow.rowId,
-      col1: rowForm.col1.trim(),
-      col2: rowForm.col2.trim(),
-    }));
+      col1: rowForm?.col1?.trim(),
+      col2: rowForm?.col2,
+    };
+    
+    if (table?.columnCount === 3) {
+      updatePayload.col3 = rowForm.col3.trim();
+    }
+    
+    dispatch(updateTableRow(updatePayload));
     setEditingRow({ tableId: null, rowId: null });
-    setRowForm({ col1: "", col2: "" });
+    setRowForm({ col1: "", col2: "", col3: "" });
+  };
+
+  const startEditHeaders = (tableId, headers, columnCount) => {
+    setEditingHeaders({
+      [tableId]: {
+        col1: headers.col1,
+        col2: headers.col2,
+        col3: columnCount === 3 ? (headers.col3 || "") : ""
+      }
+    });
+  };
+
+  const saveEditHeaders = (tableId, columnCount) => {
+    const headers = editingHeaders[tableId];
+    if (!headers?.col1?.trim() || !headers?.col2?.trim()) {
+      dispatch(showToast({ message: "Headers cannot be empty", severity: "warning" }));
+      return;
+    }
+    
+    const updatePayload = {
+      tableId,
+      col1: headers.col1.trim(),
+      col2: headers.col2.trim(),
+    };
+    
+    if (columnCount === 3) {
+      if (!headers?.col3?.trim()) {
+        dispatch(showToast({ message: "Headers cannot be empty", severity: "warning" }));
+        return;
+      }
+      updatePayload.col3 = headers.col3.trim();
+    }
+    
+    dispatch(updateTableHeaders(updatePayload));
+    setEditingHeaders({});
+    dispatch(showToast({ message: "Headers updated!", severity: "success" }));
   };
 
   // === PREVIEW ===
@@ -178,10 +241,14 @@ const PdfPageEditor2 = () => {
         const lines = block.trim().split("\n");
         const main = lines[0].replace(/^\d+\.\s*/, "").trim();
         return (
-          <Box key={i} sx={{ mb: 1.5 }}>
-            <Typography fontWeight="bold">{i + 1}. {main}</Typography>
+          <Box key={i} mb={1} sx={{wordBreak: 'break-word',      
+            overflowWrap: 'break-word',
+            hyphens: 'auto',}}>
+            <Typography><strong>{i + 1}. {main}</strong></Typography>
             {lines.slice(1).filter(Boolean).map((sub, j) => (
-              <Typography key={j} sx={{ ml: 4, mt: 0.5 }}>• {sub.replace(/^[-•·]\s*/, "").trim()}</Typography>
+              <Typography key={j} ml={3} variant="body2">
+                • {sub.replace(/^[-•·]\s*/, "").trim()}
+              </Typography>
             ))}
           </Box>
         );
@@ -194,277 +261,435 @@ const PdfPageEditor2 = () => {
       ));
     }
 
-    return <Typography sx={{ whiteSpace: "pre-line" }}>{content}</Typography>;
+    return <Typography>{content}</Typography>;
   };
 
   const getTypeIcon = (type) => {
-    const map = { plain: <FormatAlignLeft />, title: <Title />, bullets: <FormatListBulleted />, numbered: <FormatListNumbered /> };
-    return map[type] || null;
-  };
-
-  const getTypeColor = (type) => {
-    const colors = { plain: "#2196f3", title: "#9c27b0", bullets: "#4caf50", numbered: "#ff9800" };
-    return colors[type] || "#666";
+    const map = {
+      plain: <FormatAlignLeft />,
+      title: <Title />,
+      bullets: <FormatListBulleted />,
+      numbered: <FormatListNumbered />,
+    };
+    return map[type] || <FormatAlignLeft />;
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: "1600px", mx: "auto" }}>
-      {/* Premium Header */}
-      <Paper elevation={12} sx={{ p: 5, mb: 5, borderRadius: 6, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
-        <Typography variant="h3" fontWeight={900}>Page 3 Editor</Typography>
-        <Typography variant="h6" sx={{ opacity: 0.9, mt: 1 }}>
-          Dynamic Sections + Unlimited Custom Tables (Item - Value)
+    <Box p={3}>
+      {/* Success Alert */}
+      <Collapse in={showSuccess}>
+        <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircle />}>
+          Section added successfully!
+        </Alert>
+      </Collapse>
+
+      {/* Header Section */}
+      <Paper elevation={3} sx={{ p: 3, mb: 3, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" ,borderRadius:5}}>
+        <Typography variant="h4" color="white" gutterBottom>
+          📄 PDF Page 2 Editor
+        </Typography>
+        <Typography variant="body2" color="white" sx={{ opacity: 0.9 }}>
+          Manage sections, content blocks, and dynamic tables
         </Typography>
       </Paper>
 
-      {/* Header Editor Card */}
-      <Card elevation={10} sx={{ mb: 5, borderRadius: 5 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight={800} gutterBottom color="#667eea">
-            Page Header Settings
-          </Typography>
-          <Stack spacing={3}>
-            <TextField
-              label="Page Title"
-              fullWidth
-              value={header.pageTitle || ""}
-              onChange={(e) => dispatch(updatePageHeader({ field: "pageTitle", value: e.target.value }))}
-            />
-            <TextField
-              label="Main Heading"
-              fullWidth
-              value={header.heading || ""}
-              onChange={(e) => dispatch(updatePageHeader({ field: "heading", value: e.target.value }))}
-            />
-            <TextField
-              label="Subheading"
-              fullWidth
-              multiline
-              rows={3}
-              value={header.subheading || ""}
-              onChange={(e) => dispatch(updatePageHeader({ field: "subheading", value: e.target.value }))}
-            />
-          </Stack>
-        </CardContent>
-      </Card>
-
-      <Collapse in={showSuccess}>
-        <Alert severity="success" sx={{ mb: 3 }}>Section added successfully!</Alert>
-      </Collapse>
-
       {/* Tabs */}
-      <Paper elevation={6} sx={{ mb: 4 }}>
-        <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} centered>
-          <Tab icon={<FormatAlignLeft />} label="Content Sections" />
-          <Tab icon={<TableChart />} label={`Tables (${tables.length})`} />
+      <Paper sx={{ mb: 3 ,borderRadius:5}}>
+        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{borderRadius:5}}>
+          <Tab label="Content Sections" />
+          <Tab label="Tables" />
         </Tabs>
       </Paper>
 
-      {/* TAB 0: Content Sections */}
+
+      {/* Tab 1: Content Sections */}
       {tabValue === 0 && (
         <>
-          <Card elevation={10} sx={{ mb: 5 }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" fontWeight={800} gutterBottom>Add New Section</Typography>
-              <Stack spacing={3} mt={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Section Type</InputLabel>
-                  <Select value={newSection.type} onChange={(e) => setNewSection({ ...newSection, type: e.target.value, title: "", content: "" })}>
-                    <MenuItem value="title">Title + Paragraph</MenuItem>
-                    <MenuItem value="bullets">Bullet Points</MenuItem>
-                    <MenuItem value="numbered">Numbered List</MenuItem>
-                    <MenuItem value="plain">Plain Text Only</MenuItem>
-                  </Select>
-                </FormControl>
+          {/* Add New Section */}
+          <Paper elevation={2} sx={{ p: 3, mb: 3,borderRadius:5 }}>
+            <Typography variant="h6" gutterBottom>➕ Add New Section</Typography>
+            <Stack spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel>Section Type</InputLabel>
+                <Select
+                  value={newSection.type}
+                  onChange={(e) => setNewSection({ ...newSection, type: e.target.value })}
+                >
+                  <MenuItem value="plain">Plain Text</MenuItem>
+                  <MenuItem value="title">Title with Content</MenuItem>
+                  <MenuItem value="bullets">Bullet Points</MenuItem>
+                  <MenuItem value="numbered">Numbered List</MenuItem>
+                </Select>
+              </FormControl>
 
-                {newSection.type !== "plain" && newSection.type !== "numbered" && (
-                  <TextField label="Section Title" value={newSection.title} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} fullWidth />
-                )}
+              {!["plain", "numbered"].includes(newSection.type) && (
+                <TextField
+                  label="Section Title"
+                  fullWidth
+                  value={newSection.title}
+                  onChange={(e) => setNewSection({ ...newSection, title: e.target.value })}
+                />
+              )}
 
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Content"
-                      multiline
-                      rows={12}
-                      value={newSection.content}
-                      onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
-                      fullWidth
-                      placeholder={newSection.type === "numbered" ? "1. Design Phase\n• UI/UX\n• 5 Screens\n\n2. Development" : ""}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={4} sx={{ p: 3, bgcolor: "#f9f9f9", minHeight: 400 }}>
-                      <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="primary">Live Preview</Typography>
-                      {newSection.type === "title" && newSection.title && <Typography variant="h6" gutterBottom>{newSection.title}</Typography>}
-                      {renderLivePreview(newSection.content, newSection.type)}
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Stack>
-            </CardContent>
-            <CardActions sx={{ p: 4, bgcolor: "#f5f5ff", justifyContent: "space-between" }}>
-              <Button variant="contained" size="large" startIcon={<Add />} onClick={handleAddSection}>
+              <TextField
+                label="Content"
+                fullWidth
+                multiline
+                rows={5}
+                value={newSection.content}
+                onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
+                placeholder={newSection.type === "numbered" ? "1. Item one\n2. Item two" : "Enter content..."}
+              />
+
+              {/* Live Preview */}
+           
+<Box sx={{ 
+  p: 2, 
+  bgcolor: "grey.100", 
+  borderRadius: 1,
+  wordBreak: 'break-word',     
+  overflowWrap: 'break-word'  
+}}>
+  <Typography variant="subtitle2" gutterBottom>📋 Live Preview</Typography>
+  <Divider sx={{ mb: 1 }} />
+  {renderLivePreview(newSection.content, newSection.type)}
+</Box>
+
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddSection}
+                size="large"
+                fullWidth
+              >
                 Add Section
               </Button>
-              <Button variant="outlined" startIcon={<RefreshOutlined />} onClick={() => setResetOpen(true)}>
-                Reset All
-              </Button>
-            </CardActions>
-          </Card>
+            </Stack>
+          </Paper>
 
-          <Divider sx={{ my: 6 }}>
-            <Chip label={`${sections.length} Section(s)`} color="primary" />
-          </Divider>
+          {/* Existing Sections */}
+          <Typography variant="h6" gutterBottom>📚 All Sections ({sections.length})</Typography>
+          {sections.length === 0 ? (
+            <Alert severity="info">No sections yet. Add one above!</Alert>
+          ) : (
+            sections.map((sec, idx) => (
+              <Card key={sec.id} sx={{ mb: 2,borderRadius:5 ,}}>
+                <CardContent>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <Chip icon={getTypeIcon(sec.type)} label={sec.type} size="small" color="primary" />
+                    <Typography variant="caption" color="text.secondary">Position: {idx + 1}</Typography>
+                  </Stack>
 
-          <Stack spacing={4}>
-            {sections.map((sec, idx) => (
-              <Card key={sec.id} elevation={8}>
-                <CardContent sx={{ p: 4 }}>
                   {editingId === sec.id ? (
-                    <Stack spacing={3}>
-                      <Select value={editValues.type} onChange={(e) => setEditValues({ ...editValues, type: e.target.value })}>
-                        <MenuItem value="title">Title + Text</MenuItem>
-                        <MenuItem value="bullets">Bullets</MenuItem>
-                        <MenuItem value="numbered">Numbered</MenuItem>
-                        <MenuItem value="plain">Plain</MenuItem>
-                      </Select>
-                      {editValues.type !== "plain" && editValues.type !== "numbered" && (
-                        <TextField label="Title" value={editValues.title} onChange={(e) => setEditValues({ ...editValues, title: e.target.value })} />
+                    <Stack spacing={2}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Type</InputLabel>
+                        <Select
+                          value={editValues.type}
+                          onChange={(e) => setEditValues({ ...editValues, type: e.target.value })}
+                        >
+                          <MenuItem value="plain">Plain Text</MenuItem>
+                          <MenuItem value="title">Title with Content</MenuItem>
+                          <MenuItem value="bullets">Bullet Points</MenuItem>
+                          <MenuItem value="numbered">Numbered List</MenuItem>
+                        </Select>
+                      </FormControl>
+
+                      {!["plain", "numbered"].includes(editValues.type) && (
+                        <TextField
+                          label="Title"
+                          fullWidth
+                          size="small"
+                          value={editValues.title}
+                          onChange={(e) => setEditValues({ ...editValues, title: e.target.value })}
+                        />
                       )}
-                      <TextField multiline rows={8} label="Content" value={editValues.content} onChange={(e) => setEditValues({ ...editValues, content: e.target.value })} />
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        <Button variant="contained" startIcon={<Save />} onClick={saveEditSection}>Save</Button>
-                        <Button onClick={() => setEditingId(null)}>Cancel</Button>
-                      </Box>
+
+                      <TextField
+                        label="Content"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        size="small"
+                        value={editValues.content}
+                        onChange={(e) => setEditValues({ ...editValues, content: e.target.value })}
+                      />
                     </Stack>
                   ) : (
                     <>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                        {getTypeIcon(sec.type)}
-                        <Chip label={sec.type.toUpperCase()} sx={{ bgcolor: getTypeColor(sec.type) + "22", color: getTypeColor(sec.type) }} />
-                        {sec.title && <Typography variant="h6" fontWeight="bold">{sec.title}</Typography>}
-                      </Box>
-                      <Box sx={{ pl: 2, lineHeight: 1.8 }}>
+                      {sec.title && <Typography variant="h6" gutterBottom>{sec.title}</Typography>}
+                      <Box sx={{ bgcolor: "grey.50", p: 2, borderRadius: 1 }}>
                         {renderLivePreview(sec.content, sec.type)}
                       </Box>
                     </>
                   )}
                 </CardContent>
-                {editingId !== sec.id && (
-                  <CardActions sx={{ justifyContent: "space-between", bgcolor: "#fafafa" }}>
-                    <Box>
-                      <IconButton disabled={idx === 0} onClick={() => dispatch(moveSectionUp(sec.id))}><ArrowUpward /></IconButton>
-                      <IconButton disabled={idx === sections.length - 1} onClick={() => dispatch(moveSectionDown(sec.id))}><ArrowDownward /></IconButton>
-                    </Box>
-                    <Box>
-                      <IconButton onClick={() => startEditSection(sec)}><Edit /></IconButton>
-                      <IconButton color="error" onClick={() => dispatch(deleteSection(sec.id))}><Delete /></IconButton>
-                    </Box>
-                  </CardActions>
-                )}
+
+                <CardActions>
+                  {editingId === sec.id ? (
+                    <>
+                      <Button size="small" startIcon={<Save />} onClick={saveEditSection}>Save</Button>
+                      <Button size="small" onClick={() => setEditingId(null)}>Cancel</Button>
+                    </>
+                  ) : (
+                    <>
+                      <IconButton size="small" onClick={() => startEditSection(sec)}><Edit /></IconButton>
+                      <IconButton size="small" onClick={() => dispatch(deleteSection(sec.id))} color="error"><Delete /></IconButton>
+                    </>
+                  )}
+                </CardActions>
               </Card>
-            ))}
-          </Stack>
-        </>
-      )}
-
-      {/* TAB 1: Unlimited Tables */}
-      {tabValue === 1 && (
-        <>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-            <Typography variant="h5" fontWeight={800}>Custom Tables (Unlimited)</Typography>
-            <Button variant="contained" startIcon={<AddCircleOutline />} onClick={handleAddTable}>
-              Add New Table
-            </Button>
-          </Box>
-
-          {tables.length === 0 ? (
-            <Paper sx={{ p: 8, textAlign: "center", border: "2px dashed #ccc", borderRadius: 5 }}>
-              <TableChart sx={{ fontSize: 60, color: "#ccc", mb: 2 }} />
-              <Typography variant="h6" color="text.secondary">No tables yet</Typography>
-              <Typography color="text.secondary">Click "Add New Table" to start</Typography>
-            </Paper>
-          ) : (
-            <Stack spacing={6}>
-              {tables.map((table) => (
-                <Card key={table.id} elevation={10} sx={{ borderRadius: 5 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Table: {table.headers.col1} - {table.headers.col2}
-                      </Typography>
-                      <Box>
-                        <IconButton onClick={() => setEditingHeaders({ ...editingHeaders, [table.id]: true })}><Edit /></IconButton>
-                        <IconButton color="error" onClick={() => dispatch(deleteTable(table.id))}><Delete /></IconButton>
-                      </Box>
-                    </Box>
-
-                    {editingHeaders[table.id] && (
-                      <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={5}><TextField size="small" fullWidth label="Column 1" defaultValue={table.headers.col1} onChange={(e) => dispatch(updateTableHeaders({ tableId: table.id, col1: e.target.value }))} /></Grid>
-                        <Grid item xs={5}><TextField size="small" fullWidth label="Column 2" defaultValue={table.headers.col2} onChange={(e) => dispatch(updateTableHeaders({ tableId: table.id, col2: e.target.value }))} /></Grid>
-                        <Grid item xs={2}><Button size="small" variant="contained" onClick={() => setEditingHeaders({ ...editingHeaders, [table.id]: false })}>Done</Button></Grid>
-                      </Grid>
-                    )}
-
-                    <Button variant="outlined" size="small" startIcon={<Add />} onClick={() => dispatch(addTableRow(table.id))} sx={{ mb: 3 }}>
-                      Add Row
-                    </Button>
-
-                    <TableContainer component={Paper}>
-                      <Table>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: "#000" }}>
-                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>{table.headers.col1}</TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>{table.headers.col2}</TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {table.rows.map((row) => (
-                            <TableRow key={row.id}>
-                              {editingRow.tableId === table.id && editingRow.rowId === row.id ? (
-                                <>
-                                  <TableCell><TextField size="small" fullWidth value={rowForm.col1} onChange={(e) => setRowForm({ ...rowForm, col1: e.target.value })} /></TableCell>
-                                  <TableCell><TextField size="small" fullWidth value={rowForm.col2} onChange={(e) => setRowForm({ ...rowForm, col2: e.target.value })} /></TableCell>
-                                  <TableCell>
-                                    <IconButton size="small" color="primary" onClick={saveEditRow}><Save /></IconButton>
-                                    <IconButton size="small" onClick={() => setEditingRow({ tableId: null, rowId: null })}>Cancel</IconButton>
-                                  </TableCell>
-                                </>
-                              ) : (
-                                <>
-                                  <TableCell>{row.col1}</TableCell>
-                                  <TableCell>{row.col2 || "-"}</TableCell>
-                                  <TableCell>
-                                    <IconButton size="small" onClick={() => startEditRow(table.id, row)}><Edit /></IconButton>
-                                    <IconButton size="small" color="error" onClick={() => dispatch(deleteTableRow({ tableId: table.id, rowId: row.id }))}><Delete /></IconButton>
-                                  </TableCell>
-                                </>
-                              )}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </CardContent>
-                </Card>
-              ))}
-            </Stack>
+            ))
           )}
         </>
       )}
 
-      {/* Reset Dialog */}
+      {/* Tab 2: Tables */}
+      {tabValue === 1 && (
+        <>
+          {/* Add Table Buttons */}
+          <Paper elevation={2} sx={{ p: 3, mb: 3,borderRadius:5 }}>
+            <Typography variant="h6" gutterBottom>➕ Add New Table</Typography>
+            <ButtonGroup variant="contained" fullWidth sx={{borderRadius:5}}>
+              <Button
+              sx={{borderRadius:5}}
+                startIcon={<TableChart />}
+                onClick={() => handleAddTable(2)}
+              >
+                Add 2-Column Table
+              </Button>
+              <Button
+              sx={{borderRadius:5}}
+                startIcon={<ViewColumn />}
+                onClick={() => handleAddTable(3)}
+                color="secondary"
+              >
+                Add 3-Column Table
+              </Button>
+            </ButtonGroup>
+          </Paper>
+
+          {/* Existing Tables */}
+          <Typography variant="h6" gutterBottom>📊 All Tables ({tables.length})</Typography>
+          {tables.length === 0 ? (
+            <Alert severity="info">No tables yet. Add one above!</Alert>
+          ) : (
+            tables.map((table) => (
+              <Card key={table.id} sx={{ mb: 3 ,borderRadius:5}}>
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Chip
+                      icon={table.columnCount === 3 ? <ViewColumn /> : <TableChart />}
+                      label={`${table.columnCount}-Column Table`}
+                      color={table.columnCount === 3 ? "secondary" : "primary"}
+                    />
+                    <Stack direction="row" spacing={1}>
+                      <Tooltip title="Add Row">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => dispatch(addTableRow(table.id))}
+                        >
+                          <AddCircleOutline />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Table">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            if (window.confirm("Delete this entire table?")) {
+                              dispatch(deleteTable(table.id));
+                            }
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Stack>
+
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          {editingHeaders[table.id] ? (
+                            <>
+                              <TableCell>
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={editingHeaders[table.id].col1}
+                                  onChange={(e) => setEditingHeaders({
+                                    ...editingHeaders,
+                                    [table.id]: { ...editingHeaders[table.id], col1: e.target.value }
+                                  })}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={editingHeaders[table.id].col2}
+                                  onChange={(e) => setEditingHeaders({
+                                    ...editingHeaders,
+                                    [table.id]: { ...editingHeaders[table.id], col2: e.target.value }
+                                  })}
+                                />
+                              </TableCell>
+                              {table.columnCount === 3 && (
+                                <TableCell>
+                                  <TextField
+                                    size="small"
+                                    fullWidth
+                                    value={editingHeaders[table.id].col3}
+                                    onChange={(e) => setEditingHeaders({
+                                      ...editingHeaders,
+                                      [table.id]: { ...editingHeaders[table.id], col3: e.target.value }
+                                    })}
+                                  />
+                                </TableCell>
+                              )}
+                              <TableCell>
+                                <IconButton size="small" onClick={() => saveEditHeaders(table.id, table.columnCount)}>
+                                  <Save />
+                                </IconButton>
+                              </TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell><strong>{table.headers.col1}</strong></TableCell>
+                              <TableCell><strong>{table.headers.col2}</strong></TableCell>
+                              {table.columnCount === 3 && (
+                                <TableCell><strong>{table.headers.col3}</strong></TableCell>
+                              )}
+                              <TableCell>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => startEditHeaders(table.id, table.headers, table.columnCount)}
+                                >
+                                  <Edit />
+                                </IconButton>
+                              </TableCell>
+                            </>
+                          )}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {table.rows.map((row) => (
+                          <TableRow key={row.id}>
+                            {editingRow.tableId === table.id && editingRow.rowId === row.id ? (
+                              <>
+                                <TableCell>
+                                  <TextField
+                                    size="small"
+                                    fullWidth
+                                    value={rowForm.col1}
+                                    onChange={(e) => setRowForm({ ...rowForm, col1: e.target.value })}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <TextField
+                                    size="small"
+                                    fullWidth
+                                    value={rowForm.col2}
+                                    onChange={(e) => setRowForm({ ...rowForm, col2: e.target.value })}
+                                  />
+                                </TableCell>
+                                {table.columnCount === 3 && (
+                                  <TableCell>
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={rowForm.col3}
+                                      onChange={(e) => setRowForm({ ...rowForm, col3: e.target.value })}
+                                    />
+                                  </TableCell>
+                                )}
+                                <TableCell>
+                                  <Stack direction="row">
+                                    <IconButton size="small" onClick={saveEditRow}><Save /></IconButton>
+                                    <IconButton size="small" onClick={() => {
+                                      setEditingRow({ tableId: null, rowId: null });
+                                      setRowForm({ col1: "", col2: "", col3: "" });
+                                    }}>
+                                      <Delete />
+                                    </IconButton>
+                                  </Stack>
+                                </TableCell>
+                              </>
+                            ) : (
+                              <>
+                                <TableCell>{row.col1}</TableCell>
+                                <TableCell>{row.col2}</TableCell>
+                                {table.columnCount === 3 && (
+                                  <TableCell>{row.col3}</TableCell>
+                                )}
+                                <TableCell>
+                                  <Stack direction="row">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => startEditRow(table.id, row, table.columnCount)}
+                                    >
+                                      <Edit />
+                                    </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => dispatch(deleteTableRow({ tableId: table.id, rowId: row.id }))}
+                                    >
+                                      <Delete />
+                                    </IconButton>
+                                  </Stack>
+                                </TableCell>
+                              </>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div ref={containerRef}></div>
+
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            ))
+            
+
+          )}
+        </>
+      )}
+
+      {/* Reset Button */}
+      <Box mt={4}>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<RefreshOutlined />}
+          sx={{borderRadius:5}}
+          onClick={() => setResetOpen(true)}
+          fullWidth
+        >
+          Reset All Data
+        </Button>
+      </Box>
+
+      {/* Reset Confirmation Dialog */}
       <Dialog open={resetOpen} onClose={() => setResetOpen(false)}>
-        <DialogTitle sx={{ bgcolor: "#d32f2f", color: "white" }}>Reset All Data?</DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          <Alert severity="warning">This will delete all content permanently!</Alert>
+        <DialogTitle>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <WarningAmber color="error" />
+            <span>Confirm Reset</span>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <Typography>This will delete all sections and tables. Continue?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setResetOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={handleReset}>Yes, Reset</Button>
+          <Button onClick={handleReset} color="error" variant="contained">
+            Reset Everything
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

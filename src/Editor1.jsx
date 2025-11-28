@@ -30,9 +30,9 @@ import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
 
-const PdfPage1Editor = () => {
+const PdfPage1Editor = ({mode}) => {
   const dispatch = useDispatch();
-  const page1 = useSelector((state) => state.page1Slice || {});
+  const page1 = useSelector((state) => mode === 'edit-doc' ? state.page1Slice.edit : state.page1Slice.create);
 
   // Local state (for instant UI response)
   const [local, setLocal] = useState({
@@ -324,27 +324,7 @@ const PdfPage1Editor = () => {
           </Stack>
         </Paper>
 
-        {/* Pro Tips */}
-        <Alert
-          severity="info"
-          icon={<AutoAwesome sx={{ color: "#667eea" }} />}
-          sx={{
-            borderRadius: 4,
-            bgcolor: "rgba(102,126,234,0.08)",
-            border: "1px solid rgba(102,126,234,0.2)",
-            py: 2,
-          }}
-        >
-          <Typography fontWeight={600} color="#667eea" mb={1}>
-            Pro Tips for a Winning Cover:
-          </Typography>
-          <Box component="ul" sx={{ m: 0, pl: 3, color: "text.primary" }}>
-            <li>Use a bold, confident brand name</li>
-            <li>Tagline should evoke trust and innovation</li>
-            <li>Changes appear instantly in preview</li>
-            <li>Keep it clean — less is more!</li>
-          </Box>
-        </Alert>
+
       </Stack>
 
       {/* Reset Confirmation Dialog */}

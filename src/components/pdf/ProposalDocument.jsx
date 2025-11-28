@@ -123,7 +123,8 @@ const ProposalDocument = ({ formData, pdfRef, mode = "dev" }) => {
   const blankContent = useSelector((s) => s.blankContent);
   const pricing = useSelector((s) => s.pricing);
   const paymentTerms = useSelector((s) => s.paymentTerms);
-  const page1Slice = useSelector((s) => s.page1Slice);
+  const currentMode = useSelector((s) => s.page1Slice.currentMode);
+  const page1 = useSelector((s) => s.page1Slice);
   const page2 = useSelector((s) => s.page2);
   const page3 = useSelector((s) => s.page3);
 

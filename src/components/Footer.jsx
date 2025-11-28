@@ -1,10 +1,34 @@
 // src/components/Footer.jsx
 import React from "react";
-import { Box, Container, Grid, Typography, Link, Divider } from "@mui/material";
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Link,
+  Divider,
+  Stack,
+  Chip,
+  IconButton,
+  alpha,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { useLocation } from "react-router";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import DescriptionIcon from "@mui/icons-material/Description";
+import FolderIcon from "@mui/icons-material/Folder";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import PeopleIcon from "@mui/icons-material/People";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import SecurityIcon from "@mui/icons-material/Security";
+import SpeedIcon from "@mui/icons-material/Speed";
 
 const Footer = () => {
-  // Get user role from sessionStorage
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const user =
     typeof window !== "undefined"
       ? JSON.parse(sessionStorage.getItem("user") || "null")
@@ -12,269 +36,459 @@ const Footer = () => {
   const role = user?.role || "agent";
   const location = useLocation();
 
-  // Agar agent hai to sirf simple footer dikhao
-  if (role === "agent") {
-    return (
-      <Box
-        component="footer"
-        sx={{
-          mt: 6,
-          background: "linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)",
-          color: "#e0e0e0",
-          py: 4,
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "6px",
-            background:
-              "linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 2s 2",
-          },
-          "@keyframes shimmer": {
-            "0%": { backgroundPosition: "-200% 0" },
-            "100%": { backgroundPosition: "200% 0" },
-          },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center" }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 800,
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              Proposal Management System
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: "#b0bec5", mt: 1, opacity: 0.7 }}
-            >
-              © {new Date().getFullYear()} — Internal Use Only
-            </Typography>
-          </Box>
-        </Container>
-      </Box>
-    );
-  }
-
-  return (
+  // Common full-width footer wrapper
+  const FullWidthFooter = ({ children, hasShimmer = true }) => (
     <Box
       component="footer"
       sx={{
-        mt: 6,
+        mb: 0,
         background: "linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)",
         color: "#e0e0e0",
-        py: 4,
+        py: { xs: 5, md: 6 },
         position: "relative",
         overflow: "hidden",
-        "&::before": {
+        width: "100vw",
+        left: "50%",
+        right: "50%",
+        ml: "-50vw",
+        mr: "-50vw",
+        mb: "-30px",
+        borderTop: "3px solid",
+        borderImage: "linear-gradient(90deg, #667eea 0%, #764ba2 100%) 1",
+        "&::before": hasShimmer ? {
           content: '""',
           position: "absolute",
           top: 0,
-          left: 0,
-          right: 0,
-          height: "6px",
+          left: "-100%",
+          width: "100%",
+          height: "100%",
           background:
-            "linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-          backgroundSize: "200% 100%",
+            "linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)",
+          animation: "shimmer 8s infinite",
+        } : {},
+        "@keyframes shimmer": {
+          "0%": { left: "-100%" },
+          "100%": { left: "100%" },
         },
-        width: "100vw",
-        ml: { xs: "-50vw", sm: "-50vw" },
-        left: "50%",
-        position: "relative",
       }}
     >
-      <Container maxWidth="lg">
-        <Grid container spacing={4} alignItems="center">
-          {/* Left Section - App Info */}
-          <Grid item xs={12} sm={4}>
+      {children}
+    </Box>
+  );
+
+  const quickLinks = [
+    { 
+      label: "Dashboard", 
+      path: "/dashboard", 
+      icon: <DashboardIcon sx={{ fontSize: 18 }} />,
+      show: location.pathname !== "/dashboard"
+    },
+    { 
+      label: "Create Proposal", 
+      path: "/create-proposal", 
+      icon: <DescriptionIcon sx={{ fontSize: 18 }} />,
+      show: location.pathname !== "/create-proposal"
+    },
+    { 
+      label: role === "admin" ? "All Proposals" : "Your Proposals",
+      path: role === "admin" ? "/admin/proposals" : "/your-proposals",
+      icon: <FolderIcon sx={{ fontSize: 18 }} />,
+      show: location.pathname !== "/your-proposals" && location.pathname !== "/admin/proposals"
+    },
+    { 
+      label: "Reports", 
+      path: "/reports", 
+      icon: <AssessmentIcon sx={{ fontSize: 18 }} />,
+      show: true
+    },
+    { 
+      label: "Agents Management", 
+      path: "/admin/bdms", 
+      icon: <PeopleIcon sx={{ fontSize: 18 }} />,
+      show: role === "admin"
+    },
+  ].filter(link => link.show);
+
+  // Agent ka simple footer
+  if (role === "agent") {
+    return (
+      <FullWidthFooter hasShimmer={false}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: "center" }}>
+            {/* Logo/Icon */}
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 70,
+                height: 70,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.4)",
+                mb: 2,
+              }}
+            >
+              <RocketLaunchIcon sx={{ fontSize: 36, color: "#fff" }} />
+            </Box>
+
             <Typography
-              variant="h6"
+              variant="h5"
               sx={{
                 fontWeight: 800,
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 letterSpacing: "-0.5px",
+                mb: 1,
               }}
             >
               Proposal Management System
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "#b0bec5", mt: 0.5, opacity: 0.7 }}
+              sx={{ 
+                color: "#b0bec5", 
+                opacity: 0.8, 
+                fontSize: "0.95rem",
+                mb: 2,
+              }}
             >
-              Streamlining proposal creation and internal collaboration.
+              © {new Date().getFullYear()} — Internal Use Only
             </Typography>
+
+            {/* Status Chip */}
+            <Chip
+              icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+              label="System Online"
+              size="small"
+              sx={{
+                background: alpha("#4caf50", 0.15),
+                color: "#4caf50",
+                fontWeight: 600,
+                border: `1px solid ${alpha("#4caf50", 0.3)}`,
+              }}
+            />
+          </Box>
+        </Container>
+      </FullWidthFooter>
+    );
+  }
+
+  // Admin / Manager / etc. ka rich footer
+  return (
+    <FullWidthFooter hasShimmer={true}>
+      <Container maxWidth="lg">
+        <Grid container spacing={5} alignItems="flex-start">
+          {/* Left - Brand */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 50,
+                  height: 50,
+                  borderRadius: 3,
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  boxShadow: "0 8px 24px rgba(102, 126, 234, 0.3)",
+                  mr: 2,
+                }}
+              >
+                <RocketLaunchIcon sx={{ fontSize: 28, color: "#fff" }} />
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 800,
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-0.5px",
+                }}
+              >
+                Proposal System
+              </Typography>
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{ 
+                color: "#b0bec5", 
+                lineHeight: 1.7, 
+                opacity: 0.85,
+                mb: 2,
+              }}
+            >
+              Streamlining proposal creation, review, and internal collaboration
+              with efficiency and transparency.
+            </Typography>
+
+            {/* Feature Pills */}
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Chip
+                icon={<SpeedIcon sx={{ fontSize: 14 }} />}
+                label="Fast"
+                size="small"
+                sx={{
+                  background: alpha("#667eea", 0.1),
+                  color: "#667eea",
+                  border: `1px solid ${alpha("#667eea", 0.3)}`,
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                }}
+              />
+              <Chip
+                icon={<SecurityIcon sx={{ fontSize: 14 }} />}
+                label="Secure"
+                size="small"
+                sx={{
+                  background: alpha("#4caf50", 0.1),
+                  color: "#4caf50",
+                  border: `1px solid ${alpha("#4caf50", 0.3)}`,
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                }}
+              />
+              <Chip
+                icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+                label="Reliable"
+                size="small"
+                sx={{
+                  background: alpha("#2196f3", 0.1),
+                  color: "#2196f3",
+                  border: `1px solid ${alpha("#2196f3", 0.3)}`,
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                }}
+              />
+            </Stack>
           </Grid>
 
-          {/* Center Section - Quick Links */}
-          <Grid
-            item
-            xs={12}
-            sm={4}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: 0.5,
-            }}
-          >
+          {/* Center - Quick Links */}
+          <Grid item xs={12} md={4}>
             <Typography
-              variant="subtitle2"
+              variant="subtitle1"
               sx={{
                 fontWeight: 700,
                 color: "#90caf9",
-                mb: 0.5,
+                mb: 2.5,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                fontSize: "0.9rem",
               }}
             >
               Quick Access
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 2,
-                flexWrap: "wrap",
-                justifyContent: { xs: "flex-start", sm: "center" },
-              }}
-            >
-              {location.pathname !== "/dashboard" && (
+            <Stack spacing={1.5}>
+              {quickLinks.map((link, index) => (
                 <Link
-                  href="/dashboard"
-                  color="inherit"
-                  underline="none"
+                  key={index}
+                  href={link.path}
                   sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
                     color: "#e0e0e0",
-                    fontSize: "0.9rem",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                    textDecoration: "none",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    padding: "8px 12px",
+                    borderRadius: 2,
+                    background: "transparent",
                     "&:hover": {
                       color: "#667eea",
-                      transform: "translateY(-2px)",
-                      transition: "all 0.3s ease",
-                    },
-                  }}
-                >
-                  Dashboard
-                </Link>
-              )}
-              {location.pathname !== "/create-proposal" && (
-                <Link
-                  href="/create-proposal"
-                  color="inherit"
-                  underline="none"
-                  sx={{
-                    colorlibs: true,
-                    color: "#e0e0e0",
-                    fontSize: "0.9rem",
-                    "&:hover": {
-                      color: "#667eea",
-                      transform: "translateY(-2px)",
-                      transition: "all 0.3s ease",
-                    },
-                  }}
-                >
-                  Create Proposal
-                </Link>
-              )}
-              {location.pathname !== "/your-proposals" ||
-                (location.pathname !== "/admin/proposals" && (
-                  <Link
-                    href={
-                      role !== "admin" ? "/your-proposals" : "/admin/proposals"
-                    }
-                    color="inherit"
-                    underline="none"
-                    sx={{
-                      color: "#e0e0e0",
-                      fontSize: "0.9rem",
-                      "&:hover": {
-                        color: "#667eea",
-                        transform: "translateY(-2px)",
-                        transition: "all 0.3s ease",
+                      transform: "translateX(8px)",
+                      background: alpha("#667eea", 0.08),
+                      "& .link-icon": {
+                        transform: "scale(1.2) rotate(5deg)",
                       },
+                    },
+                  }}
+                >
+                  <Box 
+                    className="link-icon"
+                    sx={{ 
+                      display: "flex", 
+                      transition: "transform 0.3s ease",
+                      color: "#90caf9",
                     }}
                   >
-                    {role === "admin" ? "Total" : "Your"} Proposals
-                  </Link>
-                ))}
-              <Link
-                href="/reports"
-                color="inherit"
-                underline="none"
-                sx={{
-                  color: "#e0e0e0",
-                  fontSize: "0.9rem",
-                  "&:hover": {
-                    color: "#667eea",
-                    transform: "translateY(-2px)",
-                    transition: "all 0.3s ease",
-                  },
-                }}
-              >
-                Agents Management
-              </Link>
-            </Box>
+                    {link.icon}
+                  </Box>
+                  {link.label}
+                </Link>
+              ))}
+            </Stack>
           </Grid>
 
-          {/* Right Section - System Info */}
-          <Grid
-            item
-            xs={12}
-            sm={4}
-            sx={{
-              textAlign: { xs: "left", sm: "right" },
-            }}
-          >
+          {/* Right - System Info */}
+          <Grid item xs={12} md={4}>
             <Typography
-              variant="subtitle2"
+              variant="subtitle1"
               sx={{
                 fontWeight: 700,
                 color: "#90caf9",
-                mb: 0.5,
+                mb: 2.5,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                fontSize: "0.9rem",
+                textAlign: { xs: "left", md: "right" },
               }}
             >
-              System Info
+              System Status
             </Typography>
-            <Typography variant="body2" sx={{ color: "#b0bec5", opacity: 0.8 }}>
-              Version: 1.0.3 (Internal Build)
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#b0bec5", opacity: 0.6 }}>
-              Internal Use Only
-            </Typography>
+            <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
+              <Stack 
+                spacing={1.5} 
+                alignItems={{ xs: "flex-start", md: "flex-end" }}
+              >
+                {/* Version Badge */}
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1,
+                    padding: "6px 16px",
+                    borderRadius: 2,
+                    background: alpha("#667eea", 0.1),
+                    border: `1px solid ${alpha("#667eea", 0.3)}`,
+                  }}
+                >
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: "#b0bec5", 
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    Version: 1.0.3
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#4caf50",
+                      boxShadow: "0 0 8px rgba(76, 175, 80, 0.6)",
+                      animation: "pulse 2s infinite",
+                    }}
+                  />
+                </Box>
+
+                {/* Environment Badge */}
+                <Chip
+                  label="Production (Internal)"
+                  size="small"
+                  sx={{
+                    background: alpha("#ff9800", 0.15),
+                    color: "#ffa726",
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    border: `1px solid ${alpha("#ff9800", 0.3)}`,
+                  }}
+                />
+
+                {/* Access Badge */}
+                <Chip
+                  icon={<SecurityIcon sx={{ fontSize: 14 }} />}
+                  label="Restricted Access"
+                  size="small"
+                  sx={{
+                    background: alpha("#f44336", 0.15),
+                    color: "#ef5350",
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    border: `1px solid ${alpha("#f44336", 0.3)}`,
+                  }}
+                />
+              </Stack>
+            </Box>
           </Grid>
         </Grid>
 
-        <Divider
-          sx={{
-            my: 3,
-            borderColor: "rgba(255,255,255,0.15)",
-          }}
+        <Divider 
+          sx={{ 
+            my: 4, 
+            borderColor: "rgba(255,255,255,0.12)",
+            borderWidth: 1,
+          }} 
         />
 
+        {/* Bottom Section */}
         <Box
           sx={{
-            textAlign: "center",
-            fontSize: "0.85rem",
-            color: "#b0bec5",
-            opacity: 0.7,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
           }}
         >
-          © {new Date().getFullYear()} Proposal Management System — For Internal
-          Use Only
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#b0bec5",
+              opacity: 0.7,
+              fontSize: "0.9rem",
+            }}
+          >
+            © {new Date().getFullYear()} Proposal Management System — Strictly for Internal Use Only
+          </Typography>
+
+          {/* Status Indicator */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              padding: "4px 12px",
+              borderRadius: 2,
+              background: alpha("#4caf50", 0.1),
+              border: `1px solid ${alpha("#4caf50", 0.3)}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#4caf50",
+                boxShadow: "0 0 6px rgba(76, 175, 80, 0.8)",
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#4caf50",
+                fontWeight: 700,
+                fontSize: "0.75rem",
+              }}
+            >
+              All Systems Operational
+            </Typography>
+          </Box>
         </Box>
       </Container>
-    </Box>
+
+      {/* Pulse Animation */}
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.7;
+              transform: scale(1.1);
+            }
+          }
+        `}
+      </style>
+    </FullWidthFooter>
   );
 };
 

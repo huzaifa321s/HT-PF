@@ -18,6 +18,10 @@ import {
   ListItemText,
   Tooltip,
   useTheme,
+  Badge,
+  Chip,
+  alpha,
+  useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -28,11 +32,18 @@ import GroupIcon from "@mui/icons-material/Group";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import BusinessIcon from "@mui/icons-material/Business"; // BDM icon
+import BusinessIcon from "@mui/icons-material/Business";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import PersonIcon from "@mui/icons-material/Person";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useLocation, useNavigate } from "react-router";
 
 const Navbar = ({ onNavigate, currentPath }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const profileOpen = Boolean(anchorEl);
@@ -50,7 +61,6 @@ const Navbar = ({ onNavigate, currentPath }) => {
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
   const handleNav = (path) => {
     if (onNavigate && typeof onNavigate === "function") onNavigate(path);
-    // else window.location.href = path;
     else navigate(path);
     setMobileOpen(false);
   };
@@ -61,7 +71,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
     sessionStorage.removeItem("user");
     navigate("/login");
   };
-  console.log("user.role", user?.role);
+
   const navItems = [
     { label: "Dashboard", path: "/", icon: <DashboardIcon /> },
     {
@@ -77,7 +87,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
     ...(role === "admin"
       ? [
           {
-            label: "BDMs Management",
+            label: "BDOs Management",
             path: "/admin/bdms",
             icon: <AssessmentIcon />,
           },
@@ -88,86 +98,152 @@ const Navbar = ({ onNavigate, currentPath }) => {
   const drawer = (
     <Box
       sx={{
-        width: 260,
-        bgcolor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        width: 280,
+        background: "linear-gradient(180deg, #667eea 0%, #764ba2 100%)",
         color: "#fff",
         height: "100%",
-        px: 1,
+        display: "flex",
+        flexDirection: "column",
       }}
       onClick={() => setMobileOpen(false)}
     >
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <Avatar sx={{ bgcolor: "#f5f7fa", color: "#667eea" }}>
-          {user?.name?.[0]?.toUpperCase() || "U"}
-        </Avatar>
-        <Box>
-          <Typography
-            variant="subtitle1"
-            fontWeight="bold"
-            sx={{ color: "#fff" }}
-          >
-            Proposal System
-          </Typography>
-          <Typography variant="caption" color="rgba(255,255,255,0.7)">
-            {role === "admin" ? "Admin Panel" : "Agent Dashboard"}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
-
-      <List>
-        {navItems.map((item) => (
-          <ListItemButton
-            key={item.path}
-            selected={activePath === item.path}
-            onClick={() => handleNav(item.path)}
-            sx={{
-              borderRadius: 2,
-              mb: 1,
-              "&.Mui-selected": {
-                bgcolor: "rgba(255,255,255,0.2)",
-              },
-              "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+      {/* Drawer Header */}
+      <Box 
+        sx={{ 
+          p: 3, 
+          background: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+          <Avatar 
+            sx={{ 
+              width: 50, 
+              height: 50,
+              bgcolor: "#fff", 
+              color: "#667eea",
+              fontWeight: 800,
+              fontSize: "1.3rem",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
             }}
           >
-            <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
-        ))}
+            {user?.name?.[0]?.toUpperCase() || "U"}
+          </Avatar>
+ 
+        </Box>
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)", fontSize: "0.75rem" }}>
+          {user?.email || "user@example.com"}
+        </Typography>
+      </Box>
+
+      <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
+
+      {/* Navigation Items */}
+      <List sx={{ px: 2, py: 2, flex: 1 }}>
+        {navItems.map((item) => {
+          const isActive = activePath === item.path;
+          return (
+            <ListItemButton
+              key={item.path}
+              selected={isActive}
+              onClick={() => handleNav(item.path)}
+              sx={{
+                borderRadius: 2.5,
+                mb: 1,
+                py: 1.5,
+                transition: "all 0.3s ease",
+                "&.Mui-selected": {
+                  bgcolor: "rgba(255,255,255,0.25)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  "&:hover": {
+                    bgcolor: "rgba(255,255,255,0.3)",
+                  },
+                },
+                "&:hover": { 
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  transform: "translateX(4px)",
+                },
+              }}
+            >
+              <ListItemIcon 
+                sx={{ 
+                  color: "#fff",
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: "0.95rem",
+                }}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
 
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
+      <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
 
-      <List>
+      {/* Bottom Actions */}
+      <List sx={{ px: 2, py: 2 }}>
         <ListItemButton
           onClick={() => handleNav("/settings")}
           sx={{
-            borderRadius: 2,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+            borderRadius: 2.5,
+            mb: 1,
+            transition: "all 0.3s ease",
+            "&:hover": { 
+              bgcolor: "rgba(255,255,255,0.15)",
+              transform: "translateX(4px)",
+            },
           }}
         >
-          <ListItemIcon sx={{ color: "#fff" }}>
+          <ListItemIcon sx={{ color: "#fff", minWidth: 40 }}>
             <SettingsIcon />
           </ListItemIcon>
-          <ListItemText primary="Settings" />
+          <ListItemText 
+            primary="Settings"
+            primaryTypographyProps={{ fontSize: "0.95rem" }}
+          />
         </ListItemButton>
 
-        {location.pathname !== "/create-proposal" && (
-          <ListItemButton
-            onClick={handleLogout}
-            sx={{
-              borderRadius: 2,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
-            }}
-          >
-            <ListItemIcon sx={{ color: "#fff" }}>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        )}
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            borderRadius: 2.5,
+            transition: "all 0.3s ease",
+            background: "rgba(244, 67, 54, 0.2)",
+            "&:hover": { 
+              bgcolor: "rgba(244, 67, 54, 0.3)",
+              transform: "translateX(4px)",
+            },
+          }}
+        >
+          <ListItemIcon sx={{ color: "#fff", minWidth: 40 }}>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Logout"
+            primaryTypographyProps={{ fontSize: "0.95rem" }}
+          />
+        </ListItemButton>
       </List>
+
+      {/* Footer Badge */}
+      <Box
+        sx={{
+          p: 2,
+          textAlign: "center",
+          background: "rgba(0,0,0,0.1)",
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.7rem" }}>
+          Proposal System v1.0.3
+        </Typography>
+      </Box>
     </Box>
   );
 
@@ -175,24 +251,34 @@ const Navbar = ({ onNavigate, currentPath }) => {
     <>
       <AppBar
         position="sticky"
-        elevation={6}
+        elevation={0}
         sx={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "#fff",
           width: "100vw",
           left: "50%",
           ml: "-50vw",
+          mt: "-30px",
           position: "relative",
+          boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
         }}
       >
-        <Toolbar sx={{ display: "flex", gap: 2 }}>
+        <Toolbar sx={{ display: "flex", gap: 2, py: 1.5 }}>
           {/* Mobile menu */}
           <IconButton
             color="inherit"
             edge="start"
             aria-label="menu"
             onClick={handleDrawerToggle}
-            sx={{ mr: 1, display: { md: "none" } }}
+            sx={{ 
+              mr: 1, 
+              display: { md: "none" },
+              background: "rgba(255,255,255,0.1)",
+              "&:hover": {
+                background: "rgba(255,255,255,0.2)",
+              },
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -203,22 +289,51 @@ const Navbar = ({ onNavigate, currentPath }) => {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              gap: 1.5,
               cursor: "pointer",
+              transition: "transform 0.3s ease",
+              "&:hover": {
+                transform: "scale(1.05)",
+              },
             }}
           >
-            <Avatar sx={{ bgcolor: "#f5f7fa", color: "#667eea" }}>P</Avatar>
-            <Typography
-              variant="h6"
-              fontWeight="bold"
+            <Box
               sx={{
-                background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                width: 42,
+                height: 42,
+                borderRadius: 2.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#fff",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
               }}
             >
-              Proposal Management
-            </Typography>
+              <RocketLaunchIcon sx={{ color: "#667eea", fontSize: 24 }} />
+            </Box>
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Typography
+                variant="h6"
+                fontWeight="800"
+                sx={{
+                  fontSize: "1.1rem",
+                  letterSpacing: "-0.5px",
+                  color: "#fff",
+                }}
+              >
+                Proposal Management
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "rgba(255,255,255,0.8)",
+                  fontSize: "0.7rem",
+                  fontWeight: 500,
+                }}
+              >
+                {role === "admin" ? "Admin Panel" : "Agent Dashboard"}
+              </Typography>
+            </Box>
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -233,15 +348,22 @@ const Navbar = ({ onNavigate, currentPath }) => {
                   startIcon={item.icon}
                   onClick={() => handleNav(item.path)}
                   sx={{
-                    color: isActive ? "#fff" : "rgba(255,255,255,0.9)",
+                    color: "#fff",
                     background: isActive
-                      ? "rgba(255,255,255,0.2)"
+                      ? "rgba(255,255,255,0.25)"
                       : "transparent",
                     textTransform: "none",
-                    px: 2,
+                    px: 2.5,
+                    py: 1,
                     fontWeight: isActive ? 700 : 500,
-                    borderRadius: 2,
-                    "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+                    fontSize: "0.95rem",
+                    borderRadius: 2.5,
+                    transition: "all 0.3s ease",
+                    boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                    "&:hover": { 
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      transform: "translateY(-2px)",
+                    },
                   }}
                 >
                   {item.label}
@@ -250,61 +372,152 @@ const Navbar = ({ onNavigate, currentPath }) => {
             })}
           </Box>
 
-          {/* Profile Dropdown */}
-          <Box sx={{ ml: 2 }}>
-            <Tooltip title="Account">
-              <IconButton
+          {/* Action Icons */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
+         
+
+            {/* Profile Dropdown */}
+            <Tooltip title="Account" arrow>
+              <Button
                 onClick={handleProfileOpen}
-                size="small"
-                color="inherit"
+                endIcon={<KeyboardArrowDownIcon />}
+                sx={{
+                  color: "#fff",
+                  textTransform: "none",
+                  background: "rgba(255,255,255,0.1)",
+                  borderRadius: 3,
+                  px: 2,
+                  py: 0.8,
+                  gap: 1,
+                  "&:hover": {
+                    background: "rgba(255,255,255,0.2)",
+                  },
+                }}
               >
                 <Avatar
                   sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: "#f5f7fa",
+                    width: 32,
+                    height: 32,
+                    bgcolor: "#fff",
                     color: "#667eea",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
                   }}
                 >
-                  {user?.name?.[0]?.toUpperCase() || ""}
+                  {user?.name?.[0]?.toUpperCase() || "U"}
                 </Avatar>
-              </IconButton>
+                {!isMobile && (
+                  <Typography variant="body2" fontWeight={600}>
+                    {user?.name?.split(' ')[0] || "User"}
+                  </Typography>
+                )}
+              </Button>
             </Tooltip>
+
             <Menu
               anchorEl={anchorEl}
               open={profileOpen}
               onClose={handleProfileClose}
-              PaperProps={{ elevation: 6, sx: { mt: 1.5, minWidth: 200 } }}
+              PaperProps={{ 
+                elevation: 8, 
+                sx: { 
+                  mt: 1.5, 
+                  minWidth: 220,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                } 
+              }}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
+              {/* Profile Header */}
+              <Box
+                sx={{
+                  p: 2,
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "#fff",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: "#fff",
+                      color: "#667eea",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {user?.name?.[0]?.toUpperCase() || "U"}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700}>
+                      {user?.name || "User"}
+                    </Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                      {user?.email || "user@example.com"}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Chip
+                  icon={role === "admin" ? <AdminPanelSettingsIcon sx={{ fontSize: 14 }} /> : <PersonIcon sx={{ fontSize: 14 }} />}
+                  label={role === "admin" ? "BDM" : "Agent"}
+                  size="small"
+                  sx={{
+                    height: 24,
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    background: "rgba(255,255,255,0.2)",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                  }}
+                />
+              </Box>
+
+              <Divider />
+
               <MenuItem
                 onClick={() => {
                   handleNav("/profile");
                   handleProfileClose();
                 }}
                 sx={{
-                  "&:hover": { backgroundColor: "rgba(102, 126, 234,0.1)" },
+                  py: 1.5,
+                  gap: 1.5,
+                  "&:hover": { 
+                    backgroundColor: alpha("#667eea", 0.08),
+                  },
                 }}
               >
                 <ListItemIcon>
-                  <AccountCircleIcon fontSize="small" />
+                  <AccountCircleIcon fontSize="small" sx={{ color: "#667eea" }} />
                 </ListItemIcon>
-                Profile
+                <Typography variant="body2" fontWeight={500}>
+                  My Profile
+                </Typography>
               </MenuItem>
 
+              
+
               <Divider />
-              {location.pathname !== "/create-proposal" && (
-                <MenuItem
-                  onClick={handleLogout}
-                  sx={{ "&:hover": { backgroundColor: "rgba(255,0,0,0.1)" } }}
-                >
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" color="error" />
-                  </ListItemIcon>
-                  <Typography color="error">Logout</Typography>
-                </MenuItem>
-              )}
+
+              <MenuItem
+                onClick={handleLogout}
+                sx={{ 
+                  py: 1.5,
+                  gap: 1.5,
+                  "&:hover": { 
+                    backgroundColor: alpha("#f44336", 0.08),
+                  } 
+                }}
+              >
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" color="error" />
+                </ListItemIcon>
+                <Typography color="error" variant="body2" fontWeight={600}>
+                  Logout
+                </Typography>
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
@@ -314,6 +527,11 @@ const Navbar = ({ onNavigate, currentPath }) => {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
+        PaperProps={{
+          sx: {
+            width: 280,
+          }
+        }}
       >
         {drawer}
       </Drawer>

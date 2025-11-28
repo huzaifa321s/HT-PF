@@ -56,7 +56,7 @@ useEffect(() => {
       const res = await axiosInstance.get("/api/bdms/get-total-bdms");
       setTotalBDMs(res.data.total);
     } catch (error) {
-      console.error("Failed to fetch total BDMs:", error);
+      console.error("Failed to fetch total BDOs:", error);
     } finally {
       setLoading(false);
     }
@@ -72,6 +72,12 @@ useEffect(() => {
         minHeight: "100vh",
         py: 6,
         px: 3,
+          width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
       }}
     >
       <Box sx={{ maxWidth: 1200, mx: "auto" }}>
@@ -237,7 +243,7 @@ useEffect(() => {
           color="text.secondary"
           sx={{ mt: 1, fontWeight: 600 }}
         >
-          Total BDMs
+          Total BDOs
         </Typography>
       </>
     )}
@@ -407,14 +413,14 @@ useEffect(() => {
                   fontWeight="bold"
                   sx={{ color: "#667eea" }}
                 >
-                  BDMs Management
+                  BDOs Management
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ mt: 1 }}
                 >
-                  Open to manage BDMs.
+                  Open to manage BDOs.
                 </Typography>
               </CardContent>
               <CardActions sx={{ justifyContent: "center", pb: 2 }}>

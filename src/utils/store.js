@@ -96,7 +96,7 @@ export const loadStoreFromBackend = async (userId, dispatch) => {
     if (data.paymentTerms) dispatch({ type: 'paymentTerms/setPaymentTerms', payload: data.paymentTerms });
     if (data.blankContent) dispatch({ type: 'blankContent/setBlankContent', payload: data.blankContent });
     if (data.customContent) dispatch({ type: 'customContent/setCustomContent', payload: data.customContent });
-
+if (data.proposal) dispatch({ type: 'proposal/setProposal', payload: data.blankContent });
     console.log("Redux store loaded from backend ✔");
   } catch (err) {
     console.error("Failed to load store from backend", err);
@@ -111,6 +111,7 @@ export const saveStoreToBackend = async (userId) => {
       businessInfo: reduxStore.businessInfo,
       transcript: reduxStore.transcript,
       form: reduxStore.form,
+      proposal:reduxStore.proposal,
       page1Slice: reduxStore.page1Slice,
       page2: reduxStore.page2,
       page3: reduxStore.page3,

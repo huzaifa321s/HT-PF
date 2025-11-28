@@ -1,49 +1,85 @@
 // src/redux/slices/page1Slice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
+const modeDefaults = {
   brandName: "Brand Name",
   brandTagline: "Crafting Legacies That Last",
   projectBrief: "---",
   customElements: [],
+  includeInPdf: true,
+};
+
+const initialState = {
+  currentMode: "create", // ✅ Track current mode
+  create: { ...modeDefaults },
+  edit: { ...modeDefaults },
 };
 
 const page1Slice = createSlice({
   name: "page1Slice",
   initialState,
   reducers: {
+    // ✅ Set mode (create ya edit)
+    setMode1: (state, action) => {
+      state.currentMode = action.payload; // "create" or "edit"
+    },
+
+    // ✅ All actions ab current mode ke data pe work karenge
     setBrandName: (state, action) => {
-        console.log('action.payload',action.payload)
-      state.brandName = action.payload;
+      const mode = state.currentMode;
+      state[mode].brandName = action.payload;
     },
+    
     setBrandTagline: (state, action) => {
-      state.brandTagline = action.payload;
+      const mode = state.currentMode;
+      state[mode].brandTagline = action.payload;
     },
+    
     setProjectBrief: (state, action) => {
-      state.projectBrief = action.payload;
+      const mode = state.currentMode;
+      state[mode].projectBrief = action.payload;
     },
+    
     setCustomElements: (state, action) => {
-      state.customElements = action.payload;
+      const mode = state.currentMode;
+      state[mode].customElements = action.payload;
     },
+    
     addCustomElement: (state, action) => {
-      state.customElements.push(action.payload);
+      const mode = state.currentMode;
+      state[mode].customElements.push(action.payload);
     },
+    
     updateCustomElement: (state, action) => {
+      const mode = state.currentMode;
       const { id, data } = action.payload;
-      state.customElements = state.customElements.map((el) =>
+      state[mode].customElements = state[mode].customElements.map((el) =>
         el.id === id ? { ...el, ...data } : el
       );
     },
+    
     deleteCustomElement: (state, action) => {
-      state.customElements = state.customElements.filter(
+      const mode = state.currentMode;
+      state[mode].customElements = state[mode].customElements.filter(
         (el) => el.id !== action.payload
       );
     },
-    resetPage1: () => initialState,
+    
+    // ✅ Set DB data for edit mode
+    setDBData: (state, action) => {
+      state.edit = { ...action.payload };
+    },
+    
+    // ✅ Reset specific mode
+    resetPage1: (state, action) => {
+      const mode = action.payload || state.currentMode;
+      state[mode] = { ...modeDefaults };
+    },
   },
 });
 
 export const {
+  setMode1,
   setBrandName,
   setBrandTagline,
   setProjectBrief,
@@ -51,6 +87,7 @@ export const {
   addCustomElement,
   updateCustomElement,
   deleteCustomElement,
+  setDBData,
   resetPage1,
 } = page1Slice.actions;
 

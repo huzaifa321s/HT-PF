@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -67,33 +67,59 @@ import {
   updateField,
   updateServices,
 } from "./utils/proposalSlice";
-import { useDebouncedCallback } from "use-debounce";
 import axiosInstance from "./utils/axiosInstance";
+import { addSection } from "./utils/page2Slice";
 
 const ProposalFormWithStepper = ({
   control,
   errors,
   watch,
-  setValue,
   handleSubmit,
+  register,
   handleSubmitForm,
-  inputRefs,
-  watchedServices,
-  watchedCharges,
-  currency,
-  handleCurrencyChange,
-  customPlatform,
-  setCustomPlatform,
   isLoading,
-  showToast,
+  trigger,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-    const [creds, setCreds] = useState({ yourName: "", yourEmail: "" });
-  const [pdfBlob, setPdfBlob] = useState(null);
+  const [creds, setCreds] = useState({ yourName: "", yourEmail: "" });
   const dispatch = useDispatch();
-const proposaldata = useSelector((s) => s.proposal)
+
+  // ✅ Refs for all required fields
+  const fieldRefs = {
+    clientName: useRef(null),
+    clientEmail: useRef(null),
+    projectTitle: useRef(null),
+    businessDescription: useRef(null),
+    proposedSolution: useRef(null),
+    callOutcome: useRef(null),
+  };
+  // ✅ Step-wise required fields
+  const stepFields = {
+    0: ["clientName", "clientEmail"],
+    1: ["projectTitle", "businessDescription", "proposedSolution"],
+    2: [],
+    3: ["callOutcome"],
+    4: [],
+  };
+
+  // ✅ Scroll to first error field
+  const onInvalid = (errors) => {
+    console.log("Validation errors:", errors);
+    const firstField = Object.keys(errors)[0];
+
+    if (fieldRefs[firstField]?.current) {
+      fieldRefs[firstField].current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Focus after scroll
+      setTimeout(() => {
+        fieldRefs[firstField].current.focus();
+      }, 300);
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -101,7 +127,6 @@ const proposaldata = useSelector((s) => s.proposal)
 
         if (res.data?.success && res.data.data) {
           const { name, email } = res.data.data;
-
           setCreds({ yourName: name, yourEmail: email });
         }
       } catch (err) {
@@ -111,6 +136,7 @@ const proposaldata = useSelector((s) => s.proposal)
 
     fetchProfile();
   }, []);
+
   // Color scheme matching Generate PDF button
   const colorScheme = {
     primary: "#667eea",
@@ -175,91 +201,28 @@ const proposaldata = useSelector((s) => s.proposal)
     </Box>
   );
 
-  // Enhanced platform groups with nested structure
-  const enhancedPlatformGroups = {
-    Marketing: {
-      "Email Marketing": [
-        "Newsletter Campaigns",
-        "Automated Emails",
-        "Lead Nurturing",
-      ],
-      "Digital Marketing": [
-        "SEO Optimization",
-        "Social Media Marketing",
-        "PPC Campaigns",
-      ],
-      "Content Marketing": ["Blog Writing", "Video Content", "Infographics"],
-    },
-    Development: {
-      "WordPress Development": [
-        "Theme Development",
-        "Plugin Development",
-        "WooCommerce",
-      ],
-      "Web Development": [
-        "Frontend Development",
-        "Backend Development",
-        "Full Stack",
-      ],
-      "Mobile Development": [
-        "iOS Development",
-        "Android Development",
-        "React Native",
-      ],
-    },
-    Design: {
-      "UI/UX Design": ["Wireframing", "Prototyping", "User Testing"],
-      "Graphic Design": ["Logo Design", "Brand Identity", "Print Materials"],
-    },
+  const AddSectionToPDf = (data) => {
+    handleNext();
+
+    dispatch(
+      addSection({
+        type: "title",
+        title: "Business Description",
+        content: data.businessDescription.trim(),
+      })
+    );
+    dispatch(
+      addSection({
+        type: "title",
+        title: "Proposed Solution",
+        content: data.proposedSolution.trim(),
+      })
+    );
   };
 
-  const allPlatformGroups = {
-  ...enhancedPlatformGroups,
-
-  ...(proposaldata.customPlatforms?.length > 0 && {
-    "Custom Platforms": {
-      Custom: [...(watch("customPlatforms") || [])],
-    },
-  }),
-};
-
-  // Generate PDF Preview
-  const generatePdfPreview = async () => {
-    try {
-      const formData = watch();
-      const blob = await pdf(<ProposalDocument formData={formData} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-      setPdfBlob(blob);
-      setPreviewOpen(true);
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      showToast("PDF generation failed. Please try again.", "error");
-    }
-  };
-  const debouncedAddPlatform = useDebouncedCallback(
-    (platformName) => {
-      dispatch(addCustomPlatform({ platformName }));
-    },
-    300 // debounce delay in ms
-  );
-  // Download PDF
-  const downloadPdf = () => {
-    if (pdfBlob) {
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `proposal-${watch("clientName") || "client"}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
-
-  const handleSubmitData = (data) => {
-dispatch(updateField({ field: "clientName", value: data.clientName }));
+  const handleSubmitData = async (data) => {
+    console.log("Form data submitted:", data);
+    dispatch(updateField({ field: "clientName", value: data.clientName }));
     dispatch(updateField({ field: "clientEmail", value: data.clientEmail }));
     dispatch(updateField({ field: "brandName", value: data.brandName }));
     dispatch(
@@ -268,12 +231,42 @@ dispatch(updateField({ field: "clientName", value: data.clientName }));
         value: data.businessDescription,
       })
     );
+
     dispatch(
       updateField({ field: "proposedSolution", value: data.proposedSolution })
     );
-    dispatch(updateCharges({ serviceCharges: data.serviceCharges }));
-  }
-console.log('creds',creds);
+
+    await handleSubmitForm(data);
+  };
+
+  // ✅ Check if a step is accessible
+  const isStepAccessible = (stepIndex) => {
+    // Current step ya pehle ke steps accessible hain
+    for (let i = 0; i < stepIndex; i++) {
+      const fields = stepFields[i];
+      // Agar koi bhi field empty hai previous step mein
+      const hasError = fields.some((field) => {
+        const value = watch(field); // react-hook-form se value lao
+        return !value || value.trim() === "";
+      });
+      if (hasError) return false;
+    }
+    return true;
+  };
+
+  const handleStepClick = (stepIndex) => {
+    // ✅ Sirf accessible steps par hi click ho
+    if (isStepAccessible(stepIndex)) {
+      setActiveStep(stepIndex);
+    }
+  };
+
+  const handleFieldChange = (fieldName, field, e) => {
+    field.onChange(e); // Update value
+    if (errors[fieldName] && e.target.value.trim()) {
+      
+    }
+  };
   const steps = [
     {
       label: "Your & Client Information",
@@ -285,21 +278,15 @@ console.log('creds',creds);
           <Controller
             name="yourName"
             control={control}
-            value={creds?.yourName}
             rules={{ required: "Your name is required" }}
-            disabled
             render={({ field }) => (
               <TextField
                 {...field}
                 label="Your Name *"
                 fullWidth
-               value={creds.yourName} 
+                value={creds.yourName}
                 error={!!errors.yourName}
                 helperText={errors.yourName?.message}
-                inputRef={(el) => {
-                  field.ref(el);
-                  inputRefs.current.yourName = el;
-                }}
                 disabled
                 sx={inputStyle}
               />
@@ -308,7 +295,6 @@ console.log('creds',creds);
           <Controller
             name="yourEmail"
             control={control}
-            value={creds?.yourEmail}
             rules={{
               required: "Your email is required",
               pattern: {
@@ -316,18 +302,16 @@ console.log('creds',creds);
                 message: "Invalid email address",
               },
             }}
-            disabled
             render={({ field }) => (
               <TextField
                 {...field}
                 label="Your Email *"
                 fullWidth
+                value={creds.yourEmail}
                 error={!!errors.yourEmail}
                 helperText={errors.yourEmail?.message}
+                disabled
                 sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                }}
               />
             )}
           />
@@ -345,14 +329,9 @@ console.log('creds',creds);
                 fullWidth
                 error={!!errors.clientName}
                 helperText={errors.clientName?.message}
-                inputRef={(el) => {
-                  field.ref(el);
-                  inputRefs.current.clientName = el;
-                }}
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                }}
+                inputRef={fieldRefs.clientName}
                 sx={inputStyle}
+                onChange={(e) => handleFieldChange("clientName", field, e)}
               />
             )}
           />
@@ -362,8 +341,49 @@ console.log('creds',creds);
             rules={{
               required: "Client email is required",
               pattern: {
-                value: /^\S+@\S+$/i,
-                message: "Invalid email address",
+                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message: "Please enter a valid email address",
+              },
+              validate: {
+                // ✅ Check for valid email domains
+                validDomain: (value) => {
+                  const domain = value.split("@")[1];
+                  if (!domain || domain.length < 3) {
+                    return "Email must have a valid domain";
+                  }
+
+                  // ✅ Check if domain has proper extension (.com, .net, etc)
+                  const hasDot = domain.includes(".");
+                  if (!hasDot) {
+                    return "Email must include a valid domain (e.g., gmail.com)";
+                  }
+
+                  // ✅ Check for common invalid patterns
+                  if (
+                    domain === "abc" ||
+                    domain === "example.com" ||
+                    domain === "test.com"
+                  ) {
+                    return "Please enter a real email address";
+                  }
+
+                  return true;
+                },
+
+                
+                trustedDomain: (value) => {
+                  const trustedDomains = [
+                    "gmail.com",
+                    "yahoo.com",
+                    "outlook.com",
+                    "hotmail.com",
+                  ];
+                  const domain = value.split("@")[1]?.toLowerCase();
+
+
+
+                  return true; 
+                },
               },
             }}
             render={({ field }) => (
@@ -371,13 +391,12 @@ console.log('creds',creds);
                 {...field}
                 label="Client Email *"
                 fullWidth
+                type="email" // ✅ HTML5 email validation bhi
                 error={!!errors.clientEmail}
                 helperText={errors.clientEmail?.message}
-                inputRef={(el) => (inputRefs.current.clientEmail = el)}
+                inputRef={fieldRefs.clientEmail}
                 sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                }}
+                onChange={(e) => handleFieldChange("clientEmail", field, e)}
               />
             )}
           />
@@ -398,11 +417,7 @@ console.log('creds',creds);
                 {...field}
                 label="Brand Name"
                 fullWidth
-                inputRef={(el) => (inputRefs.current.brandName = el)}
                 sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                }}
               />
             )}
           />
@@ -417,27 +432,30 @@ console.log('creds',creds);
                 fullWidth
                 error={!!errors.projectTitle}
                 helperText={errors.projectTitle?.message}
-                inputRef={(el) => (inputRefs.current.projectTitle = el)}
+                inputRef={fieldRefs.projectTitle}
                 sx={inputStyle}
+                onChange={(e) => handleFieldChange("projectTitle", field, e)}
               />
             )}
           />
           <Controller
             name="businessDescription"
             control={control}
+            rules={{ required: "Business Description is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Business Description"
+                label="Business Description *"
                 multiline
                 rows={3}
                 fullWidth
-                inputRef={(el) => (inputRefs.current.businessDescription = el)}
+                inputRef={fieldRefs.businessDescription}
+                error={!!errors.businessDescription}
+                helperText={errors.businessDescription?.message}
                 sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                  console.log("field", field);
-                }}
+                onChange={(e) =>
+                  handleFieldChange("businessDescription", field, e)
+                }
               />
             )}
           />
@@ -445,227 +463,34 @@ console.log('creds',creds);
           <Controller
             name="proposedSolution"
             control={control}
+            rules={{ required: "Proposed Solution is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Proposed Solution"
+                label="Proposed Solution *"
                 multiline
                 rows={3}
+                error={!!errors.proposedSolution}
+                helperText={errors.proposedSolution?.message}
+                inputRef={fieldRefs.proposedSolution}
                 fullWidth
-                inputRef={(el) => (inputRefs.current.proposedSolution = el)}
                 sx={inputStyle}
+                onChange={(e) =>
+                  handleFieldChange("proposedSolution", field, e)
+                }
               />
             )}
           />
-
-          {/* ENHANCED PLATFORM SELECTOR */}
-          <Controller
-            name="developmentPlatforms"
-            control={control}
-            rules={{
-              validate: (value) =>
-                (Array.isArray(value) && value.length > 0) ||
-                "At least one platform is required",
-            }}
-            render={({ field }) => (
-              <FormControl
-                fullWidth
-                error={!!errors.developmentPlatforms}
-                sx={{ ...inputStyle }}
-              >
-                <Typography
-                  sx={{ fontSize: 20, fontWeight: 600, textAlign: "start" }}
-                >
-                  Development Platforms *
-                </Typography>
-
-                <Box sx={{ mt: 2 }}>
-                  {Object.keys(allPlatformGroups).map((parent) => (
-                    <Accordion
-                      key={parent}
-                      sx={{
-                        mb: 1,
-                        border: `2px solid ${
-                          field.value.some((item) =>
-                            Object.keys(allPlatformGroups[parent]).some(
-                              (child) =>
-                                allPlatformGroups[parent][child].includes(item)
-                            )
-                          )
-                            ? colorScheme.primary
-                            : "#e0e0e0"
-                        }`,
-                        borderRadius: 2,
-                      }}
-                    >
-                      <AccordionSummary expandIcon={<ExpandMore />}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={Object.keys(
-                                allPlatformGroups[parent]
-                              ).some((child) =>
-                                allPlatformGroups[parent][child].some(
-                                  (subItem) => field.value.includes(subItem)
-                                )
-                              )}
-                              indeterminate={
-                                Object.keys(allPlatformGroups[parent]).some(
-                                  (child) =>
-                                    allPlatformGroups[parent][child].some(
-                                      (subItem) => field.value.includes(subItem)
-                                    )
-                                ) &&
-                                !Object.keys(allPlatformGroups[parent]).every(
-                                  (child) =>
-                                    allPlatformGroups[parent][child].every(
-                                      (subItem) => field.value.includes(subItem)
-                                    )
-                                )
-                              }
-                              onChange={(e) => {
-                                const allSubItems = Object.keys(
-                                  allPlatformGroups[parent]
-                                ).flatMap(
-                                  (child) => allPlatformGroups[parent][child]
-                                );
-                                const newValue = e.target.checked
-                                  ? [
-                                      ...new Set([
-                                        ...field.value,
-                                        ...allSubItems,
-                                      ]),
-                                    ]
-                                  : field.value.filter(
-                                      (item) => !allSubItems.includes(item)
-                                    );
-                                field.onChange(newValue);
-                                dispatch(
-                                  updateField({
-                                    field: "developmentPlatforms",
-                                    value: newValue,
-                                  })
-                                );
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography
-                              sx={{
-                                fontWeight: 600,
-                                color: colorScheme.primary,
-                              }}
-                            >
-                              {parent}
-                            </Typography>
-                          }
-                        />
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {Object.keys(allPlatformGroups[parent]).map((child) => (
-                          <Box key={child} sx={{ ml: 3, mb: 2 }}>
-                            <FormGroup sx={{ ml: 1 }}>
-                              {allPlatformGroups[parent][child].map(
-                                (subItem) => (
-                                  <FormControlLabel
-                                    key={subItem}
-                                    control={
-                                      <Checkbox
-                                        checked={field.value.includes(subItem)}
-                                        onChange={(e) => {
-                                          const newValue = e.target.checked
-                                            ? [...field.value, subItem]
-                                            : field.value.filter(
-                                                (val) => val !== subItem
-                                              );
-                                          field.onChange(newValue);
-                                          dispatch(
-                                            updateField({
-                                              field: "developmentPlatforms",
-                                              value: newValue,
-                                            })
-                                          );
-                                        }}
-                                      />
-                                    }
-                                    label={subItem}
-                                  />
-                                )
-                              )}
-                            </FormGroup>
-                          </Box>
-                        ))}
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </Box>
-                {errors.developmentPlatforms && (
-                  <FormHelperText
-                    sx={{
-                      color: colorScheme.error,
-                      fontSize: "0.875rem",
-                      mt: 1,
-                    }}
-                  >
-                    {errors.developmentPlatforms.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-          />
-
-          {/* ADD CUSTOM PLATFORM */}
-          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-            <TextField
-              value={customPlatform}
-              onChange={(e) => setCustomPlatform(e.target.value)}
-              placeholder="Add custom platform..."
-              fullWidth
-              sx={inputStyle}
-            />
-            <Button
-              variant="contained"
-              sx={{
-                background: colorScheme.gradient,
-                "&:hover": { background: colorScheme.hoverGradient },
-                minWidth: "120px",
-                height: "56px",
-                borderRadius:10
-              }}
-              onClick={() => {
-                if (customPlatform.trim()) {
-                    dispatch(addCustomPlatform({ platformName:customPlatform }));
-                  setCustomPlatform("");
-                }
-              }}
-            >
-              Add
-            </Button>
-
-
-          </Box>
         </>
       ),
     },
     {
-      label: "Timeline and Costs",
+      label: "Costs",
       icon: <AttachMoney />,
       content: (
         <>
-          {sectionHeader(<AttachMoney />, "Timeline and Costs")}
-          <Controller
-            name="projectDuration"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Project Duration"
-                fullWidth
-                inputRef={(el) => (inputRefs.current.projectDuration = el)}
-                sx={inputStyle}
-              />
-            )}
-          />
+          {sectionHeader(<AttachMoney />, "Costs")}
+
           <Controller
             name="advancePercent"
             control={control}
@@ -675,7 +500,6 @@ console.log('creds',creds);
                 label="Advance Percentage"
                 type="number"
                 fullWidth
-                inputRef={(el) => (inputRefs.current.advancePercent = el)}
                 sx={inputStyle}
               />
             )}
@@ -689,213 +513,10 @@ console.log('creds',creds);
                 label="Additional Costs"
                 type="number"
                 fullWidth
-                inputRef={(el) => (inputRefs.current.additionalCosts = el)}
                 sx={inputStyle}
               />
             )}
           />
-          <Controller
-            name="timelineMilestones"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Timeline Milestones"
-                multiline
-                rows={3}
-                fullWidth
-                inputRef={(el) => (inputRefs.current.timelineMilestones = el)}
-                sx={inputStyle}
-              />
-            )}
-          />
-
-          {/* Services Charges */}
-          <Box sx={{ mt: 3 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 2,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: 700, color: colorScheme.primary }}
-              >
-                Charge Amount ({currency === "USD" ? "$" : "₨"})
-              </Typography>
-              <ToggleButtonGroup
-                value={currency}
-                exclusive
-                onChange={handleCurrencyChange}
-                sx={{
-                  "& .MuiToggleButton-root": {
-                    borderColor: colorScheme.primary,
-                    color: colorScheme.primary,
-                    "&.Mui-selected": {
-                      background: colorScheme.gradient,
-                      color: "#fff",
-                    },
-                  },
-                }}
-              >
-                <ToggleButton value="USD">$ USD</ToggleButton>
-                <ToggleButton value="PKR">₨ PKR</ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-
-            {watchedServices?.length > 0 && (
-              <>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: 2, color: colorScheme.primary, fontWeight: 600 }}
-                >
-                  Recommended Services
-                </Typography>
-                {watchedServices?.map((service, i) => (
-                  <Card
-                    key={i}
-                    sx={{
-                      mb: 2,
-                      p: 2,
-                      background: "#f8f9ff",
-                      border: `1px solid ${colorScheme.primary}20`,
-                    }}
-                  >
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={12} md={5}>
-                        <TextField
-                          value={service}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const newServices = [...watchedServices];
-                            newServices[i] = val;
-                            setValue("recommended_services", newServices);
-                            dispatch(updateServices(newServices));
-                          }}
-                          label="Service Name"
-                          fullWidth
-                          sx={inputStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={4}>
-                        <TextField
-                          value={
-                            watchedCharges[i] !== undefined
-                              ? watchedCharges[i]
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            const newCharges = [...watchedCharges];
-                            newCharges[i] = isNaN(val) ? 0 : val; // store 0 if invalid
-                            setValue("serviceCharges", newCharges);
-                          }}
-                          label="Charge Amount"
-                          type="number"
-                          fullWidth
-                          sx={inputStyle}
-                        />
-                      </Grid>
-
-                      {i === 0 && watchedServices?.length === 1 ? null : (
-                        <Grid item xs={12} md={3}>
-                          <Button
-                            onClick={() => {
-                              const newServices = [...watchedServices];
-                              newServices.splice(i, 1);
-                              setValue("recommended_services", newServices);
-                              const newCharges = [...watchedCharges];
-                              newCharges.splice(i, 1);
-                              setValue("serviceCharges", newCharges);
-                              dispatch(removeService({ index: i }));
-                            }}
-                            variant="outlined"
-                            color="error"
-
-                            fullWidth
-                            sx={{ height: "30px" ,display:'flex',alignItems:'center',borderRadius:10}}
-                          >
-                            Delete <Delete/>
-                          </Button>
-                        </Grid>
-                      )}
-                    </Grid>
-                  </Card>
-                ))}
-                <Button
-                  onClick={() => {
-                    setValue("recommended_services", [
-                      ...watchedServices,
-                      "New Service",
-                    ]);
-                    setValue("serviceCharges", [...watchedCharges, 0]);
-                    dispatch(addService({ serviceName: "New Service" }));
-                  }}
-                  variant="contained"
-                  startIcon={<Add />}
-                  sx={{
-                    background: colorScheme.gradient,
-                    "&:hover": { background: colorScheme.hoverGradient },
-                    mb: 2,
-                    borderRadius:10
-                  }}
-                >
-                  + Add Service
-                </Button>
-
-                {watchedCharges?.length > 0 && (
-                  <Card
-                    sx={{
-                      p: 3,
-                      background: colorScheme.gradient,
-                      color: "#fff",
-                    }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{ fontWeight: 700, textAlign: "center" }}
-                    >
-                      Grand Total: {currency === "USD" ? "$" : "₨"}{" "}
-                      {watchedCharges
-                        .reduce((sum, val) => sum + (parseFloat(val) || 0), 0)
-                        .toFixed(2)}
-                    </Typography>
-                  </Card>
-                )}
-              </>
-            )}
-
-            <Box sx={{ mt: 2, p: 2, background: "#f0f2ff", borderRadius: 2 }}>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, color: colorScheme.primary }}
-              >
-                {watchedServices?.length || 0} Services Selected
-              </Typography>
-              {watchedServices?.length > 0 ? (
-                <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {watchedServices.map((s, i) => (
-                    <Chip
-                      key={i}
-                      label={s}
-                      sx={{
-                        background: colorScheme.gradient,
-                        color: "#fff",
-                        fontWeight: 600,
-                      }}
-                    />
-                  ))}
-                </Box>
-              ) : (
-                <Typography variant="body2" sx={{ color: "#666", mt: 1 }}>
-                  No services recommended yet.
-                </Typography>
-              )}
-            </Box>
-          </Box>
         </>
       ),
     },
@@ -914,9 +535,14 @@ console.log('creds',creds);
                 fullWidth
                 error={!!errors.callOutcome}
                 sx={inputStyle}
+                ref={fieldRefs.callOutcome}
               >
                 <InputLabel>Call Outcome *</InputLabel>
-                <Select {...field} label="Call Outcome *">
+                <Select
+                  {...field}
+                  label="Call Outcome *"
+                  onChange={(e) => handleFieldChange("callOutcome", field, e)}
+                >
                   <MenuItem value="Interested">Interested</MenuItem>
                   <MenuItem value="No Fit">No Fit</MenuItem>
                   <MenuItem value="Flaked">Flaked</MenuItem>
@@ -932,8 +558,7 @@ console.log('creds',creds);
           <Controller
             name="date"
             control={control}
-            defaultValue={new Date().toISOString().split("T")[0]} // <-- today
-            disabled
+            defaultValue={new Date().toISOString().split("T")[0]}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -941,7 +566,7 @@ console.log('creds',creds);
                 disabled
                 label="Date"
                 fullWidth
-                value={new Date().toISOString().split("T")[0]} // fallback today
+                value={new Date().toISOString().split("T")[0]}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -960,30 +585,6 @@ console.log('creds',creds);
               />
             )}
           />
-            <Button
-                onClick={() => {handleSubmit(handleSubmitData),dispatch(showToast({message:'Data added to PDF successfully',servity:'success'}))}}
-                variant="contained"
-                size="large"
-                startIcon={<Send />}
-                disabled={isLoading}
-                sx={{
-                  px: 2,
-                  py: 1,
-                  borderRadius: 4,
-                  fontSize: "1rem",
-                  fontWeight: 700,
-                  boxShadow: 6,
-                  background: colorScheme.gradient,
-                  "&:hover": {
-                    background: colorScheme.hoverGradient,
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
-                  },
-                  width: "100%",
-                }}
-              >
-              Set form Data To Pdf
-              </Button>
         </>
       ),
     },
@@ -1002,10 +603,10 @@ console.log('creds',creds);
               gap: 5,
             }}
           >
-            <UnifiedPdfEditor />
+            <UnifiedPdfEditor pdfPages={{}} mode="doc" />
             <Grid item xs={12} md={6}>
               <Button
-                onClick={handleSubmit(handleSubmitForm)}
+                onClick={() => handleSubmit(handleSubmitData, onInvalid)()}
                 variant="contained"
                 size="large"
                 startIcon={isLoading ? <Timeline /> : <Send />}
@@ -1026,7 +627,9 @@ console.log('creds',creds);
                   width: "100%",
                 }}
               >
-                {isLoading ? "Generating Proposal..." : "Generate Proposal PDF"}
+                {isLoading
+                  ? "Generating Proposal..."
+                  : "Generate Proposal & Download PDF"}
               </Button>
             </Grid>
           </Box>
@@ -1034,8 +637,33 @@ console.log('creds',creds);
       ),
     },
   ];
+  const handleNext = async () => {
+    const currentStepFields = stepFields[activeStep];
 
-  const handleNext = () => {
+    if (currentStepFields.length > 0) {
+      // ✅ Current step ke fields validate karo
+      const isValid = await trigger(currentStepFields);
+
+      if (!isValid) {
+        // ✅ First error field par scroll karo
+        const firstError = currentStepFields.find((field) => errors[field]);
+
+        if (firstError && fieldRefs[firstError]?.current) {
+          fieldRefs[firstError].current.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          setTimeout(() => {
+            fieldRefs[firstError].current.focus();
+          }, 300);
+        }
+
+        return; // ✅ Validation fail - Next step pe mat jao
+      }
+    }
+
+    // ✅ Validation pass - Next step pe jao
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
@@ -1043,12 +671,7 @@ console.log('creds',creds);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleStepClick = (stepIndex) => {
-    setActiveStep(stepIndex);
-  };
-
   return (
-    
     <>
       <Box
         sx={{ maxWidth: 1800, margin: "0 auto", p: { xs: 1, sm: 2, md: 3 } }}
@@ -1057,9 +680,10 @@ console.log('creds',creds);
           {steps.map((step, index) => (
             <Step key={step.label} sx={{ mb: 3 }}>
               <StepLabel
-                onClick={() => handleStepClick(index)}
+                onClick={() => handleStepClick(index)} // Already conditional hai handleStepClick mein
                 sx={{
-                  cursor: "pointer",
+                  cursor: isStepAccessible(index) ? "pointer" : "not-allowed", // ✅ Cursor change
+                  opacity: isStepAccessible(index) ? 1 : 0.5, // ✅ Visual feedback
                   "& .MuiStepLabel-label": {
                     fontSize: "1.1rem",
                     fontWeight: 600,
@@ -1070,7 +694,9 @@ console.log('creds',creds);
                   },
                   "&:hover": {
                     "& .MuiStepLabel-label": {
-                      color: colorScheme.primary,
+                      color: isStepAccessible(index)
+                        ? colorScheme.primary
+                        : "text.secondary", // ✅ Hover bhi conditional
                     },
                   },
                 }}
@@ -1086,6 +712,7 @@ console.log('creds',creds);
                       background:
                         activeStep >= index ? colorScheme.gradient : "#e0e0e0",
                       color: activeStep >= index ? "#fff" : "#999",
+                      opacity: isStepAccessible(index) ? 1 : 0.5, // ✅ Icon opacity
                     }}
                   >
                     {activeStep > index ? <CheckCircle /> : step.icon}
@@ -1111,7 +738,7 @@ console.log('creds',creds);
                       variant="outlined"
                       sx={{
                         borderColor: colorScheme.primary,
-                        borderRadius:10,
+                        borderRadius: 10,
                         color: colorScheme.primary,
                         "&:hover": {
                           borderColor: colorScheme.secondary,
@@ -1121,22 +748,48 @@ console.log('creds',creds);
                     >
                       Back
                     </Button>
-                    {index < steps.length - 1 && (
-                      <Button
-                        onClick={handleNext}
-                        endIcon={<ArrowForward />}
-                        variant="contained"
-                        sx={{
-                          background: colorScheme.gradient,
-                          "&:hover": {
-                            background: colorScheme.hoverGradient,
-                          },
-                          borderRadius:10,
-                        }}
-                      >
-                        Next
-                      </Button>
-                    )}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {activeStep === 1 && (
+                        <Button
+                          onClick={() => {
+                            const data = {
+                              businessDescription: watch("businessDescription"),
+                              proposedSolution: watch("proposedSolution"),
+                            };
+                            AddSectionToPDf(data);
+                          }}
+                          variant="outlined"
+                          endIcon={<ArrowForward />}
+                          sx={{
+                            border: "1px solid black",
+                            "&:hover": {
+                              background: colorScheme.hoverGradient,
+                              color: "#fff",
+                            },
+                            borderRadius: 10,
+                          }}
+                        >
+                          Add These Sections to PDF
+                        </Button>
+                      )}
+
+                      {index < steps.length - 1 && (
+                        <Button
+                          onClick={handleNext}
+                          endIcon={<ArrowForward />}
+                          variant="contained"
+                          sx={{
+                            background: colorScheme.gradient,
+                            "&:hover": {
+                              background: colorScheme.hoverGradient,
+                            },
+                            borderRadius: 10,
+                          }}
+                        >
+                          Next
+                        </Button>
+                      )}
+                    </Box>
                   </Box>
                 </Card>
               </StepContent>

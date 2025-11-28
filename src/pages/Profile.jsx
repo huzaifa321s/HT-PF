@@ -61,6 +61,12 @@ const Profile = () => {
         py: 8,
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         minHeight: "100vh",
+          width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
       }}
     >
       <Paper

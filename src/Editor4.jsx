@@ -55,10 +55,12 @@ import {
   resetPageData,
 } from "../src/utils/pricingReducer";
 
-const PdfEditorPage = () => {
+const PdfEditorPage = ({mode}) => {
   const dispatch = useDispatch();
-  const data = useSelector(
-    (state) => state.pricing || { elements: [], gridPackages: [] }
+  const data = mode === 'edit-doc' ? useSelector(
+    (state) => state.pricing.edit || { elements: [], gridPackages: [] }
+  ) : useSelector(
+    (state) => state.pricing.create || { elements: [], gridPackages: [] }
   );
   const [addAnchor, setAddAnchor] = useState(null);
   const [resetDialog, setResetDialog] = useState(false);

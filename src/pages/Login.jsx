@@ -75,7 +75,7 @@ const Login = () => {
   };
 
   return (
-    <> {/* Full width container */}
+
       <Box
         sx={{
           minHeight: "100vh",
@@ -83,6 +83,14 @@ const Login = () => {
           alignItems: "center",
           justifyContent: "center",
           bgcolor: "background.default",
+          width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginTop: "-30px",
+        marginBottom:"-30px",
+        marginRight: "-50vw",
         }}
       >
         <Paper
@@ -117,7 +125,7 @@ const Login = () => {
               "100%": { backgroundPosition: "200% 0" },
             },
             width: "100%",
-            maxWidth: "md", // Form width restricted to md
+            maxWidth: "sm",
           }}
         >
           <Box
@@ -282,7 +290,7 @@ const Login = () => {
           </Box>
         </Paper>
       </Box>
-    </>
+  
   );
 };
 

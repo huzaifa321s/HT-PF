@@ -1,8 +1,10 @@
 // src/utils/paymentTermsSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
-  title: "Payment Terms",
+
+
+const modeDefaults = {
+title: "Payment Terms",
   terms: [
     "Payments will be made upfront to get the services started.",
     "Project Termination: If the client fails to respond within 15 days, Humantek reserves the right to terminate the project.",
@@ -14,33 +16,58 @@ const initialState = {
     "Legal Jurisdiction: This Agreement is governed by the laws of Pakistan.",
     "Out-of-Scope Work: Any requests or deliverables outside the agreed package will incur additional charges and require approval from senior management.",
   ],
-  currentPages:1
+  currentPages: 1,
+  includeInPdf: true,
+}
+
+const initialState = {
+  currentMode: "create", // ✅ Track current mode
+  create: { ...modeDefaults },
+  edit: { ...modeDefaults },
 };
 
 const paymentTermsSlice = createSlice({
   name: 'paymentTerms',
   initialState,
   reducers: {
+   setMode4: (state, action) => {
+         state.currentMode = action.payload; // "create" or "edit"
+       }, 
     updateTitle: (state, action) => {
-      state.title = action.payload;
+      const mode = state.currentMode;
+      state[mode].title = action.payload;
     },
     addTerm: (state, action) => {
-      state.terms.push(action.payload);
+      const mode = state.currentMode;
+      state[mode].terms.push(action.payload);
     },
     updateTerm: (state, action) => {
+      const mode = state.currentMode;
       const { index, value } = action.payload;
-      state.terms[index] = value;
+      state[mode].terms[index] = value;
     },
-    setCurrentPagesPT:(state,action) =>{
-     state.currentPages = action.payload.currentPages
+    setCurrentPagesPT: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].currentPages = action.payload.currentPages
     },
     deleteTerm: (state, action) => {
-      state.terms = state.terms.filter((_, i) => i !== action.payload);
+      const mode = state.currentMode;
+      state[mode].terms = state[mode].terms.filter((_, i) => i !== action.payload);
     },
-    resetTerms: () => initialState,
-  
+    togglePaymentPageInclusion: (state) => {
+      const mode = state.currentMode;
+      state[mode].includeInPdf = !state.includeInPdf;
+    },
+    setDBTerms: (state, action) => {
+    state.edit = { ...action.payload };
+    },
+    resetTerms: (state) => {
+      const mode = state.currentMode;
+      state[mode] = modeDefaults
+    },
+
   },
 });
 
-export const { updateTitle,setCurrentPagesPT, addTerm, updateTerm, deleteTerm, resetTerms } = paymentTermsSlice.actions;
+export const {setMode4, updateTitle, setCurrentPagesPT, togglePaymentPageInclusion, addTerm, updateTerm, deleteTerm, resetTerms, setDBTerms } = paymentTermsSlice.actions;
 export default paymentTermsSlice.reducer;

@@ -17,58 +17,62 @@ const MemoizedPricingPage = memo(PdfPricingPage);
 const MemoizedPaymentTerms = memo(PdfPaymentTermsCoverPage);
 const MemoizedFixedImage = memo(FixedImagePdfPage);
 
-const CombinedPdfDocument = memo(({
-  page1Data = {},
-  page2Data = {},
-  page3Data = {},
-  pricingPage = {},
-  paymentTerms = {},
-  formDataRT = {}
-}) => {
-  console.log('sss3434',formDataRT)
+const CombinedPdfDocument = memo(
+  ({
+    page1Data = {},
+    page2Data = {},
+    page3Data = {},
+    pricingPage = {},
+    paymentTerms = {},
+  }) => {
+    console.log("sss3434", page1Data);
 
+    return (
+      <Document title="Proposal - Humantek" author="Humantek IT Solutions">
+        {/* Page 1: Cover */}
+        <MemoizedCoverPage
+          brandName={page1Data?.brandName}
+          brandTagline={page1Data?.brandTagline}
+        />
 
-  return (
-    <Document title="Proposal - Humantek" author="Humantek IT Solutions" >
-      {/* Page 1: Cover */}
-      <MemoizedCoverPage
-        brandName={page1Data?.brandName}
-        brandTagline={page1Data?.brandTagline}
-      />
+        {/* Page 2: About HumanTek */}
+        {page2Data?.includeInPdf !== false && (
+          <MemoizedPage3
+            elements={page2Data?.elements}
+            subtitle={page2Data?.subtitle}
+            title={page2Data?.title}
+          />
+        )}
 
-      {/* Page 2: About HumanTek */}
-      <MemoizedPage3
-        elements={page2Data?.elements}
-        subtitle={page2Data?.subtitle}
-        title={page2Data?.title}
-      />
+        {/* Page 3: Additional Info */}
+        {page3Data?.includeInPdf !== false && (
+          <MemoizedPage2
+            orderedSections={page3Data?.orderedSections}
+            tables={page3Data?.tables}
+          />
+        )}
 
-      {/* Page 3: Additional Info */}
-      <MemoizedPage2 
-        orderedSections={page3Data?.orderedSections} 
-    tables={page3Data?.tables}   // ← Yeh new multiple tables array
-      />
+        {/* Page 4: Pricing */}
+        {pricingPage?.includeInPdf !== false && (
+          <MemoizedPricingPage
+            pageTitle={pricingPage?.pageTitle}
+            heading={pricingPage?.heading}
+            subheading={pricingPage?.subheading}
+            elements={pricingPage?.elements}
+            gridPackages={pricingPage?.gridPackages}
+          />
+        )}
 
-
-      {/* Page 4: Pricing */}
-      <MemoizedPricingPage
-        pageTitle={pricingPage?.pageTitle}
-        heading={pricingPage?.heading}
-        subheading={pricingPage?.subheading}
-        elements={pricingPage?.elements}
-        gridPackages={pricingPage?.gridPackages}
-      />
-
-      {/* Page 5: Payment Terms */}
-      <MemoizedPaymentTerms 
-        {...paymentTerms}
-      />
-
-      {/* Page 6: Fixed Image */}
-      <MemoizedFixedImage />
-    </Document>
-  );
-});
+        {/* Page 5: Payment Terms */}
+  {paymentTerms?.includeInPdf !== false && (
+        <MemoizedPaymentTerms {...paymentTerms} />
+  )}
+        {/* Page 6: Fixed Image */}
+        <MemoizedFixedImage />
+      </Document>
+    );
+  }
+);
 
 CombinedPdfDocument.displayName = "CombinedPdfDocument";
 

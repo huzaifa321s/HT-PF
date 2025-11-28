@@ -86,7 +86,6 @@ import {
 } from "./utils/recordingToastSlice";
 import RecordingToast from "./components/RecordingToast";
 import { usePrompt } from "./hooks/usePrompt";
-import PreviewConfirmDialog from "./components/modals/PDFViewDialog";
 import axiosInstance from "./utils/axiosInstance";
 import {
   clearTranscript,
@@ -103,7 +102,9 @@ import { addTranscriptEntry } from "./utils/liveTranscriptionSlice";
 import { setBrandName, setProjectBrief } from "./utils/page1Slice";
 import ProposalFormWithStepper from "./ProposalFormwithStepper";
 import { setBusinessInfo } from "./utils/businessInfoSlice";
-
+import CombinedPdfDocument from "./CombinedPdf";
+import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
 // import { usePrompt } from "./hooks/usePrompt";
 
 export default function App() {
@@ -140,22 +141,31 @@ export default function App() {
   const transcriptRT = useSelector(
     (state) => state.transcript.polishedTranscript
   );
-  const hasRun = useRef(false);
   const [status, setStatus] = useState("Idle");
   const [progress, setProgress] = useState(0);
   const [transcript, setTranscript] = useState("");
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const { historyRT } = useSelector((state) => state.liveTranscription);
   const formDataRT = useSelector((state) => state.form);
-  const formDataPT = useSelector((state) => state.proposal);
+  const currentMode = useSelector((s) => s.page1Slice.currentMode);
+  const currentMode2 = useSelector((s) => s.page2.currentMode);
+  const currentMode3 = useSelector((s) => s.page3.currentMode);
+  const currentMode4 = useSelector((s) => s.pricing.currentMode);
+  const page1 = useSelector((s) => s.page1Slice[currentMode]);
+  console.log("p3", page1);
+  const page2 = useSelector((s) => s.page3[currentMode3]);
+  const page3 = useSelector((s) => s.page2[currentMode2]); // ← Additional Info (page2Slice)
+  const pricingPage = useSelector((s) => s.pricing[currentMode4]);
+  const currentMode5 = useSelector((s) => s.paymentTerms.currentMode);
+  const paymentTerms = useSelector((s) => s.paymentTerms[currentMode5]);
+  const contactPage = useSelector((s) => s.contact);
 
   const [formData, setFormData] = useState(formDataRT);
   const [audioUrl, setAudioUrl] = useState(null);
-  const [customPlatform, setCustomPlatform] = useState("");
-  const [currency, setCurrency] = useState("USD");
   const [audioFileName, setAudioFileName] = useState("");
   const [fullTranscript, setFullTranscript] = useState("");
+  const [transcriptWordLength, setTranscriptWordLength] = useState(0);
+
   const {
     control,
     handleSubmit,
@@ -164,7 +174,11 @@ export default function App() {
     getValues,
     formState: { errors },
     reset,
+    register,
+    trigger,
   } = useForm({
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       clientName: "",
       clientEmail: "",
@@ -194,21 +208,9 @@ export default function App() {
       date: "",
     },
   });
-  useEffect(() => {
-    if (formDataPT) {
-      reset(formDataPT); // 🔥 All fields synced in one line
-    }
-  }, [formDataPT, reset]);
-  const watchedServices = watch("recommended_services");
-  const watchedCharges = watch("serviceCharges");
+
   const [pdfUrl, setPdfUrl] = useState("");
-  const [customPlatformOptions, setCustomPlatformOptions] = useState([]);
   const [tabValue, setTabValue] = useState(0);
-  const platformGroups = {
-    Marketing: ["SEO", "Content Writing", "Social Media", "Branding"],
-    Development: ["Frontend", "Backend", "Full Stack", "Mobile Apps", "DevOps"],
-    Services: ["UI/UX", "Cloud Services", "Consulting", "Maintenance"],
-  };
 
   // === Socket Setup ===
   useEffect(() => {
@@ -256,7 +258,7 @@ export default function App() {
         type: "raw",
         text,
         is_final: data.is_final,
-        timestamp: Date.now(),
+        timestamp: data.timestamp,
         id: `raw-${Date.now()}-${Math.random()}`,
       };
       console.log("---------", data);
@@ -274,7 +276,7 @@ export default function App() {
         type: "final",
         text,
         is_final: true,
-        timestamp: Date.now(),
+        timestamp: data.timestamp,
         id: `final-${Date.now()}`,
       };
       dispatch(updateTranscription(entry));
@@ -284,11 +286,12 @@ export default function App() {
 
     socketRef.current.on("finalized_transcript", (data) => {
       console.log("FULL FINAL TRANSCRIPT:", data);
-
+      console.log("WORD LENGTH:", data.length);
       const extracted = data.extracted;
       dispatch(setBusinessInfo(extracted));
       // Update full transcript
       setFullTranscript(data.text);
+      setTranscriptWordLength(data.length);
       setBadges((prev) => ({ ...prev, ["live"]: false }));
 
       // Prepare updated form data conditionally
@@ -495,48 +498,6 @@ export default function App() {
     return buffer;
   };
 
-  useEffect(() => {
-    if (!hasRun.current) {
-      setFormData(formDataRT);
-
-      // Conditionally prepare values to reset
-      const resetValues = {
-        ...formDataRT,
-        ...(formDataRT.businessDescription && {
-          businessDescription: formDataRT.businessDescription,
-        }),
-        ...(formDataRT.proposedSolution && {
-          proposedSolution: formDataRT.proposedSolution,
-        }),
-        ...(formDataRT.recommended_services?.length > 0 && {
-          recommended_services: formDataRT.recommended_services,
-        }),
-        ...(formDataRT.projectBrief && {
-          projectBrief: formDataRT.projectBrief,
-        }),
-        ...(formDataRT.brandName && { brandName: formDataRT.brandName }),
-        ...(formDataRT.brandTagline && {
-          brandTagline: formDataRT.brandTagline,
-        }),
-        ...(formDataRT.businessType && {
-          businessType: formDataRT.businessType,
-        }),
-        ...(formDataRT.industoryTitle && {
-          industoryTitle: formDataRT.industoryTitle,
-        }),
-        ...(formDataRT.strategicProposal?.length > 0 && {
-          strategicProposal: formDataRT.strategicProposal,
-        }),
-      };
-
-      reset(resetValues); // Reset only non-empty fields
-      hasRun.current = true;
-      setHistory(historyRT);
-    } else {
-      dispatch(clearTranscript());
-    }
-  }, [formDataRT, reset, historyRT]);
-
   usePrompt(true);
 
   useEffect(() => {
@@ -558,27 +519,47 @@ export default function App() {
     }
   }, [errors]);
 
-  // Scroll to PDF preview
-  const scrollToPdf = () => {
-    pdfRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setHasViewedPdf(true);
-    setOpenDialog(false);
-  };
-
-  // Continue generating PDF after user has viewed
-  const continueGeneratePdf = () => {
-    setHasViewedPdf(false);
-    generatePdfActual(getValues());
-  };
-
-  const generatePdfActual = async (data, filename = "Proposal.pdf") => {
+  const generatePdfActual = async (data) => {
     setLoading(true);
-    dispatch(setFormDataRT(data));
-    setMode("prod");
+    // Professional file name
+    const clientName = data.clientName?.trim() || "Client";
+    const date = new Date().toISOString().slice(0, 10);
+    const fileName = `Proposal_HT_${clientName.replace(
+      /\s+/g,
+      "_"
+    )}_${date}.pdf`;
+    const blob = await pdf(
+      <CombinedPdfDocument
+        paymentTerms={paymentTerms}
+        pricingPage={pricingPage}
+        page1Data={page1}
+        page2Data={page2}
+        page3Data={page3}
+        contactData={contactPage}
+      />
+    ).toBlob();
+
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+    const pdfPages = {
+      paymentTerms,
+      pricingPage,
+      page1,
+      page2,
+      page3,
+      contactPage,
+    };
+
     try {
       const res = await axiosInstance.post(
         "http://localhost:5000/api/proposals/create-proposal",
-        data,
+        { data, pdfPages },
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -593,38 +574,8 @@ export default function App() {
         })
       );
 
-      const pdfPages = pdfRef.current?.querySelectorAll(".pdf-page");
-      if (!pdfPages?.length) throw new Error("No .pdf-page found!");
-
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      for (let i = 0; i < pdfPages.length; i++) {
-        const canvas = await html2canvas(pdfPages[i], {
-          scale: 3,
-          useCORS: true,
-          backgroundColor: "#fff",
-          scrollY: -window.scrollY,
-        });
-        const imgData = canvas.toDataURL("image/jpeg", 1.0);
-        if (i > 0) pdf.addPage();
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          0,
-          0,
-          pageWidth,
-          pageHeight,
-          undefined,
-          "FAST"
-        );
-      }
-
-      const pdfBlob = pdf.output("blob");
-
       const formData = new FormData();
-      formData.append("pdfFile", pdfBlob, filename);
+      formData.append("pdfFile", blob, fileName);
       formData.append("proposalId", proposalId);
 
       const uploadRes = await axiosInstance.post(
@@ -638,15 +589,6 @@ export default function App() {
       const serverPdfUrl = `http://localhost:5000/${uploadRes.data.filePath}`;
       setPdfUrl(serverPdfUrl);
 
-      const downloadUrl = URL.createObjectURL(pdfBlob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(downloadUrl);
-
       dispatch(
         showToast({ message: "Proposal + PDF ready!", severity: "success" })
       );
@@ -656,7 +598,7 @@ export default function App() {
       dispatch(hideToast());
       dispatch(
         showToast({
-          message: "PDF generation/upload failed",
+          message: err.response.data.message || "PDF generation/upload failed",
           severity: "error",
         })
       );
@@ -664,63 +606,6 @@ export default function App() {
       setLoading(false);
       setMode("dev");
     }
-  };
-
-  const handleCurrencyChange = (event, newCurrency) => {
-    if (newCurrency !== null) {
-      setCurrency(newCurrency);
-    }
-  };
-
-  const handleAddCustom = () => {
-    const trimmed = customPlatform.trim();
-    if (!trimmed) return;
-
-    // Add to our custom list if not already
-    if (!customPlatformOptions.includes(trimmed)) {
-      setCustomPlatformOptions((prev) => [...prev, trimmed]);
-    }
-
-    // Add to form state
-    const current = getValues("developmentPlatforms") || [];
-
-    if (!current.includes(trimmed)) {
-      const updated = [...current, trimmed];
-
-      // RHF update
-      setValue("developmentPlatforms", updated);
-
-      // local state update
-      setFormData((prev) => ({
-        ...prev,
-        developmentPlatforms: updated,
-      }));
-
-      // redux update
-      dispatch(
-        setFormDataRT({
-          ...formData,
-          developmentPlatforms: updated,
-        })
-      );
-    }
-
-    setCustomPlatform("");
-  };
-
-  const handleSubmitForm = async (data) => {
-    console.log("data", data);
-
-    // if (dontShowNext) {
-    //   // Skip dialog if user opted out and generate PDF immediately
-    //   await generatePdfActual(
-    //     data,
-    //     `${data.clientName || "proposal"}_proposal.pdf`
-    //   );
-    // } else {
-    //   // Open confirmation/dialog for user
-    //   setOpenDialog(true);
-    // }
   };
 
   useEffect(() => {
@@ -755,6 +640,28 @@ export default function App() {
     fetchProfile();
   }, []); // runs once on mount
 
+  const isValidData = (obj, maxEmptyAllowed = 3) => {
+    let emptyCount = 0;
+
+    for (const key in obj) {
+      // Skip *_prompt keys
+      if (key.endsWith("_prompt")) continue;
+
+      const value = obj[key];
+
+      // Check empty text, empty array, null, undefined
+      const isEmpty =
+        value === "" ||
+        value === null ||
+        value === undefined ||
+        (Array.isArray(value) && value.length === 0);
+
+      if (isEmpty) emptyCount++;
+    }
+
+    return emptyCount <= maxEmptyAllowed;
+  };
+
   useEffect(() => {
     const evtSource = new EventSource(
       "http://localhost:5000/api/transcribe/sse"
@@ -771,10 +678,63 @@ export default function App() {
       ) {
         if (!processing) setProcessing(true);
         setStatus(data.step);
-        dispatch(showToast({ message: data.step, severity: "info" }));
-        setProgress((prev) => Math.min(prev + 10, 90));
+        dispatch(showToast({ message:"Processing...", severity: "info" }));
+        if (event === "upload_status") {
+          setProgress((prev) => Math.min(prev + 10, 90));
+        }
+        setProcessing(false);
       }
       if (event === "complete") {
+        console.log("sss34432424234234");
+        setStatus(data?.step || "Done");
+        const extracted = data.data.extracted || {};
+        dispatch(setBusinessInfo(extracted));
+        if (history.length > 0 || data.data.polished.length > 0) {
+          dispatch(
+            showToast({
+              message: `✅ Transcription completed${
+                extracted.business_details
+                  ? " and business details extracted"
+                  : ""
+              } successfully!.`,
+              severity: "success",
+              duration: 4000,
+            })
+          );
+          const result = isValidData(extracted);
+
+          setBadges((prev) => ({
+            ...prev,
+            polished: true,
+            business: result,
+          }));
+
+          if (event === "upload_status") {
+            setBadges((prev) => ({ ...prev, audio: true }));
+            setTimeout(
+              () => setBadges((prev) => ({ ...prev, audio: false })),
+              3000
+            );
+          }
+
+
+          if (result) {
+            setBadges((prev) => ({
+              ...prev,
+              proposal: true,
+              email: true,
+              pdf: true,
+              business:true
+            }));
+            if (extracted.brand_name)
+              dispatch(setBrandName(extracted.brand_name));
+            if (extracted.project_brief)
+              dispatch(setProjectBrief(extracted.project_brief));
+          }
+          dispatch(setPolishedTranscript(data.data.polished));
+        }
+      }
+      if (event === "completed_audio") {
         setStatus("✅ Done!");
         console.log("data.data", data.data);
         const extracted = data.data.extracted || {};
@@ -815,9 +775,6 @@ export default function App() {
         // Set progress
         setProgress(100);
 
-        // Set business info
-
-        // Prepare updated form data with conditional fields
         const updatedData = {
           ...formData,
           ...(extracted.business_details && {
@@ -847,8 +804,9 @@ export default function App() {
           }),
         };
 
-        // Set badges for proposal, email, pdf if brand name exists
-        if (extracted.brand_name || extracted.project_brief) {
+        const result = isValidData(extracted);
+
+        if (result) {
           setBadges((prev) => ({
             ...prev,
             proposal: true,
@@ -925,22 +883,20 @@ export default function App() {
   };
 
   return (
-    
     <Box
-    sx={{
-      p: { xs: 2, sm: 4 },
-      bgcolor: "#f4f6fa",
-      minHeight: "100vh",
-      // Yeh add karo - sabse important
-      width: "100vw",
-      position: "relative",
-      left: "50%",
-      right: "50%",
-      marginLeft: "-50vw",
-      marginRight: "-50vw",
-    }}
-  >
-    <Grid  spacing={4} sx={{ m: 0, width: "100%", p: 0 }}>
+      sx={{
+        p: { xs: 2, sm: 4 },
+        bgcolor: "#f4f6fa",
+        minHeight: "100vh",
+        width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
+      }}
+    >
+      <Grid spacing={4} sx={{ m: 0, width: "100%", p: 0 }}>
         <Grid item xs={12} md={5}>
           <Paper
             sx={{
@@ -951,7 +907,15 @@ export default function App() {
               backdropFilter: "blur(10px)",
             }}
           >
-            <Box sx={{ borderBottom: "1px solid", borderColor: "divider" ,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <Box
+              sx={{
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
@@ -1008,31 +972,14 @@ export default function App() {
                   control={control}
                   errors={errors}
                   watch={watch}
-                  setValue={setValue}
                   handleSubmit={handleSubmit}
-                  handleSubmitForm={handleSubmitForm}
+                  handleSubmitForm={generatePdfActual}
                   inputRefs={inputRefs}
+                  register={register}
                   processing={processing}
-                  watchedServices={watchedServices}
-                  watchedCharges={watchedCharges}
-                  currency={currency}
-                  handleCurrencyChange={handleCurrencyChange}
-                  platformGroups={platformGroups}
-                  customPlatformOptions={customPlatformOptions}
-                  customPlatform={customPlatform}
-                  setCustomPlatform={setCustomPlatform}
-                  handleAddCustom={handleAddCustom}
-                  dispatch={dispatch}
-                  updateServiceLabelRT={updateServiceLabelRT}
-                  updateServiceChargeRT={updateServiceChargeRT}
-                  removeServiceRT={removeServiceRT}
-                  addServiceRT={addServiceRT}
                   isLoading={isLoading}
                   formData={formData}
-                  pdfRef={pdfRef}
-                  mode={mode}
-                  setMode={setMode}
-                  showToast={showToast}
+                  trigger={trigger}
                 />
               )}
               {tabValue === 1 && (
@@ -1043,6 +990,7 @@ export default function App() {
                     isRecording={isRecording}
                     isPaused={isPaused}
                     polished={fullTranscript}
+                    transcriptLength={transcriptWordLength}
                     startRecording={startRecording}
                     stopRecording={stopRecording}
                     pauseRecording={pauseRecording}
@@ -1339,25 +1287,12 @@ export default function App() {
           </Paper>
         </Grid>
       </Grid>
- 
+
       <RecordingToast
         pauseRecording={pauseRecording}
         socketRef={socketRef}
         stopRecordingMF={stopRecording}
         resumeRecordingMF={resumeRecording}
-      />
-      <PreviewConfirmDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        onViewPDF={() => {
-          scrollToPdf();
-        }}
-        onContinue={() => {
-          setOpenDialog(false);
-          generatePdfActual(getValues());
-        }}
-        dontShowNext={dontShowNext}
-        setDontShowNext={setDontShowNext}
       />
     </Box>
   );

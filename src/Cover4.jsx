@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   page: {
     paddingTop: PAGE_MARGIN_TOP,
     paddingBottom: PAGE_MARGIN_BOTTOM,
-    paddingHorizontal: 40,
+    paddingHorizontal: 50,
     position: "relative",
     backgroundColor: "#fff",
     fontFamily: "Liberation Serif",
@@ -54,18 +54,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   mainHeading: {
-    fontSize: 34,
     fontWeight: "bold",
     color: "#000",
     textAlign: "center",
-    marginVertical: 20,
+     fontSize: 28,
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 20,
   },
   subheading: {
     fontSize: 12,
-    color: "#555",
-    textAlign: "start",
+    color: "#000",
+    textAlign: "center",
     lineHeight: 1.6,
-    marginBottom: 30,
+
   },
   textContent: {
     fontSize: 11,
@@ -107,7 +109,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   packagePrice: {
-    fontSize: 30,
+    fontSize: 15,
     fontWeight: "bold",
     color: "#000",
     textAlign: "start",

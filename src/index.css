@@ -43,7 +43,6 @@
 @import "@fontsource/unbounded/800.css";
 @import "@fontsource/unbounded/900.css";
 
-
 /* Root Styles */
 /* ------------------------ */
 :root {
@@ -75,10 +74,23 @@ a:hover {
 
 /* ------------------------ */
 /* Body Styles */
-/* ------------------------ */
+html {
+  overflow-x: hidden;
+  font-size: 100%; /* 1rem = 16px — easy rem calculations */
+  -webkit-text-size-adjust: 100%; /* iOS pe font zoom na ho */
+  scroll-behavior: smooth; /* Smooth scrolling (optional but nice) */
+}
+
 body {
   margin: 0;
-
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ------------------------ */
@@ -133,11 +145,6 @@ button:focus-visible {
   font-weight: 400;
 }
 
-
-
-
-
-
 .pdf-container {
   display: flex;
   flex-direction: column;
@@ -147,15 +154,14 @@ button:focus-visible {
 
 .pdf-page {
   width: 100%;
-  min-height: 100vh;       /* at least one full page */
-  height: auto;            /* expand to fit content */
-  overflow: visible;       /* allow full rendering */
+  min-height: 100vh; /* at least one full page */
+  height: auto; /* expand to fit content */
+  overflow: visible; /* allow full rendering */
   position: relative;
   page-break-after: always;
   page-break-inside: avoid;
   background-color: white; /* important for html2canvas */
 }
-
 
 @media print {
   .pdf-page {

@@ -1,7 +1,8 @@
 // src/store/page3Slice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+
+const modeDefaults = {
   title: 'Proposal for Brand Name',
   subtitle: 'About Humantek',
   elements: [
@@ -24,21 +25,34 @@ const initialState = {
       dimensions: { width: '85%', height: '100%' },
     },
   ],
+  includeInPdf: true,
+}
+
+
+const initialState = {
+  currentMode: "create", // ✅ Track current mode
+  create: { ...modeDefaults },
+  edit: { ...modeDefaults },
 };
 
 const page3Slice = createSlice({
   name: 'page3',
   initialState,
   reducers: {
+    setMode2: (state, action) => {
+      state.currentMode = action.payload; // ✅ Sahi
+    },
+    
     updateTitle: (state, action) => {
-      state.title = action.payload;
+      state[state.currentMode].title = action.payload; // ✅ Sahi
     },
+    
     updateSubtitle: (state, action) => {
-      state.subtitle = action.payload;
+      state[state.currentMode].subtitle = action.payload; // ✅ Sahi
     },
-
-    // === Fixed: Default Content for Non-Image Elements ===
+    
     addElement: (state, action) => {
+      const mode = state.currentMode; // ✅ Sahi
       const { type, content = '', title = '', desc = '' } = action.payload;
       const newId = `${type}-${Date.now()}`;
       let newEl = { id: newId, type };
@@ -61,37 +75,61 @@ const page3Slice = createSlice({
         newEl.dimensions = { width: '100%', height: '300px' };
       }
 
-      state.elements.push(newEl);
+      state[mode].elements.push(newEl); // ✅ Sahi
     },
 
     editElementContent: (state, action) => {
+      const mode = state.currentMode;
       const { id, content } = action.payload;
-      const el = state.elements.find(e => e.id === id);
+      const el = state[mode].elements.find(e => e.id === id);
       if (el && el.type !== 'section') el.content = content;
     },
+    
     editSectionField: (state, action) => {
+      const mode = state.currentMode;
       const { id, field, value } = action.payload;
-      const el = state.elements.find(e => e.id === id);
+      const el = state[mode].elements.find(e => e.id === id);
       if (el && el.type === 'section') el[field] = value;
     },
+    
     deleteElement: (state, action) => {
-      state.elements = state.elements.filter(el => el.id !== action.payload);
+      const mode = state.currentMode;
+      state[mode].elements = state[mode].elements.filter(el => el.id !== action.payload);
     },
+    
     reorderElements: (state, action) => {
+      const mode = state.currentMode;
       const { activeId, overId } = action.payload;
-      const oldIdx = state.elements.findIndex(el => el.id === activeId);
-      const newIdx = state.elements.findIndex(el => el.id === overId);
+      const oldIdx = state[mode].elements.findIndex(el => el.id === activeId);
+      const newIdx = state[mode].elements.findIndex(el => el.id === overId);
       if (oldIdx !== -1 && newIdx !== -1) {
-        const [moved] = state.elements.splice(oldIdx, 1);
-        state.elements.splice(newIdx, 0, moved);
+        const [moved] = state[mode].elements.splice(oldIdx, 1);
+        state[mode].elements.splice(newIdx, 0, moved);
       }
     },
+    
     updateImageDimensions: (state, action) => {
+      const mode = state.currentMode;
       const { id, dimensions } = action.payload;
-      const el = state.elements.find(e => e.id === id);
+      const el = state[mode].elements.find(e => e.id === id);
       if (el && el.type === 'image') el.dimensions = dimensions;
     },
-    resetPage: () => initialState, 
+    
+    toggleAboutPageInclusion: (state) => {
+      const mode = state.currentMode;
+      state[mode].includeInPdf = !state[mode].includeInPdf;
+    },
+    
+    // ✅ FIXED: Sirf edit mode mein data set karo
+    setDBDataP3: (state, action) => {
+      state.edit = { ...action.payload }; // ✅ Sirf edit mode update
+    },
+    
+    // ✅ Reset specific mode
+    resetPage: (state, action) => {
+      const mode = action.payload || state.currentMode;
+      state[mode] = { ...modeDefaults };
+    },
   },
 });
 
@@ -105,6 +143,9 @@ export const {
   reorderElements,
   updateImageDimensions,
   resetPage,
+  setMode2,
+  setDBDataP3,
+  toggleAboutPageInclusion
 } = page3Slice.actions;
 
 export default page3Slice.reducer;

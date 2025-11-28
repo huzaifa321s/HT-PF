@@ -39,6 +39,12 @@ const navigate = useNavigate();
         minHeight: "100vh",
         py: 8,
         px: { xs: 2, sm: 4 },
+          width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-50vw",
       }}
     >
       <Box sx={{ maxWidth: 1100, mx: "auto" }}>

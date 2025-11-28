@@ -38,11 +38,12 @@ const LiveSpeechToText = ({
   resumeRecording,
   history,
   historyEndRef,
+  transcriptLength,
   pauseTime,
   audioUrl,
   audioFileName,
   clearAudioUrl,
-  polished
+  polished,
 }) => {
   return (
     <Fade in timeout={600}>
@@ -65,7 +66,8 @@ const LiveSpeechToText = ({
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   boxShadow: "0 8px 24px rgba(102, 126, 234, 0.3)",
                   mb: 3,
                 }}
@@ -92,10 +94,10 @@ const LiveSpeechToText = ({
               color="text.secondary"
               sx={{ maxWidth: 600, mx: "auto" }}
             >
-              Real-time transcription with speaker identification and instant playback
+              Real-time transcription with speaker identification and instant
+              playback
             </Typography>
           </Box>
-          
 
           {/* Status Card */}
           <Slide in direction="down" timeout={500}>
@@ -126,14 +128,19 @@ const LiveSpeechToText = ({
                       boxShadow: `0 0 12px ${
                         status === "connected" ? "#4caf50" : "#f44336"
                       }`,
-                      animation: status === "connected" ? "pulse 2s infinite" : "none",
+                      animation:
+                        status === "connected" ? "pulse 2s infinite" : "none",
                       "@keyframes pulse": {
                         "0%, 100%": { opacity: 1 },
                         "50%": { opacity: 0.5 },
                       },
                     }}
                   />
-                  <Typography variant="body1" fontWeight={600} color="text.primary">
+                  <Typography
+                    variant="body1"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
                     Connection Status
                   </Typography>
                   <Chip
@@ -254,7 +261,8 @@ const LiveSpeechToText = ({
                     borderRadius: 50,
                     fontWeight: 700,
                     textTransform: "none",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
                     transition: "all 0.3s ease",
                     "&:hover": {
@@ -267,60 +275,67 @@ const LiveSpeechToText = ({
                 </Button>
               </Zoom>
             )}
-{/* Polished Length Indicator - With Word Count Alert */}
-{polished.length > 0 && (
-  <Fade in={true}>
-    <Box
-      sx={{
-        mt: 2,
-        p: 2,
-        borderRadius: 2,
-        textAlign: 'center',
-        animation: 'fadeIn 0.6s ease-out',
-        '@keyframes fadeIn': {
-          from: { opacity: 0, transform: 'translateY(8px)' },
-          to: { opacity: 1, transform: 'translateY(0)' },
-        },
-        // Conditional Styling
-        bgcolor: polished.trim().split(/\s+/).filter(Boolean).length < 100
-          ? 'rgba(244, 67, 54, 0.12)'
-          : 'rgba(102, 126, 234, 0.08)',
-        border: polished.trim().split(/\s+/).filter(Boolean).length < 100
-          ? '1px solid rgba(244, 67, 54, 0.3)'
-          : '1px solid rgba(102, 126, 234, 0.2)',
-      }}
-    >
-      <Typography
-        variant="body2"
-        sx={{
-          fontWeight: 600,
-          color: polished.trim().split(/\s+/).filter(Boolean).length < 100
-            ? '#d32f2f'
-            : '#667eea',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-        }}
-      >
-    {polished.trim().split(/\s+/).filter(Boolean).length < 100 ? (
-  <>
-    <span style={{ fontSize: 30 }}>Warning</span>
-    Business details cannot be extracted — only {polished.trim().split(/\s+/).filter(Boolean).length} words provided.  
-    (Minimum required: 100 words)
-  </>
-) : (
-  <>
-    <AutoAwesome sx={{ fontSize: 30, color: '#f093fb' }} />
-    Final proposal ready for business details extraction • 
-    {polished.length} characters ({polished.trim().split(/\s+/).filter(Boolean).length} words)
-  </>
-)}
-
-      </Typography>
-    </Box>
-  </Fade>
-)}
+            {/* Polished Length Indicator - With Word Count Alert */}
+            {polished.length > 0 && (
+              <Fade in={true}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    borderRadius: 2,
+                    textAlign: "center",
+                    animation: "fadeIn 0.6s ease-out",
+                    "@keyframes fadeIn": {
+                      from: { opacity: 0, transform: "translateY(8px)" },
+                      to: { opacity: 1, transform: "translateY(0)" },
+                    },
+                    // Conditional Styling
+                    bgcolor:
+                      transcriptLength < 100
+                        ? "rgba(244, 67, 54, 0.12)"
+                        : "rgba(102, 126, 234, 0.08)",
+                    border:
+                    transcriptLength < 100
+                        ? "1px solid rgba(244, 67, 54, 0.3)"
+                        : "1px solid rgba(102, 126, 234, 0.2)",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      color:
+                        transcriptLength <
+                        100
+                          ? "#d32f2f"
+                          : "#667eea",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                    }}
+                  >
+                    {transcriptLength <
+                    100 ? (
+                      <>
+                        <span style={{ fontSize: 30 }}>Warning</span>
+                        Business details cannot be extracted — only{" "}
+                        {
+                          transcriptLength
+                        }{" "}
+                        words provided. (Minimum required: 100 words)
+                      </>
+                    ) : (
+                      <>
+                        <AutoAwesome sx={{ fontSize: 30, color: "#f093fb" }} />
+                        Final transcript ready for business details extraction •
+                        {transcriptLength} characters
+                      </>
+                    )}
+                  </Typography>
+                </Box>
+              </Fade>
+            )}
             {/* Audio Download Section */}
             {audioUrl && (
               <Fade in timeout={400}>
@@ -331,13 +346,18 @@ const LiveSpeechToText = ({
                       display: "inline-block",
                       p: 2.5,
                       borderRadius: 3,
-                      background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
+                      background:
+                        "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
                       border: "1px solid #81c784",
                     }}
                   >
                     <Stack direction="row" spacing={2} alignItems="center">
                       <CheckCircle sx={{ color: "#4caf50", fontSize: 28 }} />
-                      <Typography variant="body1" fontWeight={600} color="text.primary">
+                      <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        color="text.primary"
+                      >
                         Recording Complete
                       </Typography>
                       <Button
@@ -428,7 +448,8 @@ const LiveSpeechToText = ({
               minHeight: 450,
               maxHeight: 650,
               overflowY: "auto",
-              background: "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
+              background:
+                "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
               border: "1px solid #e0e0e0",
               position: "relative",
               "&::-webkit-scrollbar": {
@@ -483,152 +504,177 @@ const LiveSpeechToText = ({
                   textAlign="center"
                   sx={{ mt: 1, maxWidth: 400 }}
                 >
-                  Press "Start Recording" and begin speaking. Your words will appear here in real-time.
+                  Press "Start Recording" and begin speaking. Your words will
+                  appear here in real-time.
                 </Typography>
               </Box>
             ) : (
-              <Box>
-                {history.map((item, index) => {
-                  const speakerMatch = item.text.match(/Speaker (\d+):/);
-                  const speakerId = speakerMatch ? parseInt(speakerMatch[1]) : null;
-                  const isLeft = speakerId === null || speakerId % 2 === 0;
+  <Box>
+  {history.map((item, index) => {
+    const speakerMatch = item.text.match(/Speaker (\d+):/);
+    const speakerId = speakerMatch ? parseInt(speakerMatch[1]) : null;
+    const isLeft = speakerId === null || speakerId % 2 === 0;
 
-                  return (
-                    <Fade in timeout={300} key={item.id || index}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: isLeft ? "flex-start" : "flex-end",
-                          mb: 2.5,
-                          px: 1,
-                        }}
-                      >
-                        <Paper
-                          elevation={2}
-                          sx={{
-                            maxWidth: "80%",
-                            p: 2.5,
-                            borderRadius: 3,
-                            bgcolor:
-                              item.type === "finalized"
-                                ? "#fff3e0"
-                                : item.type === "final"
-                                ? isLeft
-                                  ? "#e3f2fd"
-                                  : "#e8f5e9"
-                                : isLeft
-                                ? "#f5f5f5"
-                                : "#eeeeee",
-                            border:
-                              item.type === "finalized"
-                                ? "2px solid #ff9800"
-                                : item.type === "final"
-                                ? isLeft
-                                  ? "2px solid #2196f3"
-                                  : "2px solid #4caf50"
-                                : "1px solid #e0e0e0",
-                            position: "relative",
-                            transition: "all 0.3s ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                              boxShadow: 4,
-                            },
-                            "&::before": item.type === "finalized" || item.type === "final" ? {
-                              content: '""',
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              height: 4,
-                              borderRadius: "3px 3px 0 0",
-                              background:
-                                item.type === "finalized"
-                                  ? "linear-gradient(90deg, #ff9800 0%, #ffc107 100%)"
-                                  : isLeft
-                                  ? "linear-gradient(90deg, #2196f3 0%, #64b5f6 100%)"
-                                  : "linear-gradient(90deg, #4caf50 0%, #81c784 100%)",
-                            } : {},
-                          }}
-                        >
-                          {speakerId !== null && (
-                            <Box mb={1}>
-                              <Chip
-                                label={`Speaker ${speakerId}`}
-                                size="small"
-                                sx={{
-                                  bgcolor: isLeft ? "#2196f3" : "#4caf50",
-                                  color: "white",
-                                  fontWeight: 700,
-                                  fontSize: "0.7rem",
-                                  height: 22,
-                                }}
-                              />
-                            </Box>
-                          )}
-
-                          <Stack direction="row" spacing={1} alignItems="baseline" mb={0.5}>
-                            <Chip
-                              label={
-                                item.type === "finalized"
-                                  ? "✓ FINALIZED"
-                                  : item.type === "final"
-                                  ? "✓ Final"
-                                  : "Live"
-                              }
-                              size="small"
-                              sx={{
-                                height: 20,
-                                fontSize: "0.65rem",
-                                fontWeight: 700,
-                                bgcolor:
-                                  item.type === "finalized"
-                                    ? "#ff9800"
-                                    : item.type === "final"
-                                    ? "#4caf50"
-                                    : "#9e9e9e",
-                                color: "white",
-                              }}
-                            />
-                          </Stack>
-
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              lineHeight: 1.7,
-                              color: "#212121",
-                              fontSize:
-                                item.type === "final" || item.type === "finalized"
-                                  ? "1rem"
-                                  : "0.9rem",
-                            }}
-                          >
-                            {item.text.replace(/Speaker \d+:/g, "").trim()}
-                            {item.is_final === false && (
-                              <Box
-                                component="span"
-                                sx={{
-                                  display: "inline-block",
-                                  width: 6,
-                                  height: 6,
-                                  borderRadius: "50%",
-                                  bgcolor: "#666",
-                                  ml: 1,
-                                  animation: "blink 1s infinite",
-                                  "@keyframes blink": {
-                                    "0%, 100%": { opacity: 1 },
-                                    "50%": { opacity: 0 },
-                                  },
-                                }}
-                              />
-                            )}
-                          </Typography>
-                        </Paper>
-                      </Box>
-                    </Fade>
-                  );
-                })}
-                <div ref={historyEndRef} />
+    return (
+      <Fade in timeout={300} key={item.id || index}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: isLeft ? "flex-start" : "flex-end",
+            mb: 2.5,
+            px: 1,
+          }}
+        >
+          <Paper
+            elevation={2}
+            sx={{
+              maxWidth: "80%",
+              p: 2.5,
+              borderRadius: 3,
+              bgcolor:
+                item.type === "finalized"
+                  ? "#fff3e0"
+                  : item.type === "final"
+                  ? isLeft
+                    ? "#e3f2fd"
+                    : "#e8f5e9"
+                  : isLeft
+                  ? "#f5f5f5"
+                  : "#eeeeee",
+              border:
+                item.type === "finalized"
+                  ? "2px solid #ff9800"
+                  : item.type === "final"
+                  ? isLeft
+                    ? "2px solid #2196f3"
+                    : "2px solid #4caf50"
+                  : "1px solid #e0e0e0",
+              position: "relative",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 4,
+              },
+              "&::before":
+                item.type === "finalized" || item.type === "final"
+                  ? {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 4,
+                      borderRadius: "3px 3px 0 0",
+                      background:
+                        item.type === "finalized"
+                          ? "linear-gradient(90deg, #ff9800 0%, #ffc107 100%)"
+                          : isLeft
+                          ? "linear-gradient(90deg, #2196f3 0%, #64b5f6 100%)"
+                          : "linear-gradient(90deg, #4caf50 0%, #81c784 100%)",
+                    }
+                  : {},
+            }}
+          >
+            {speakerId !== null && (
+              <Box mb={1}>
+                <Chip
+                  label={`Speaker ${speakerId}`}
+                  size="small"
+                  sx={{
+                    bgcolor: isLeft ? "#2196f3" : "#4caf50",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.7rem",
+                    height: 22,
+                  }}
+                />
               </Box>
+            )}
+
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="baseline">
+                <Chip
+                  label={
+                    item.type === "finalized"
+                      ? "✓ FINALIZED"
+                      : item.type === "final"
+                      ? "✓ Final"
+                      : "Live"
+                  }
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
+                    bgcolor:
+                      item.type === "finalized"
+                        ? "#ff9800"
+                        : item.type === "final"
+                        ? "#4caf50"
+                        : "#9e9e9e",
+                    color: "white",
+                  }}
+                />
+              </Stack>
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    lineHeight: 1.7,
+                    color: "#212121",
+                    fontSize:
+                      item.type === "final" || item.type === "finalized"
+                        ? "1rem"
+                        : "0.9rem",
+                  }}
+                >
+                  {item.text.replace(/Speaker \d+:/g, "").trim()}
+                  {item.is_final === false && (
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-block",
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#666",
+                        ml: 1,
+                        animation: "blink 1s infinite",
+                        "@keyframes blink": {
+                          "0%, 100%": { opacity: 1 },
+                          "50%": { opacity: 0 },
+                        },
+                      }}
+                    />
+                  )}
+                </Typography>
+
+                {item.timestamp && item.type !== "final" && item.type !== "finalized" && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#9e9e9e",
+                      fontSize: "0.75rem",
+                      fontStyle: "italic",
+                      alignSelf: "flex-start",
+                    }}
+                  >
+                    {new Date(item.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
+          </Paper>
+        </Box>
+      </Fade>
+    );
+  })}
+  <div ref={historyEndRef} />
+</Box>
             )}
           </Paper>
 
