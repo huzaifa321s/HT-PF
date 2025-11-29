@@ -49,7 +49,7 @@ const AdminProposalsPage = () => {
   const [length, setLength] = useState(0);
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-
+ const [totalCount,setTotalCount] = useState(0)
   // ✅ Same color scheme as EditProposal
   const colorScheme = {
     primary: "#667eea",
@@ -100,6 +100,7 @@ const AdminProposalsPage = () => {
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);
       setLength(res.data.proposals?.length || 0);
+      setTotalCount(res.data.totalCount)
     } catch (error) {
       setProposals([]);
       setTotalPages(1);
@@ -212,7 +213,7 @@ const AdminProposalsPage = () => {
             >
               <CardContent>
                 <Typography variant="h6" fontWeight={700} color={colorScheme.primary}>
-                  {proposals.length}
+                  {totalCount}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Total Proposals

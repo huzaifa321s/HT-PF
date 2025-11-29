@@ -28,6 +28,8 @@ import {
   TextFields,
   CheckCircle,
   Warning,
+  CloudUpload,
+  Image as ImageIcon,
 } from "@mui/icons-material";
 
 import {
@@ -42,7 +44,7 @@ import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
 
-const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
+const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
   const dispatch = useDispatch();
   const page3 = mode === 'edit-doc' ? useSelector((s) => s.page3.edit) : useSelector((s) => s.page3.create);
 
@@ -50,6 +52,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
   const [edit, setEdit] = useState(null);
   const [resetDialog, setResetDialog] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => setData(page3), [page3]);
 
@@ -97,6 +100,51 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
     dispatch(editElementContent({ id, content: element.content }));
     setEdit(null);
     dispatch(showToast({ message: "Content saved successfully", severity: "success" }));
+  };
+
+  const handleImageUpload = (id, file) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      dispatch(showToast({ message: "Please upload a valid image file", severity: "error" }));
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      dispatch(showToast({ message: "Image size should be less than 5MB", severity: "error" }));
+      return;
+    }
+
+    setUploading(true);
+    
+    // Convert image to base64 or create object URL
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const imagePath = e.target.result; // base64 string
+      
+      // Update element with new image path
+      setData((prev) => ({
+        ...prev,
+        elements: prev.elements.map((el) =>
+          el.id === id ? { ...el, content: imagePath } : el
+        ),
+      })); 
+
+      dispatch(editElementContent({ id, content: imagePath,  type: 'image', dimensions: { width: '85%', height: '100%' }, }));
+      dispatch(showToast({ message: "Image uploaded successfully", severity: "success" }));
+      autoSave();
+      setUploading(false);
+    };
+
+    reader.onerror = () => {
+      dispatch(showToast({ message: "Image upload failed", severity: "error" }));
+      setUploading(false);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const reset = async () => {
@@ -193,7 +241,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
               fontWeight: 600,
               px: 3,
               py: 3,
-              height:50,
+              height: 50,
               "&:hover": {
                 borderColor: "#764ba2",
                 bgcolor: "rgba(102,126,234,0.1)",
@@ -354,24 +402,93 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
           <CardContent sx={{ p: 4 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <TextFields sx={{ color: "#667eea", fontSize: 28 }} />
+                {el.type === 'image' ? (
+                  <ImageIcon sx={{ color: "#667eea", fontSize: 28 }} />
+                ) : (
+                  <TextFields sx={{ color: "#667eea", fontSize: 28 }} />
+                )}
                 <Typography fontWeight={700} color="#667eea">
-                  Text Block #{i + 1}
+                  {el.type === 'image' ? `Image Block #${i + 1}` : `Text Block #${i + 1}`}
                 </Typography>
               </Stack>
-              <IconButton
-                onClick={() => (edit === el.id ? saveElement(el.id) : setEdit(el.id))}
-                sx={{
-                  bgcolor: edit === el.id ? "rgba(76,175,80,0.15)" : "rgba(102,126,234,0.1)",
-                  color: edit === el.id ? "#2e7d32" : "#667eea",
-                  "&:hover": { bgcolor: edit === el.id ? "rgba(76,175,80,0.25)" : "rgba(102,126,234,0.2)" },
-                }}
-              >
-                {edit === el.id ? <Save /> : <Edit />}
-              </IconButton>
+              {el.type !== 'image' && (
+                <IconButton
+                  onClick={() => (edit === el.id ? saveElement(el.id) : setEdit(el.id))}
+                  sx={{
+                    bgcolor: edit === el.id ? "rgba(76,175,80,0.15)" : "rgba(102,126,234,0.1)",
+                    color: edit === el.id ? "#2e7d32" : "#667eea",
+                    "&:hover": { bgcolor: edit === el.id ? "rgba(76,175,80,0.25)" : "rgba(102,126,234,0.2)" },
+                  }}
+                >
+                  {edit === el.id ? <Save /> : <Edit />}
+                </IconButton>
+              )}
             </Stack>
 
-            {edit === el.id ? (
+            {el.type === 'image' ? (
+              <Box>
+                {/* Image Preview */}
+                <Box
+                  sx={{
+                    width: '100%',
+                    maxHeight: 300,
+                    mb: 2,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    border: '2px dashed rgba(102,126,234,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(102,126,234,0.05)',
+                  }}
+                >
+                  {el.content ? (
+                    <img
+                      src={el.content}
+                      alt="Preview"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '300px',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  ) : (
+                    <Typography color="text.secondary">No image uploaded</Typography>
+                  )}
+                </Box>
+
+                {/* Upload Button */}
+                <Button
+                  component="label"
+                  variant="contained"
+                  startIcon={uploading ? null : <CloudUpload />}
+                  disabled={uploading}
+                  sx={{
+                    borderRadius: 3,
+                    px: 4,
+                    py: 1.5,
+                    fontWeight: 600,
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                    },
+                  }}
+                >
+                  {uploading ? 'Uploading...' : 'Upload New Image'}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(el.id, file);
+                    }}
+                  />
+                </Button>
+
+          
+              </Box>
+            ) : edit === el.id ? (
               <TextField
                 fullWidth
                 multiline
@@ -398,7 +515,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
       ))}
 
       {/* Reset Dialog */}
-      <Dialog open={resetDialog} onClose={() => setResetDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={resetDialog} onClose={() => setResetDialog(false)} maxWidth="sm" sx={{ borderRadius: 5 }} fullWidth>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
           <Warning sx={{ mr: 1, verticalAlign: "middle" }} />
           Reset About Humantek Page?
@@ -420,7 +537,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
             variant="contained"
             color="error"
             size="large"
-            sx={{ px: 5, fontWeight: 700 }}
+            sx={{ px: 5, fontWeight: 700, borderRadius: 5 }}
           >
             Yes, Reset Page
           </Button>

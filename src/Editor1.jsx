@@ -328,7 +328,7 @@ const PdfPage1Editor = ({mode}) => {
       </Stack>
 
       {/* Reset Confirmation Dialog */}
-      <Dialog open={resetDialog} onClose={() => setResetDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={resetDialog} onClose={() => setResetDialog(false)} maxWidth="sm" sx={{borderRadius:5}} fullWidth>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3 }}>
           <WarningAmber sx={{ mr: 1, verticalAlign: "middle" }} />
           Confirm Reset
@@ -353,7 +353,7 @@ const PdfPage1Editor = ({mode}) => {
             variant="contained"
             color="error"
             size="large"
-            sx={{ px: 4, fontWeight: 600 }}
+            sx={{ px: 4, fontWeight: 600,borderRadius:5 }}
           >
             Yes, Reset Everything
           </Button>

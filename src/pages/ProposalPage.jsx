@@ -57,7 +57,7 @@ const ProposalPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [proposalID, setProposalID] = useState(null);
   const [length, setLength] = useState(0);
-
+ const [totalCount,setTotalCount] = useState(0);
   const handleView = (id) => {
     setOpen(true);
     setProposalID(id);
@@ -119,6 +119,7 @@ const ProposalPage = () => {
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);
       setLength(res.data.proposals?.length || 0);
+      setTotalCount(res.data.totalCount)
     } catch (error) {
       console.error("Error fetching proposals:", error);
       setProposals([]);
@@ -139,7 +140,7 @@ const ProposalPage = () => {
   const statsCards = [
     {
       title: 'Total Proposals',
-      value: proposals.length,
+      value: totalCount,
       icon: <DescriptionIcon />,
       color: '#667eea',
       bgGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

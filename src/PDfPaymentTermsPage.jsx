@@ -229,11 +229,11 @@ const PdfPaymentTermsDocument = ({ title, terms }) => {
             {/* Logo + Company Name - Smart Placement */}
             {showLogoOnThisPage && (
               <View style={styles.logoContainer}>
-                <Image style={styles.logo} src="/download.jpg" />
-                <View>
+                <Image  src="/download.jpg" />
+                {/* <View>
                   <Text style={styles.logoTitle}>HUMANTEK</Text>
                   <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>
-                </View>
+                </View> */}
               </View>
             )}
 

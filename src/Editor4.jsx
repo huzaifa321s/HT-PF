@@ -451,6 +451,7 @@ const PdfEditorPage = ({mode}) => {
         onClose={() => setResetDialog(false)}
         maxWidth="sm"
         fullWidth
+        sx={{borderRadius:5}}
       >
         <DialogTitle
           sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}
@@ -471,7 +472,7 @@ const PdfEditorPage = ({mode}) => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button onClick={() => setResetDialog(false)} size="large">
+          <Button onClick={() => setResetDialog(false)} size="large" sx={{borderRadius:5}}>
             Cancel
           </Button>
           <Button
@@ -479,7 +480,7 @@ const PdfEditorPage = ({mode}) => {
             variant="contained"
             color="error"
             size="large"
-            sx={{ px: 5, fontWeight: 700 }}
+            sx={{ px: 5, fontWeight: 700 ,borderRadius:5}}
           >
             Yes, Reset Everything
           </Button>

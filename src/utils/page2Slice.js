@@ -56,7 +56,7 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
   tables: [
     // Example: 2-column Services Table
     {
-      id: generateId(),
+      id: 1,
       columnCount: 2,
       headers: { col1: "Recommended Services", col2: "Charges (PKR)" },
       rows: [
@@ -116,7 +116,7 @@ const page2Slice = createSlice({
       state[mode].orderedSections.push({
         id: generateId(),
         type,
-        title: type === "plain" || type === "numbered" ? "" : title,
+        title: type === "plain" ? "" : title,
         content,
       });
     },
@@ -134,7 +134,7 @@ const page2Slice = createSlice({
           ? {
               ...sec,
               type: type ?? sec.type,
-              title: (type === "plain" || type === "numbered") ? "" : (title ?? sec.title),
+             title: type === "plain" ? "" : (title ?? sec.title),
               content: content ?? sec.content,
             }
           : sec

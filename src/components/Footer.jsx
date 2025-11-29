@@ -79,7 +79,7 @@ const Footer = () => {
   const quickLinks = [
     { 
       label: "Dashboard", 
-      path: "/dashboard", 
+      path: "/", 
       icon: <DashboardIcon sx={{ fontSize: 18 }} />,
       show: location.pathname !== "/dashboard"
     },
@@ -94,12 +94,6 @@ const Footer = () => {
       path: role === "admin" ? "/admin/proposals" : "/your-proposals",
       icon: <FolderIcon sx={{ fontSize: 18 }} />,
       show: location.pathname !== "/your-proposals" && location.pathname !== "/admin/proposals"
-    },
-    { 
-      label: "Reports", 
-      path: "/reports", 
-      icon: <AssessmentIcon sx={{ fontSize: 18 }} />,
-      show: true
     },
     { 
       label: "Agents Management", 
@@ -208,7 +202,7 @@ const Footer = () => {
                   letterSpacing: "-0.5px",
                 }}
               >
-                Proposal System
+                Proposal Management System
               </Typography>
             </Box>
             <Typography

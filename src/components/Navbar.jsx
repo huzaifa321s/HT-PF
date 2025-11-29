@@ -321,7 +321,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
                   color: "#fff",
                 }}
               >
-                Proposal Management
+                Proposal Management System
               </Typography>
               <Typography
                 variant="caption"
@@ -331,7 +331,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
                   fontWeight: 500,
                 }}
               >
-                {role === "admin" ? "Admin Panel" : "Agent Dashboard"}
+                {role === "admin" ? "Business Development Manager" : "Business Development Officer"}
               </Typography>
             </Box>
           </Box>

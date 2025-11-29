@@ -522,12 +522,8 @@ export default function App() {
   const generatePdfActual = async (data) => {
     setLoading(true);
     // Professional file name
-    const clientName = data.clientName?.trim() || "Client";
-    const date = new Date().toISOString().slice(0, 10);
-    const fileName = `Proposal_HT_${clientName.replace(
-      /\s+/g,
-      "_"
-    )}_${date}.pdf`;
+    const brandName = data?.brandName?.trim() || "Client";
+    const fileName = `${brandName} Proposal.pdf`;
     const blob = await pdf(
       <CombinedPdfDocument
         paymentTerms={paymentTerms}
@@ -679,9 +675,14 @@ export default function App() {
         if (!processing) setProcessing(true);
         setStatus(data.step);
         dispatch(showToast({ message:"Processing...", severity: "info" }));
-        if (event === "upload_status") {
+        console.log('dddd',data)
+        if(data.progress){
+          setProgress(data.progress);
+          
+        }else{
           setProgress((prev) => Math.min(prev + 10, 90));
         }
+        
         setProcessing(false);
       }
       if (event === "complete") {

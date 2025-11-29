@@ -159,7 +159,7 @@ const EditProposal = () => {
     callOutcome: formData.callOutcome,
     date: formData.date,
   };
-
+const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   // Fetch proposal on mount
   useEffect(() => {
     const fetchProposal = async () => {
@@ -392,12 +392,8 @@ const EditProposal = () => {
     try {
       setPdfLoading(true);
 
-      const clientName = formDataToSave.clientName?.trim() || "Client";
-      const date = new Date().toISOString().slice(0, 10);
-      const fileName = `Proposal_HT_${clientName.replace(
-        /\s+/g,
-        "_"
-      )}_${date}.pdf`;
+    const brandName = formDataToSave?.brandName?.trim() || "Client";
+    const fileName = `${brandName} Proposal.pdf`;
 
       const blob = await pdf(
         <CombinedPdfDocument
@@ -502,7 +498,7 @@ const EditProposal = () => {
             label="Your Name *"
             fullWidth
             value={formData.yourName}
-            disabled
+              disabled
             sx={inputStyle}
           />
           <TextField

@@ -14,7 +14,7 @@ import {
 const styles = StyleSheet.create({
   page: {
     position: "relative",
-    paddingTop: 50,
+    paddingTop: 60,
     paddingBottom: 90,
     paddingHorizontal: 60,
     fontSize: 11,
@@ -268,7 +268,7 @@ const PdfPageDocument2 = ({
     const isThreeColumn = columnCount === 3;
 
     return (
-      <View key={table.id}>
+      <View key={table.id} wrap={false}>
         <Text
           style={{
             fontSize: 20,
@@ -276,7 +276,6 @@ const PdfPageDocument2 = ({
             textAlign: "center",
             marginTop: 32,
             marginBottom: 14,
-            keepWithNext: true,
           }}
         >
           {table?.type  ? 'Quotation' : table?.headers?.col1.charAt(0).toUpperCase() +

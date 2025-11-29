@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
-  logo: { width: 40, height: 40, borderRadius: 20 },
+  logo: { width: 150, height: 50, borderRadius: 20 },
   logoTitle: { color: "#FF8C00", fontSize: 20, fontWeight: "bold" },
   logoSubtitle: { color: "#000", fontSize: 9 },
 
@@ -242,13 +242,13 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms }) => {
             {/* Logo + Company Name - Smart Placement */}
             {showLogoOnThisPage && (
               <View style={styles.logoContainer}>
-                <Image style={styles.logo} src="/download.jpg" />
-                <View>
+                <Image style={styles.logo} src="/ht-logo.png" />
+                {/* <View>
                   <Text style={styles.logoTitle}>HUMANTEK</Text>
                   <Text style={styles.logoSubtitle}>
                     IT SERVICES & SOLUTIONS
                   </Text>
-                </View>
+                </View> */}
               </View>
             )}
 

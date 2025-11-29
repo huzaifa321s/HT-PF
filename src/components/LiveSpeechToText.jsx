@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import {
   Container,
   Zoom,
   Slide,
+  Fab,
 } from "@mui/material";
 import {
   Clear,
@@ -25,6 +26,7 @@ import {
   CheckCircle,
   RadioButtonChecked,
   AutoAwesome,
+  KeyboardArrowDown,
 } from "@mui/icons-material";
 
 const LiveSpeechToText = ({
@@ -45,6 +47,38 @@ const LiveSpeechToText = ({
   clearAudioUrl,
   polished,
 }) => {
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollContainerRef = useRef(null);
+  const userScrolledRef = useRef(false);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (historyEndRef.current && !userScrolledRef.current) {
+      historyEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [history, historyEndRef]);
+
+  // Handle scroll detection
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      
+      setShowScrollButton(!isNearBottom);
+      userScrolledRef.current = !isNearBottom;
+    }
+  };
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (historyEndRef.current) {
+      historyEndRef.current.scrollIntoView({ behavior: "smooth" });
+      userScrolledRef.current = false;
+      setShowScrollButton(false);
+    }
+  };
+
   return (
     <Fade in timeout={600}>
       <Container maxWidth="lg">
@@ -141,7 +175,7 @@ const LiveSpeechToText = ({
                     fontWeight={600}
                     color="text.primary"
                   >
-                    Connection Status
+                     Status
                   </Typography>
                   <Chip
                     label={status?.toUpperCase() || "DISCONNECTED"}
@@ -289,13 +323,12 @@ const LiveSpeechToText = ({
                       from: { opacity: 0, transform: "translateY(8px)" },
                       to: { opacity: 1, transform: "translateY(0)" },
                     },
-                    // Conditional Styling
                     bgcolor:
                       transcriptLength < 100
                         ? "rgba(244, 67, 54, 0.12)"
                         : "rgba(102, 126, 234, 0.08)",
                     border:
-                    transcriptLength < 100
+                      transcriptLength < 100
                         ? "1px solid rgba(244, 67, 54, 0.3)"
                         : "1px solid rgba(102, 126, 234, 0.2)",
                   }}
@@ -304,26 +337,19 @@ const LiveSpeechToText = ({
                     variant="body2"
                     sx={{
                       fontWeight: 600,
-                      color:
-                        transcriptLength <
-                        100
-                          ? "#d32f2f"
-                          : "#667eea",
+                      color: transcriptLength < 100 ? "#d32f2f" : "#667eea",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: 1,
                     }}
                   >
-                    {transcriptLength <
-                    100 ? (
+                    {transcriptLength < 100 ? (
                       <>
                         <span style={{ fontSize: 30 }}>Warning</span>
                         Business details cannot be extracted — only{" "}
-                        {
-                          transcriptLength
-                        }{" "}
-                        words provided. (Minimum required: 100 words)
+                        {transcriptLength} words provided. (Minimum required: 100
+                        words)
                       </>
                     ) : (
                       <>
@@ -440,243 +466,286 @@ const LiveSpeechToText = ({
           )}
 
           {/* Transcription Window */}
-          <Paper
-            elevation={6}
-            sx={{
-              p: { xs: 2, md: 4 },
-              borderRadius: 4,
-              minHeight: 450,
-              maxHeight: 650,
-              overflowY: "auto",
-              background:
-                "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
-              border: "1px solid #e0e0e0",
-              position: "relative",
-              "&::-webkit-scrollbar": {
-                width: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                bgcolor: "#f1f1f1",
+          <Box sx={{ position: "relative" }}>
+            <Paper
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              elevation={6}
+              sx={{
+                p: { xs: 2, md: 4 },
                 borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                bgcolor: "#888",
-                borderRadius: 4,
-                "&:hover": {
-                  bgcolor: "#555",
+                minHeight: 450,
+                maxHeight: 650,
+                overflowY: "auto",
+                background:
+                  "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
+                border: "1px solid #e0e0e0",
+                position: "relative",
+                "&::-webkit-scrollbar": {
+                  width: 8,
                 },
-              },
-            }}
-          >
-            {history.length === 0 ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 400,
-                }}
-              >
-                <Mic
+                "&::-webkit-scrollbar-track": {
+                  bgcolor: "#f1f1f1",
+                  borderRadius: 4,
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  bgcolor: "#888",
+                  borderRadius: 4,
+                  "&:hover": {
+                    bgcolor: "#555",
+                  },
+                },
+              }}
+            >
+              {history.length === 0 ? (
+                <Box
                   sx={{
-                    fontSize: 80,
-                    color: "#bdbdbd",
-                    mb: 2,
-                    animation: "float 3s ease-in-out infinite",
-                    "@keyframes float": {
-                      "0%, 100%": { transform: "translateY(0)" },
-                      "50%": { transform: "translateY(-10px)" },
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 400,
+                  }}
+                >
+                  <Mic
+                    sx={{
+                      fontSize: 80,
+                      color: "#bdbdbd",
+                      mb: 2,
+                      animation: "float 3s ease-in-out infinite",
+                      "@keyframes float": {
+                        "0%, 100%": { transform: "translateY(0)" },
+                        "50%": { transform: "translateY(-10px)" },
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    textAlign="center"
+                    fontWeight={500}
+                  >
+                    Ready to transcribe
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ mt: 1, maxWidth: 400 }}
+                  >
+                    Press "Start Recording" and begin speaking. Your words will
+                    appear here in real-time.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box>
+                  {history.map((item, index) => {
+                    const speakerMatch = item.text.match(/Speaker (\d+):/);
+                    const speakerId = speakerMatch
+                      ? parseInt(speakerMatch[1])
+                      : null;
+                    const isLeft = speakerId === null || speakerId % 2 === 0;
+
+                    return (
+                      <Fade in timeout={300} key={item.id || index}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: isLeft ? "flex-start" : "flex-end",
+                            mb: 2.5,
+                            px: 1,
+                          }}
+                        >
+                          <Paper
+                            elevation={2}
+                            sx={{
+                              maxWidth: "80%",
+                              p: 2.5,
+                              borderRadius: 3,
+                              bgcolor:
+                                item.type === "finalized"
+                                  ? "#fff3e0"
+                                  : item.type === "final"
+                                  ? isLeft
+                                    ? "#e3f2fd"
+                                    : "#e8f5e9"
+                                  : isLeft
+                                  ? "#f5f5f5"
+                                  : "#eeeeee",
+                              border:
+                                item.type === "finalized"
+                                  ? "2px solid #ff9800"
+                                  : item.type === "final"
+                                  ? isLeft
+                                    ? "2px solid #2196f3"
+                                    : "2px solid #4caf50"
+                                  : "1px solid #e0e0e0",
+                              position: "relative",
+                              transition: "all 0.3s ease",
+                              "&:hover": {
+                                transform: "translateY(-2px)",
+                                boxShadow: 4,
+                              },
+                              "&::before":
+                                item.type === "finalized" ||
+                                item.type === "final"
+                                  ? {
+                                      content: '""',
+                                      position: "absolute",
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 4,
+                                      borderRadius: "3px 3px 0 0",
+                                      background:
+                                        item.type === "finalized"
+                                          ? "linear-gradient(90deg, #ff9800 0%, #ffc107 100%)"
+                                          : isLeft
+                                          ? "linear-gradient(90deg, #2196f3 0%, #64b5f6 100%)"
+                                          : "linear-gradient(90deg, #4caf50 0%, #81c784 100%)",
+                                    }
+                                  : {},
+                            }}
+                          >
+                            {speakerId !== null && (
+                              <Box mb={1}>
+                                <Chip
+                                  label={`Speaker ${speakerId}`}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: isLeft ? "#2196f3" : "#4caf50",
+                                    color: "white",
+                                    fontWeight: 700,
+                                    fontSize: "0.7rem",
+                                    height: 22,
+                                  }}
+                                />
+                              </Box>
+                            )}
+
+                            <Stack spacing={1}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="baseline"
+                              >
+                                <Chip
+                                  label={
+                                    item.type === "finalized"
+                                      ? "✓ FINALIZED"
+                                      : item.type === "final"
+                                      ? "✓ Final"
+                                      : "Live"
+                                  }
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: "0.65rem",
+                                    fontWeight: 700,
+                                    bgcolor:
+                                      item.type === "finalized"
+                                        ? "#ff9800"
+                                        : item.type === "final"
+                                        ? "#4caf50"
+                                        : "#9e9e9e",
+                                    color: "white",
+                                  }}
+                                />
+                              </Stack>
+
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 1,
+                                }}
+                              >
+                                <Typography
+                                  variant="body1"
+                                  sx={{
+                                    lineHeight: 1.7,
+                                    color: "#212121",
+                                    fontSize:
+                                      item.type === "final" ||
+                                      item.type === "finalized"
+                                        ? "1rem"
+                                        : "0.9rem",
+                                  }}
+                                >
+                                {console.log('item.timestamp',item)}
+                                  {item.text.replace(/\[\d{2}:\d{2}:\d{2} [AP]M\]\s*/, "").replace(/Speaker \d+:/g, "").trim()}
+                                  {item.is_final === false && (
+                                    <Box
+                                      component="span"
+                                      sx={{
+                                        display: "inline-block",
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: "50%",
+                                        bgcolor: "#666",
+                                        ml: 1,
+                                        animation: "blink 1s infinite",
+                                        "@keyframes blink": {
+                                          "0%, 100%": { opacity: 1 },
+                                          "50%": { opacity: 0 },
+                                        },
+                                      }}
+                                    />
+                                  )}
+                                </Typography>
+
+                                {item.timestamp &&
+                                  item.type !== "final" &&
+                                  item.type !== "finalized" && (
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        color: "#9e9e9e",
+                                        fontSize: "0.75rem",
+                                        fontStyle: "italic",
+                                        alignSelf: "flex-start",
+                                      }}
+                                    >
+                                      {item.timestamp}
+                                    </Typography>
+                                  )}
+                              </Box>
+                            </Stack>
+                          </Paper>
+                        </Box>
+                      </Fade>
+                    );
+                  })}
+                  <div ref={historyEndRef} />
+                </Box>
+              )}
+            </Paper>
+
+            {/* Scroll to Bottom Button */}
+            {showScrollButton && history.length > 0 && (
+              <Zoom in timeout={200}>
+                <Fab
+                  size="medium"
+                  onClick={scrollToBottom}
+                  sx={{
+                    position: "absolute",
+                    bottom: 20,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    bgcolor: "white",
+                    color: "#667eea",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    "&:hover": {
+                      bgcolor: "#f5f5f5",
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
                     },
                   }}
-                />
-                <Typography
-                  variant="h6"
-                  color="text.secondary"
-                  textAlign="center"
-                  fontWeight={500}
                 >
-                  Ready to transcribe
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  textAlign="center"
-                  sx={{ mt: 1, maxWidth: 400 }}
-                >
-                  Press "Start Recording" and begin speaking. Your words will
-                  appear here in real-time.
-                </Typography>
-              </Box>
-            ) : (
-  <Box>
-  {history.map((item, index) => {
-    const speakerMatch = item.text.match(/Speaker (\d+):/);
-    const speakerId = speakerMatch ? parseInt(speakerMatch[1]) : null;
-    const isLeft = speakerId === null || speakerId % 2 === 0;
-
-    return (
-      <Fade in timeout={300} key={item.id || index}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: isLeft ? "flex-start" : "flex-end",
-            mb: 2.5,
-            px: 1,
-          }}
-        >
-          <Paper
-            elevation={2}
-            sx={{
-              maxWidth: "80%",
-              p: 2.5,
-              borderRadius: 3,
-              bgcolor:
-                item.type === "finalized"
-                  ? "#fff3e0"
-                  : item.type === "final"
-                  ? isLeft
-                    ? "#e3f2fd"
-                    : "#e8f5e9"
-                  : isLeft
-                  ? "#f5f5f5"
-                  : "#eeeeee",
-              border:
-                item.type === "finalized"
-                  ? "2px solid #ff9800"
-                  : item.type === "final"
-                  ? isLeft
-                    ? "2px solid #2196f3"
-                    : "2px solid #4caf50"
-                  : "1px solid #e0e0e0",
-              position: "relative",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: 4,
-              },
-              "&::before":
-                item.type === "finalized" || item.type === "final"
-                  ? {
-                      content: '""',
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 4,
-                      borderRadius: "3px 3px 0 0",
-                      background:
-                        item.type === "finalized"
-                          ? "linear-gradient(90deg, #ff9800 0%, #ffc107 100%)"
-                          : isLeft
-                          ? "linear-gradient(90deg, #2196f3 0%, #64b5f6 100%)"
-                          : "linear-gradient(90deg, #4caf50 0%, #81c784 100%)",
-                    }
-                  : {},
-            }}
-          >
-            {speakerId !== null && (
-              <Box mb={1}>
-                <Chip
-                  label={`Speaker ${speakerId}`}
-                  size="small"
-                  sx={{
-                    bgcolor: isLeft ? "#2196f3" : "#4caf50",
-                    color: "white",
-                    fontWeight: 700,
-                    fontSize: "0.7rem",
-                    height: 22,
-                  }}
-                />
-              </Box>
+                  <KeyboardArrowDown />
+                </Fab>
+              </Zoom>
             )}
-
-            <Stack spacing={1}>
-              <Stack direction="row" spacing={1} alignItems="baseline">
-                <Chip
-                  label={
-                    item.type === "finalized"
-                      ? "✓ FINALIZED"
-                      : item.type === "final"
-                      ? "✓ Final"
-                      : "Live"
-                  }
-                  size="small"
-                  sx={{
-                    height: 20,
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    bgcolor:
-                      item.type === "finalized"
-                        ? "#ff9800"
-                        : item.type === "final"
-                        ? "#4caf50"
-                        : "#9e9e9e",
-                    color: "white",
-                  }}
-                />
-              </Stack>
-
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    lineHeight: 1.7,
-                    color: "#212121",
-                    fontSize:
-                      item.type === "final" || item.type === "finalized"
-                        ? "1rem"
-                        : "0.9rem",
-                  }}
-                >
-                  {item.text.replace(/Speaker \d+:/g, "").trim()}
-                  {item.is_final === false && (
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "inline-block",
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#666",
-                        ml: 1,
-                        animation: "blink 1s infinite",
-                        "@keyframes blink": {
-                          "0%, 100%": { opacity: 1 },
-                          "50%": { opacity: 0 },
-                        },
-                      }}
-                    />
-                  )}
-                </Typography>
-
-                {item.timestamp && item.type !== "final" && item.type !== "finalized" && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "#9e9e9e",
-                      fontSize: "0.75rem",
-                      fontStyle: "italic",
-                      alignSelf: "flex-start",
-                    }}
-                  >
-                    {new Date(item.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Typography>
-                )}
-              </Box>
-            </Stack>
-          </Paper>
-        </Box>
-      </Fade>
-    );
-  })}
-  <div ref={historyEndRef} />
-</Box>
-            )}
-          </Paper>
+          </Box>
 
           {/* Footer */}
           <Box mt={4} textAlign="center">

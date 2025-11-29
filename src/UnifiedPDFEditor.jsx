@@ -176,7 +176,6 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
     return map[currentPage.name] ?? 0;
   }, [activeTab, pageOffsets]);
 
-  // Jab bhi koi page hide/show ho → activeTab safe rakho
 
   const pages = useMemo(
     () => [

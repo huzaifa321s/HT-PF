@@ -174,12 +174,6 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
             border: "1px solid rgba(102,126,234,0.2)",
           }}
         >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={{ xs: 2, sm: 3 }}
-            justifyContent="space-between"
-            alignItems="center"
-          >
             <Chip
               icon={<DescriptionOutlined />}
               label={`Total Terms: ${terms.length}`}
@@ -190,10 +184,17 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
                 fontSize: { xs: "0.9rem", sm: "1rem" },
                 height: { xs: 36, sm: 40 },
                 width: { xs: "100%", sm: "auto" },
+                marginBottom: 5
               }}
             />
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 2, sm: 3 }}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+          
 
-            <Stack direction="row" spacing={2} sx={{ width: { xs: "100%", sm: "auto" } }}>
               <Button
                 fullWidth={isSmallScreen}
                 variant="outlined"
@@ -205,7 +206,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
                   color: "#667eea",
                   fontWeight: 600,
                   px: { xs: 3, sm: 4 },
-                  py: 1.5,
+                  py: 0.4,
                   "&:hover": {
                     borderColor: "#764ba2",
                     bgcolor: "rgba(102,126,234,0.1)",
@@ -225,7 +226,6 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
                   px: { xs: 4, sm: 6 },
                   py: 1,
                   fontWeight: 700,
-                  fontSize: { xs: "1rem", sm: "0.7rem" },
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   boxShadow: "0 8px 25px rgba(102,126,234,0.4)",
                   "&:hover": {
@@ -237,7 +237,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
               >
                 Add New Term
               </Button>
-            </Stack>
+            
           </Stack>
         </Paper>
 
@@ -463,6 +463,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
               px: 6,
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               "&:hover": { background: "#5568d3" },
+              borderRadius:5
             }}
           >
             Add Term
@@ -470,7 +471,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
         </DialogActions>
       </Dialog>
 
-      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth fullScreen={isSmallScreen}>
+      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth fullScreen={isSmallScreen} sx={{borderRadius:5}}>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
           <WarningAmber sx={{ mr: 1 }} /> Reset Payment Terms Page?
         </DialogTitle>
@@ -492,7 +493,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
             color="error"
             size="large"
             fullWidth={isSmallScreen}
-            sx={{ px: 5, fontWeight: 700 }}
+            sx={{ px: 5, fontWeight: 700 ,borderRadius:5}}
           >
             Yes, Reset Page
           </Button>

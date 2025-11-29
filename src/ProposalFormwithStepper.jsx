@@ -33,6 +33,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  InputAdornment,
 } from "@mui/material";
 import {
   Info,
@@ -53,10 +54,13 @@ import {
   Preview,
   Download,
   Delete,
+  Money,
+  Payment,
 } from "@mui/icons-material";
 import { Controller } from "react-hook-form";
 import { pdf } from "@react-pdf/renderer";
 import ProposalDocument from "./components/pdf/ProposalDocument";
+import dayjs from "dayjs";
 import UnifiedPdfEditor from "./UnifiedPDFEditor";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -69,7 +73,12 @@ import {
 } from "./utils/proposalSlice";
 import axiosInstance from "./utils/axiosInstance";
 import { addSection } from "./utils/page2Slice";
-
+import { setBrandName } from "./utils/page1Slice";
+import { updateTitle } from "./utils/page3Slice";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 const ProposalFormWithStepper = ({
   control,
   errors,
@@ -264,7 +273,65 @@ const ProposalFormWithStepper = ({
   const handleFieldChange = (fieldName, field, e) => {
     field.onChange(e); // Update value
     if (errors[fieldName] && e.target.value.trim()) {
-      
+    }
+  };
+
+  // Add this state at the top of your component
+  const formatNumberDisplay = (value) => {
+    if (!value) return "";
+    const number = value.toString().replace(/[^0-9]/g, "");
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+  // Updated formatNumberInWords function jo teeno currencies ko handle kare
+  const formatNumberInWords = (value, currency) => {
+    if (!value) return "";
+
+    const number = parseInt(value.toString().replace(/[^0-9]/g, ""), 10);
+    if (isNaN(number) || number === 0) return "";
+
+    // Common formatting for USD, GBP, EUR, AED
+    if (["USD", "GBP", "EUR", "AED"].includes(currency)) {
+      if (number >= 1000000000) {
+        return `${(number / 1000000000).toFixed(2)}B`;
+      } else if (number >= 1000000) {
+        return `${(number / 1000000).toFixed(2)}M`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    // PKR - Lakh & Crore
+    if (currency === "PKR") {
+      if (number >= 10000000) {
+        return `${(number / 10000000).toFixed(2)} Crore`;
+      } else if (number >= 100000) {
+        return `${(number / 100000).toFixed(2)} Lakh`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    return number.toLocaleString();
+  };
+
+  // Currency symbols and formatting information
+  const currencySymbols = {
+    USD: "$",
+    PKR: "₨",
+    GBP: "£",
+    EUR: "€",
+    AED: "د.إ",
+  };
+
+  // Add this state at the top of your component
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+
+  // Add this handler function
+  const handleCurrencyChange = (event, newCurrency) => {
+    if (newCurrency !== null) {
+      setSelectedCurrency(newCurrency);
     }
   };
   const steps = [
@@ -370,7 +437,6 @@ const ProposalFormWithStepper = ({
                   return true;
                 },
 
-                
                 trustedDomain: (value) => {
                   const trustedDomains = [
                     "gmail.com",
@@ -380,9 +446,7 @@ const ProposalFormWithStepper = ({
                   ];
                   const domain = value.split("@")[1]?.toLowerCase();
 
-
-
-                  return true; 
+                  return true;
                 },
               },
             }}
@@ -391,7 +455,7 @@ const ProposalFormWithStepper = ({
                 {...field}
                 label="Client Email *"
                 fullWidth
-                type="email" // ✅ HTML5 email validation bhi
+                type="email"
                 error={!!errors.clientEmail}
                 helperText={errors.clientEmail?.message}
                 inputRef={fieldRefs.clientEmail}
@@ -417,6 +481,12 @@ const ProposalFormWithStepper = ({
                 {...field}
                 label="Brand Name"
                 fullWidth
+                onChange={(e) => {
+                  console.log("e", e.target.value);
+                  field.onChange(e);
+                  dispatch(setBrandName(e.target.value));
+                  dispatch(updateTitle(`Proposal For ${e.target.value}`));
+                }}
                 sx={inputStyle}
               />
             )}
@@ -486,33 +556,184 @@ const ProposalFormWithStepper = ({
     },
     {
       label: "Costs",
-      icon: <AttachMoney />,
+      icon: <Payment />,
       content: (
         <>
-          {sectionHeader(<AttachMoney />, "Costs")}
+          {sectionHeader(<Payment />, "Costs")}
 
+          {/* Currency Toggle - 5 Currencies */}
+          <Box sx={{ mb: 4, display: "flex", justifyContent: "center" }}>
+            <ToggleButtonGroup
+              value={selectedCurrency}
+              exclusive
+              onChange={handleCurrencyChange}
+              aria-label="currency selection"
+              sx={{
+                gap: 1,
+                flexWrap: "wrap",
+                "& .MuiToggleButton-root": {
+                  px: { xs: 1.5, sm: 2 },
+                  py: 1,
+                  fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                  fontWeight: 700,
+                  border: "2px solid",
+                  borderColor: colorScheme.primary,
+                  borderRadius: 3,
+                  minWidth: 90,
+                  "&.Mui-selected": {
+                    background: colorScheme.gradient,
+                    color: "#fff",
+                    "&:hover": {
+                      background: colorScheme.hoverGradient,
+                    },
+                  },
+                  "&:hover": {
+                    background: `${colorScheme.primary}15`,
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="USD">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>$</Typography>
+                  <Typography>USD</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="PKR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>₨</Typography>
+                  <Typography>PKR</Typography>
+                </Box>
+              </ToggleButton>
+              <ToggleButton value="GBP">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>£</Typography>
+                  <Typography>GBP</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="EUR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>€</Typography>
+                  <Typography>EUR</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="AED">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.3rem", fontWeight: 800 }}>
+                    د.إ
+                  </Typography>
+                  <Typography>AED</Typography>
+                </Box>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+          {/* Advance Percentage */}
           <Controller
             name="advancePercent"
             control={control}
-            render={({ field }) => (
+            render={({ field: { onChange, value, ...field } }) => (
               <TextField
                 {...field}
                 label="Advance Percentage"
-                type="number"
+                type="text"
                 fullWidth
-                sx={inputStyle}
+                value={value || ""}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                  // Limit to 100
+                  const limitedValue = numericValue
+                    ? Math.min(parseInt(numericValue), 100).toString()
+                    : "";
+                  onChange(limitedValue);
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Typography
+                        sx={{ fontWeight: 600, color: colorScheme.primary }}
+                      >
+                        %
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                  endAdornment: value && (
+                    <InputAdornment position="end">
+                      <Typography variant="caption" sx={{ color: "#999" }}>
+                        / 100
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Enter percentage (e.g., 50)"
+                sx={{
+                  ...inputStyle,
+                  "& input:-webkit-autofill": {
+                    WebkitBoxShadow: "0 0 0 100px #fff inset !important",
+                    WebkitTextFillColor: "#000 !important",
+                    caretColor: "#000",
+                  },
+                  "& .MuiInputBase-root": {
+                    backgroundColor: "#fff !important",
+                  },
+                }}
               />
             )}
           />
+
+          {/* Additional Costs with Currency Symbol and Formatting */}
           <Controller
             name="additionalCosts"
             control={control}
-            render={({ field }) => (
+            render={({ field: { onChange, value, ...field } }) => (
               <TextField
                 {...field}
-                label="Additional Costs"
-                type="number"
+                label={`Additional Costs (${selectedCurrency})`}
+                type="text"
                 fullWidth
+                value={value ? parseInt(value).toLocaleString() : ""}
+                onChange={(e) => {
+                  const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                  onChange(numericValue);
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Typography
+                        sx={{
+                          fontWeight: 800,
+                          fontSize: "1.4rem",
+                          color: colorScheme.primary,
+                        }}
+                      >
+                        {selectedCurrency === "USD" && "$"}
+                        {selectedCurrency === "GBP" && "£"}
+                        {selectedCurrency === "EUR" && "€"}
+                        {selectedCurrency === "AED" && "د.إ"}
+                        {selectedCurrency === "PKR" && "₨"}
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                  endAdornment: value && (
+                    <InputAdornment position="end">
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: colorScheme.primary,
+                          fontWeight: 700,
+                          fontSize: "0.9rem",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {formatNumberInWords(value, selectedCurrency)}
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder={`Enter amount in ${selectedCurrency}`}
                 sx={inputStyle}
               />
             )}
@@ -530,64 +751,66 @@ const ProposalFormWithStepper = ({
             name="callOutcome"
             control={control}
             rules={{ required: "Call outcome is required" }}
-            render={({ field }) => (
-              <FormControl
-                fullWidth
-                error={!!errors.callOutcome}
-                sx={inputStyle}
-                ref={fieldRefs.callOutcome}
-              >
+            render={({ field, fieldState: { error } }) => (
+              <FormControl fullWidth error={!!error} sx={inputStyle}>
                 <InputLabel>Call Outcome *</InputLabel>
-                <Select
-                  {...field}
-                  label="Call Outcome *"
-                  onChange={(e) => handleFieldChange("callOutcome", field, e)}
-                >
+                <Select {...field} label="Call Outcome *">
                   <MenuItem value="Interested">Interested</MenuItem>
                   <MenuItem value="No Fit">No Fit</MenuItem>
                   <MenuItem value="Flaked">Flaked</MenuItem>
                   <MenuItem value="Follow-up">Follow-up</MenuItem>
                 </Select>
-                {errors.callOutcome && (
-                  <FormHelperText>{errors.callOutcome.message}</FormHelperText>
+                {error && (
+                  <FormHelperText error>{error.message}</FormHelperText>
                 )}
               </FormControl>
             )}
           />
-
-          <Controller
-            name="date"
-            control={control}
-            defaultValue={new Date().toISOString().split("T")[0]}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="date"
-                disabled
-                label="Date"
-                fullWidth
-                value={new Date().toISOString().split("T")[0]}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                sx={{
-                  height: 56,
-                  width: "100%",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  background: "#ffffff",
-                  borderRadius: 2,
-                  mb: 2,
-                  "& .MuiInputBase-root": {
-                    height: 56,
-                  },
-                }}
-              />
-            )}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Controller
+              name="date"
+              control={control}
+              defaultValue={dayjs().format("YYYY-MM-DD")} // ✅ String format for form
+              render={({ field: { onChange, value, ...field } }) => (
+                <DatePicker
+                  {...field}
+                  label="Date"
+                  value={value ? dayjs(value) : dayjs()} // ✅ Convert string back to dayjs for display
+                  onChange={(newValue) => {
+                    // ✅ Convert dayjs to string before saving to form
+                    const formattedDate = newValue
+                      ? newValue.format("YYYY-MM-DD")
+                      : "";
+                    onChange(formattedDate);
+                  }}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      InputLabelProps: {
+                        shrink: true,
+                      },
+                      sx: {
+                        height: 56,
+                        width: "100%",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        background: "#ffffff",
+                        borderRadius: 2,
+                        mb: 2,
+                        "& .MuiInputBase-root": {
+                          height: 56,
+                        },
+                      },
+                    },
+                  }}
+                />
+              )}
+            />
+          </LocalizationProvider>
         </>
       ),
     },
+
     {
       label: "Review & Generate PDF",
       icon: <Send />,
@@ -641,11 +864,9 @@ const ProposalFormWithStepper = ({
     const currentStepFields = stepFields[activeStep];
 
     if (currentStepFields.length > 0) {
-      // ✅ Current step ke fields validate karo
       const isValid = await trigger(currentStepFields);
 
       if (!isValid) {
-        // ✅ First error field par scroll karo
         const firstError = currentStepFields.find((field) => errors[field]);
 
         if (firstError && fieldRefs[firstError]?.current) {
@@ -659,11 +880,10 @@ const ProposalFormWithStepper = ({
           }, 300);
         }
 
-        return; // ✅ Validation fail - Next step pe mat jao
+        return;
       }
     }
 
-    // ✅ Validation pass - Next step pe jao
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
@@ -676,14 +896,30 @@ const ProposalFormWithStepper = ({
       <Box
         sx={{ maxWidth: 1800, margin: "0 auto", p: { xs: 1, sm: 2, md: 3 } }}
       >
-        <Stepper activeStep={activeStep} orientation="vertical" sx={{ mb: 4 }}>
+        <Stepper
+          activeStep={activeStep}
+          orientation="horizontal"
+          sx={{
+            mb: 4,
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: steps.length % 2 !== 0 ? "center" : "flex-start",
+          }}
+        >
           {steps.map((step, index) => (
-            <Step key={step.label} sx={{ mb: 3 }}>
+            <Step
+              key={step.label}
+              sx={{
+                mb: 3,
+                width: index === steps.length - 1 ? "100%" : "50%",
+                minWidth: index === steps.length - 1 ? "none" : "300px",
+              }}
+            >
               <StepLabel
-                onClick={() => handleStepClick(index)} // Already conditional hai handleStepClick mein
+                onClick={() => handleStepClick(index)}
                 sx={{
-                  cursor: isStepAccessible(index) ? "pointer" : "not-allowed", // ✅ Cursor change
-                  opacity: isStepAccessible(index) ? 1 : 0.5, // ✅ Visual feedback
+                  cursor: isStepAccessible(index) ? "pointer" : "not-allowed",
+                  opacity: isStepAccessible(index) ? 1 : 0.5,
                   "& .MuiStepLabel-label": {
                     fontSize: "1.1rem",
                     fontWeight: 600,
@@ -696,7 +932,7 @@ const ProposalFormWithStepper = ({
                     "& .MuiStepLabel-label": {
                       color: isStepAccessible(index)
                         ? colorScheme.primary
-                        : "text.secondary", // ✅ Hover bhi conditional
+                        : "text.secondary",
                     },
                   },
                 }}
@@ -712,7 +948,7 @@ const ProposalFormWithStepper = ({
                       background:
                         activeStep >= index ? colorScheme.gradient : "#e0e0e0",
                       color: activeStep >= index ? "#fff" : "#999",
-                      opacity: isStepAccessible(index) ? 1 : 0.5, // ✅ Icon opacity
+                      opacity: isStepAccessible(index) ? 1 : 0.5,
                     }}
                   >
                     {activeStep > index ? <CheckCircle /> : step.icon}
