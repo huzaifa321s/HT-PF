@@ -22,6 +22,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import {
   RefreshOutlined,
@@ -541,6 +543,17 @@ const StandalonePackage = ({ el }) => {
     [dispatch, el.id]
   );
 
+  const [value, setValue] = useState("PKR");
+
+    const handleChange = (event, newValue) => {
+    // ToggleButtonGroup with exclusive selection returns null when clicking selected button.
+    // We keep selection (don't allow clearing) — if you want to allow clearing, remove this guard.
+    console.log('newVal',newValue)
+    if (newValue === null) return;
+    
+    else setValue(newValue);
+    onField("currency", newValue)
+  };
   return (
     <Stack spacing={3}>
       <TextField
@@ -575,6 +588,54 @@ const StandalonePackage = ({ el }) => {
         sx={{ fontSize: 6 }}
         // InputProps hata do ya sirf number dikhao
       />
+        <ToggleButtonGroup
+        value={el.currency}
+        exclusive
+        onChange={handleChange}
+        aria-label="Select currency"
+        size="small"
+        sx={{
+          // keep group compact
+          "& .MuiToggleButtonGroup-grouped": {
+            margin: 0.5,
+            borderRadius: 1.5,
+          },
+          // remove extra border around the group
+          padding: 0.5,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <Tooltip title="Pakistani Rupee (PKR)">
+          <ToggleButton value="PKR" aria-label="PKR" >
+            PKR
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="US Dollar (USD)">
+          <ToggleButton value="USD" aria-label="USD" >
+            USD
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="British Pound (GBP)">
+          <ToggleButton value="GBP" aria-label="GBP" >
+            GBP
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="Euro (EUR)">
+          <ToggleButton value="EUR" aria-label="EUR" >
+            EUR
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="United Arab Emirates Dirham (AED)">
+          <ToggleButton value="AED" aria-label="AED" >
+            AED
+          </ToggleButton>
+        </Tooltip>
+      </ToggleButtonGroup>
       <Typography fontWeight={700} color="#667eea">
         Features
       </Typography>

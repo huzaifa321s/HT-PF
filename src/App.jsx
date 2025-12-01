@@ -105,6 +105,7 @@ import { setBusinessInfo } from "./utils/businessInfoSlice";
 import CombinedPdfDocument from "./CombinedPdf";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import { addTable } from "./utils/page2Slice";
 // import { usePrompt } from "./hooks/usePrompt";
 
 export default function App() {
@@ -180,11 +181,11 @@ export default function App() {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      clientName: "",
-      clientEmail: "",
-      projectTitle: "",
-      businessDescription: "",
-      proposedSolution: "",
+      clientName: "abc",
+      clientEmail: "abc@gmail.com",
+      projectTitle: "Word Press E-commerce Website",
+      businessDescription: "abc",
+      proposedSolution: "abc",
       developmentPlatforms: [],
       projectDuration: "",
       chargeAmount: "",
@@ -202,7 +203,7 @@ export default function App() {
       recommended_services: [],
       timelineMilestones: "",
       terms: "",
-      callOutcome: "",
+      callOutcome: "Interested",
       yourName: "",
       yourEmail: "",
       date: "",
@@ -519,7 +520,7 @@ export default function App() {
     }
   }, [errors]);
 
-  const generatePdfActual = async (data) => {
+  const generatePdfActual = async (data, currency) => {
     setLoading(true);
     // Professional file name
     const brandName = data?.brandName?.trim() || "Client";
@@ -555,7 +556,7 @@ export default function App() {
     try {
       const res = await axiosInstance.post(
         "http://localhost:5000/api/proposals/create-proposal",
-        { data, pdfPages },
+        { data: data, selectedCurrency: currency, pdfPages },
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -674,23 +675,58 @@ export default function App() {
       ) {
         if (!processing) setProcessing(true);
         setStatus(data.step);
-        dispatch(showToast({ message:"Processing...", severity: "info" }));
-        console.log('dddd',data)
-        if(data.progress){
+        dispatch(showToast({ message: "Processing...", severity: "info" }));
+        console.log("dddd", data);
+        if (data.progress) {
           setProgress(data.progress);
-          
-        }else{
+        } else {
           setProgress((prev) => Math.min(prev + 10, 90));
         }
-        
+
         setProcessing(false);
       }
       if (event === "complete") {
-        console.log("sss34432424234234");
         setStatus(data?.step || "Done");
-        const extracted = data.data.extracted || {};
+        const extracted = data.data.extracted ;
         dispatch(setBusinessInfo(extracted));
-        if (history.length > 0 || data.data.polished.length > 0) {
+          if (extracted?.deliverables?.length > 0) {
+            console.log('datassssss')
+            const rows = extracted?.deliverables?.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.estimated_time || "",
+            }));
+            dispatch(addTable({ T_ID: "123", rows }));
+             dispatch(
+                    showToast({
+                      message: `${"deliverables"
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                      severity: "success",
+                    })
+                  );
+          }
+          if (extracted?.quotation?.length > 0) {
+            const rows = extracted?.quotation.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.quantity || 0,
+              col3: row.estimated_cost_pkr || "",
+            }));
+            dispatch(
+              addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+            );
+            dispatch(
+                    showToast({
+                      message: `${"quotation"
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                      severity: "success",
+                    })
+                  );
+          }
+        console.log("data", data);
+        
           dispatch(
             showToast({
               message: `✅ Transcription completed${
@@ -707,7 +743,7 @@ export default function App() {
           setBadges((prev) => ({
             ...prev,
             polished: true,
-            business: result,
+            business: result || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0 ,
           }));
 
           if (event === "upload_status") {
@@ -718,14 +754,13 @@ export default function App() {
             );
           }
 
-
           if (result) {
             setBadges((prev) => ({
               ...prev,
               proposal: true,
               email: true,
               pdf: true,
-              business:true
+              business: true,
             }));
             if (extracted.brand_name)
               dispatch(setBrandName(extracted.brand_name));
@@ -733,7 +768,7 @@ export default function App() {
               dispatch(setProjectBrief(extracted.project_brief));
           }
           dispatch(setPolishedTranscript(data.data.polished));
-        }
+        
       }
       if (event === "completed_audio") {
         setStatus("✅ Done!");
@@ -742,17 +777,54 @@ export default function App() {
         dispatch(setBusinessInfo(extracted));
         // Show toast if transcription or extraction exists
         if (history.length > 0 || data.data.polished.length > 0) {
-          dispatch(
-            showToast({
-              message: `✅ Transcription completed${
-                extracted.business_details
-                  ? " and business details extracted"
-                  : ""
-              } successfully!.`,
-              severity: "success",
-              duration: 4000,
-            })
-          );
+          const generateId = () => crypto.randomUUID();
+          if (data.data.extracted?.deliverables?.length > 0) {
+            console.log('datassssss')
+            const rows = data.data?.extracted?.deliverables?.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.estimated_time || "",
+            }));
+            dispatch(addTable({ T_ID: "123", rows }));
+             dispatch(
+                    showToast({
+                      message: `${"deliverables"
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                      severity: "success",
+                    })
+                  );
+          }
+          if (data.data.extracted?.quotation?.length > 0) {
+            const rows = data.data?.extracted?.quotation.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.quantity || 0,
+              col3: row.estimated_cost_pkr || "",
+            }));
+            dispatch(
+              addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+            );
+            dispatch(
+                    showToast({
+                      message: `${"quotation"
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                      severity: "success",
+                    })
+                  );
+          }
+          // dispatch(
+          //   showToast({
+          //     message: `✅ Transcription completed${
+          //       extracted.business_details
+          //         ? " and business details extracted"
+          //         : ""
+          //     } successfully!.`,
+          //     severity: "success",
+          //     duration: 4000,
+          //   })
+          // );
 
           setBadges((prev) => ({
             ...prev,
@@ -771,6 +843,7 @@ export default function App() {
 
         // Set polished transcript
         dispatch(setPolishedTranscript(data.data.polished));
+        console.log("data.data.polished", data.data.polished);
         setTranscript(data.data.polished);
 
         // Set progress

@@ -189,26 +189,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
 
       {/* Bottom Actions */}
       <List sx={{ px: 2, py: 2 }}>
-        <ListItemButton
-          onClick={() => handleNav("/settings")}
-          sx={{
-            borderRadius: 2.5,
-            mb: 1,
-            transition: "all 0.3s ease",
-            "&:hover": { 
-              bgcolor: "rgba(255,255,255,0.15)",
-              transform: "translateX(4px)",
-            },
-          }}
-        >
-          <ListItemIcon sx={{ color: "#fff", minWidth: 40 }}>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Settings"
-            primaryTypographyProps={{ fontSize: "0.95rem" }}
-          />
-        </ListItemButton>
+  
 
         <ListItemButton
           onClick={handleLogout}
@@ -298,19 +279,29 @@ const Navbar = ({ onNavigate, currentPath }) => {
             }}
           >
             <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: 2.5,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#fff",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              }}
-            >
-              <RocketLaunchIcon sx={{ color: "#667eea", fontSize: 24 }} />
-            </Box>
+  sx={{
+    width: 42,
+    height: 42,
+    borderRadius: 2.5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  }}
+>
+  <img
+    src="/download.jpg"
+    alt="icon"
+    style={{
+      width: "24px",
+      height: "24px",
+      objectFit: "contain",
+      borderRadius:100
+    }}
+  />
+</Box>
+
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
                 variant="h6"

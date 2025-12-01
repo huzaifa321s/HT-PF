@@ -14,10 +14,9 @@ import { Font } from "@react-pdf/renderer";
 Font.register({
   family: "Liberation Serif",
   fonts: [
-    { src: "/fonts/LiberationSerif-Regular.ttf" },
-    { src: "/fonts/LiberationSerif-Bold.ttf", fontWeight: 700 },
-    { src: "/fonts/LiberationSerif-Italic.ttf", fontStyle: "italic" },
-    { src: "/fonts/LiberationSerif-BoldItalic.ttf", fontWeight: 700, fontStyle: "italic" },
+    { src: "/fonts/static/Inter_18pt-Regular.ttf", fontWeight: 400 }, // default
+    { src: "/fonts/static/Inter_18pt-Black.ttf", fontWeight: 800 },
+    { src: "/fonts/static/Inter_24pt-Black.ttf", fontWeight: 900 },
   ],
 });
 
@@ -26,8 +25,9 @@ Font.register({
 Font.register({
   family: "Oswald",
   fonts: [
-    { src: "/fonts/degular.otf" ,fontWeight: 700},
-    { src: "/fonts/Degular-Bold.otf" ,fontWeight: 800},
+    { src: "/fonts/Degular-Thin.otf" ,fontWeight: 400},
+    { src: "/fonts/DegularDisplay-Semibold.otf" ,fontWeight: 600},
+    { src: "/fonts/DegularDisplay-Bold.otf" ,fontWeight: 800},
   ],
 });
 

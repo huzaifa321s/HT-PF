@@ -68,6 +68,8 @@ import {
   updateTableHeaders,
   deleteTable,
   updatePageHeader,
+  addColumnToNumber,
+  removeColumnToNumber,
 } from "../src/utils/page2Slice";
 import { showToast } from "../src/utils/toastSlice";
 
@@ -260,12 +262,11 @@ const PdfPageEditor2 = ({ mode }) => {
     setRowForm({ col1: "", col2: "", col3: "" });
   };
 
-const formatNumber = (value) => {
-  if (!value) return "";
-  const numeric = value.replace(/\D/g, ""); 
-  return Number(numeric).toLocaleString("en-US");
-};
-
+  const formatNumber = (value) => {
+    if (!value) return "";
+    const numeric = value.replace(/\D/g, "");
+    return Number(numeric).toLocaleString("en-US");
+  };
 
   const startEditHeaders = (tableId, headers, columnCount) => {
     setEditingHeaders({
@@ -778,7 +779,10 @@ const formatNumber = (value) => {
             <Alert severity="info">No tables yet. Add one above!</Alert>
           ) : (
             tables.map((table) => (
+              
               <Card key={table.id} sx={{ mb: 3, borderRadius: 5 }}>
+                                                {console.log('table.columnNo',table.columnNo)}
+
                 <CardContent>
                   <Stack
                     direction="row"
@@ -823,8 +827,6 @@ const formatNumber = (value) => {
                     </Stack>
                   </Stack>
 
-                          {table.id === 1 && "In this table, the second column must always contain numeric values."}
-
                   <TableContainer>
                     <Table size="small">
                       <TableHead>
@@ -848,6 +850,7 @@ const formatNumber = (value) => {
                                 />
                               </TableCell>
                               <TableCell>
+                                
                                 <TextField
                                   size="small"
                                   fullWidth
@@ -894,17 +897,129 @@ const formatNumber = (value) => {
                             </>
                           ) : (
                             <>
-                              <TableCell>
+                              <TableCell sx={{ pt: 5 }}>
                                 <strong>{table.headers.col1}</strong>
                               </TableCell>
                               <TableCell>
-                                <strong>{table.headers.col2}</strong>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                  }}
+                                >
+                                  {table?.columnNo?.includes(2) ? (
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      sx={{
+                                        padding: "2px 6px",
+                                        minHeight: "24px",
+                                        lineHeight: 1,
+                                      }}
+                                      onClick={() =>
+                                        dispatch(
+                                          removeColumnToNumber({
+                                            id: table.id,
+                                            col: 2,
+                                          })
+                                        )
+                                      }
+                                    >
+                                      Remove Number Format
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      onClick={() =>
+                                        dispatch(
+                                          addColumnToNumber({
+                                            id: table.id,
+                                            col: 2,
+                                          })
+                                        )
+                                      }
+                                      sx={{
+                                        padding: "2px 6px",
+                                        minHeight: "24px",
+                                        lineHeight: 1,
+                                      }}
+                                      variant="contained"
+                                      size="small"
+                                    >
+                                      Set as Number
+                                    </Button>
+                                  )}
+
+                                  <strong>
+                                    {table.headers.col2} (Format :{" "}
+                                    {table?.columnNo?.includes(2)
+                                      ? "Number"
+                                      : "Text"}
+                                    )
+                                  </strong>
+                                </Box>
                               </TableCell>
+
                               {table.columnCount === 3 && (
                                 <TableCell>
-                                  <strong>{table.headers.col3}</strong>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: 1,
+                                    }}
+                                  >
+                                    {table?.columnNo?.includes(3) ? (
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{
+                                          padding: "2px 6px",
+                                          minHeight: "24px",
+                                          lineHeight: 1,
+                                        }}
+                                        onClick={() =>
+                                          dispatch(
+                                            removeColumnToNumber({
+                                              id: table.id,
+                                              col: 3,
+                                            })
+                                          )
+                                        }
+                                      >
+                                        Remove Number Format
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        sx={{
+                                          padding: "2px 6px",
+                                          minHeight: "24px",
+                                          lineHeight: 1,
+                                        }}
+                                        onClick={() =>
+                                          dispatch(
+                                            addColumnToNumber({
+                                              id: table.id,
+                                              col: 3,
+                                            })
+                                          )
+                                        }
+                                      >
+                                        Set as Number
+                                      </Button>
+                                    )}
+
+                                    <strong>{table.headers.col3} (Format: 
+                                         {table?.columnNo?.includes(3)
+                                      ? "Number"
+                                      : "Text"})
+                                    </strong>
+                                  </Box>
                                 </TableCell>
                               )}
+
                               <TableCell>
                                 <IconButton
                                   size="small"
@@ -947,7 +1062,7 @@ const formatNumber = (value) => {
                                     size="small"
                                     fullWidth
                                     value={
-                                      table.id === 1
+                                      table?.columnNo?.includes(2)
                                         ? formatNumber(rowForm.col2)
                                         : rowForm.col2
                                     }
@@ -956,7 +1071,9 @@ const formatNumber = (value) => {
                                         e.target.value
                                       );
 
-                                      if (table.id === 1) {
+                                      if (
+                                        table?.columnNo?.includes(2)
+                                      ) {
                                         setRowForm({
                                           ...rowForm,
                                           col2: formatted, // <-- store formatted value like "12,000"
@@ -975,13 +1092,32 @@ const formatNumber = (value) => {
                                     <TextField
                                       size="small"
                                       fullWidth
-                                      value={rowForm.col3}
-                                      onChange={(e) =>
+                                      value={
+                                        table?.columnNo?.includes(3)
+                                          ? formatNumber(rowForm.col3)
+                                          : rowForm.col3
+                                      }
+                                      onChange={(e) => {
+                                        const formatted = formatNumber(
+                                          e.target.value
+                                        );
+
+                                        if (
+                                          table?.columnNo?.includes(
+                                           3
+                                          )
+                                        ) {
+                                          setRowForm({
+                                            ...rowForm,
+                                            col3: formatted, // <-- store formatted value like "12,000"
+                                          });
+                                        }
+
                                         setRowForm({
                                           ...rowForm,
                                           col3: e.target.value,
-                                        })
-                                      }
+                                        });
+                                      }}
                                     />
                                   </TableCell>
                                 )}

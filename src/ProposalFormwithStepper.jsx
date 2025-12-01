@@ -231,6 +231,7 @@ const ProposalFormWithStepper = ({
 
   const handleSubmitData = async (data) => {
     console.log("Form data submitted:", data);
+    console.log('selected',selectedCurrency)
     dispatch(updateField({ field: "clientName", value: data.clientName }));
     dispatch(updateField({ field: "clientEmail", value: data.clientEmail }));
     dispatch(updateField({ field: "brandName", value: data.brandName }));
@@ -245,7 +246,7 @@ const ProposalFormWithStepper = ({
       updateField({ field: "proposedSolution", value: data.proposedSolution })
     );
 
-    await handleSubmitForm(data);
+    await handleSubmitForm(data,selectedCurrency);
   };
 
   // ✅ Check if a step is accessible
@@ -314,15 +315,6 @@ const ProposalFormWithStepper = ({
     }
 
     return number.toLocaleString();
-  };
-
-  // Currency symbols and formatting information
-  const currencySymbols = {
-    USD: "$",
-    PKR: "₨",
-    GBP: "£",
-    EUR: "€",
-    AED: "د.إ",
   };
 
   // Add this state at the top of your component
@@ -562,7 +554,7 @@ const ProposalFormWithStepper = ({
           {sectionHeader(<Payment />, "Costs")}
 
           {/* Currency Toggle - 5 Currencies */}
-          <Box sx={{ mb: 4, display: "flex", justifyContent: "center" }}>
+          <Box sx={{ mb: 4, display: "flex", justifyContent: "start" }}>
             <ToggleButtonGroup
               value={selectedCurrency}
               exclusive
@@ -573,8 +565,8 @@ const ProposalFormWithStepper = ({
                 flexWrap: "wrap",
                 "& .MuiToggleButton-root": {
                   px: { xs: 1.5, sm: 2 },
-                  py: 1,
-                  fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                  py: 0.5,
+                  fontSize: { xs: "0.4rem", sm: "0.6rem" },
                   fontWeight: 700,
                   border: "2px solid",
                   borderColor: colorScheme.primary,
@@ -909,6 +901,7 @@ const ProposalFormWithStepper = ({
           {steps.map((step, index) => (
             <Step
               key={step.label}
+              
               sx={{
                 mb: 3,
                 width: index === steps.length - 1 ? "100%" : "50%",

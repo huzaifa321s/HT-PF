@@ -35,6 +35,7 @@ import {
   Description,
   Insights,
   AddCircleOutline,
+  Clear,
 } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -279,9 +280,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
   const isAutoAdded = (key) => {
     return (
       key === "deliverables" ||
-      key === "quotation" ||
-      key === "why_choose_HT" ||
-      key === "next_steps"
+      key === "quotation" 
     );
   };
 
@@ -675,6 +674,7 @@ console.log('value',value)
               textAlign: "start",
             }}
           >
+            
             {parseError && (
               <Paper
                 sx={{
@@ -691,7 +691,7 @@ console.log('value',value)
                 </Box>
               </Paper>
             )}
-
+{entries?.length > 0 && <Button onClick={() => {dispatch(showToast({ message: "Data cleared successfully.", servity: 'success' })),dispatch(setBusinessInfo({}))}}>Clear All Data <Clear/></Button>}
             {entries.length > 0 ? (
               entries.map(([key, value]) => {
                 const promptKey = `${key}_prompt`;

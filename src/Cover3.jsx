@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     color: "#666",
     marginTop: 30,
-    fontStyle: "italic",
+    // fontStyle: "italic",
     textAlign: "start",
   },
 });

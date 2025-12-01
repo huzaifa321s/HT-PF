@@ -118,12 +118,21 @@ const Footer = () => {
                 width: 70,
                 height: 70,
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: "#fff",
                 boxShadow: "0 8px 32px rgba(102, 126, 234, 0.4)",
                 mb: 2,
               }}
             >
-              <RocketLaunchIcon sx={{ fontSize: 36, color: "#fff" }} />
+             <img
+    src="/download.jpg"
+    alt="icon"
+    style={{
+      width: "24px",
+      height: "24px",
+      objectFit: "contain",
+      borderRadius:100
+    }}
+  />
             </Box>
 
             <Typography
@@ -177,21 +186,30 @@ const Footer = () => {
           {/* Left - Brand */}
           <Grid item xs={12} md={4}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 50,
-                  height: 50,
-                  borderRadius: 3,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  boxShadow: "0 8px 24px rgba(102, 126, 234, 0.3)",
-                  mr: 2,
-                }}
-              >
-                <RocketLaunchIcon sx={{ fontSize: 28, color: "#fff" }} />
-              </Box>
+          <Box
+  sx={{
+    width: 42,
+    height: 42,
+    borderRadius: 2.5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  }}
+>
+  <img
+    src="/download.jpg"
+    alt="icon"
+    style={{
+      width: "24px",
+      height: "24px",
+      objectFit: "contain",
+      borderRadius:100
+    }}
+  />
+</Box>
+
               <Typography
                 variant="h6"
                 sx={{

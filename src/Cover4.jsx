@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   continuationNote: {
     fontSize: 9,
     color: "#000",
-    fontStyle: "italic",
+    // fontStyle: "italic",
     textAlign: "center",
     marginTop: 10,
     fontWeight: "bold",
@@ -329,7 +329,7 @@ const PackageBox = ({ pkg }) => (
         </Text>
 <Text style={styles.packagePrice}>
   {pkg.price 
-    && `PKR ${pkg.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} / Month`}
+    && `${pkg?.currency} ${pkg.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} / Month`}
 </Text>
       </>
     )}

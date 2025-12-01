@@ -66,6 +66,7 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
         { id: generateId(), col1: "Social Media Creative Kit", col2: "45,000" },
         { id: generateId(), col1: "Admin Dashboard", col2: "60,000" },
       ],
+      columnNO: []
     },
     // Example: 3-column Timeline Table
     {
@@ -81,13 +82,14 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
         { id: generateId(), col1: "Launch", col2: "Final Delivery & Deployment", col3: "Week 13" },
         { id: generateId(), col1: "Support", col2: "30 Days Post-Launch Support", col3: "Week 14-17" },
       ],
+      columnNO: []
     },
   ],
   includeInPdf: true,
 }
 
 const initialState = {
- currentMode: "create", // ✅ Track current mode
+  currentMode: "create", // ✅ Track current mode
   create: { ...modeDefaults },
   edit: { ...modeDefaults },
 };
@@ -132,11 +134,11 @@ const page2Slice = createSlice({
       state[mode].orderedSections = (state[mode].orderedSections || []).map((sec) =>
         sec.id === id
           ? {
-              ...sec,
-              type: type ?? sec.type,
-             title: type === "plain" ? "" : (title ?? sec.title),
-              content: content ?? sec.content,
-            }
+            ...sec,
+            type: type ?? sec.type,
+            title: type === "plain" ? "" : (title ?? sec.title),
+            content: content ?? sec.content,
+          }
           : sec
       );
     },
@@ -173,13 +175,13 @@ const page2Slice = createSlice({
     addTable: (state, action) => {
       const mode = state.currentMode;
       const columnCount = action.payload?.columnCount || 2;
-      
+
       if (action.payload?.T_ID) {
         state[mode].tables.push({
           id: action.payload.T_ID,
           type: action.payload.type === 'quotation' ? 'Quotation' : "",
           columnCount,
-          headers: columnCount === 3 
+          headers: columnCount === 3
             ? { col1: "Item", col2: "Quantity", col3: "Estimated Cost (PKR)" }
             : { col1: "Deliverable", col2: "Estimated Delivery Time" },
           rows: action.payload.rows,
@@ -198,7 +200,7 @@ const page2Slice = createSlice({
 
     addTableRow: (state, action) => {
       const mode = state.currentMode;
-      console.log('mss',mode)
+      console.log('mss', mode)
       const table = state[mode].tables.find((t) => t.id === action.payload);
       if (table) {
         const newRow = { id: generateId(), col1: "New Item", col2: "" };
@@ -231,11 +233,11 @@ const page2Slice = createSlice({
         table.rows = table.rows.filter((r) => r.id !== rowId);
       }
     },
-    
+
     deleteTable: (state, action) => {
       const mode = state.currentMode;
-      console.log('mode',mode)
-      console.log('tac',state[mode].tables)
+      console.log('mode', mode)
+      console.log('tac', state[mode].tables)
       state[mode].tables = state[mode].tables.filter((t) => t.id !== action.payload);
     },
 
@@ -255,11 +257,34 @@ const page2Slice = createSlice({
       state.edit = { ...action.payload };
     },
 
+    addColumnToNumber: (state, action) => {
+  const mode = state.currentMode;
+  const table = state[mode].tables.find((t) => t.id === action.payload.id);
+
+  console.log('action.payload', action.payload);
+
+  if (!table.columnNo) {
+    table.columnNo = []; // safety (first time)
+  }
+
+  table.columnNo.push(action.payload.col);
+},
+
+ removeColumnToNumber: (state, action) => {
+  const mode = state.currentMode;
+  const table = state[mode].tables.find((t) => t.id === action.payload.id);
+
+  table.columnNo = table.columnNo.filter(
+    (item) => item !== action.payload.col
+  );
+},
+
     // ✅ Reset specific mode
     resetPage2: (state, action) => {
       const mode = action.payload || state.currentMode;
       state[mode] = { ...modeDefaults };
     },
+
   },
 });
 
@@ -279,6 +304,8 @@ export const {
   toggleInclusion,
   deleteTable,
   setDBDataP2,
+  addColumnToNumber,
+  removeColumnToNumber,
   updateTableHeaders,
   resetPage2,
 } = page2Slice.actions;

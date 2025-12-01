@@ -21,6 +21,9 @@ import {
   StepLabel,
   StepContent,
   FormHelperText,
+  ToggleButtonGroup,
+  ToggleButton,
+  InputAdornment,
 } from "@mui/material";
 import {
   Person,
@@ -41,38 +44,41 @@ import { store } from "../utils/store";
 import { pdf } from "@react-pdf/renderer";
 import CombinedPdfDocument from "../CombinedPdf";
 import { useDispatch, useSelector } from "react-redux";
-
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
   if (!email || email.trim() === "") return false;
-  
+
   // Basic email regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
   if (!emailRegex.test(email)) return false;
-  
+
   // ✅ Block common fake/example domains
   const blockedDomains = [
-    'example.com',
-    'test.com',
-    'demo.com',
-    'sample.com',
-    'fake.com',
-    'dummy.com',
-    'temp.com',
-    'tempmail.com',
-    'throwaway.email',
-    '10minutemail.com',
-    'guerrillamail.com',
+    "example.com",
+    "test.com",
+    "demo.com",
+    "sample.com",
+    "fake.com",
+    "dummy.com",
+    "temp.com",
+    "tempmail.com",
+    "throwaway.email",
+    "10minutemail.com",
+    "guerrillamail.com",
   ];
-  
-  const domain = email.split('@')[1]?.toLowerCase();
-  
+
+  const domain = email.split("@")[1]?.toLowerCase();
+
   if (blockedDomains.includes(domain)) {
     return false;
   }
-  
+
   return true;
 };
 
@@ -80,34 +86,33 @@ const getEmailErrorMessage = (email) => {
   if (!email || email.trim() === "") {
     return "Client email is required";
   }
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return "Please enter a valid email address";
   }
-  
-  const domain = email.split('@')[1]?.toLowerCase();
+
+  const domain = email.split("@")[1]?.toLowerCase();
   const blockedDomains = [
-    'example.com',
-    'test.com',
-    'demo.com',
-    'sample.com',
-    'fake.com',
-    'dummy.com',
-    'temp.com',
-    'tempmail.com',
-    'throwaway.email',
-    '10minutemail.com',
-    'guerrillamail.com',
+    "example.com",
+    "test.com",
+    "demo.com",
+    "sample.com",
+    "fake.com",
+    "dummy.com",
+    "temp.com",
+    "tempmail.com",
+    "throwaway.email",
+    "10minutemail.com",
+    "guerrillamail.com",
   ];
-  
+
   if (blockedDomains.includes(domain)) {
     return `Cannot use ${domain}. Please provide a real email address`;
   }
-  
+
   return null;
 };
-
 
 const EditProposal = () => {
   const { id } = useParams();
@@ -123,7 +128,6 @@ const EditProposal = () => {
     severity: "success",
   });
   const [errors, setErrors] = useState({});
-
 
   const page1 = useSelector((s) => s.page1Slice.edit);
   const page2 = useSelector((s) => s.page3.edit);
@@ -145,6 +149,7 @@ const EditProposal = () => {
     yourName: "Your Name",
     yourEmail: "your@email.com",
     date: new Date().toISOString().split("T")[0],
+    selectedCurrency: "",
   });
 
   const formDataToSave = {
@@ -159,7 +164,7 @@ const EditProposal = () => {
     callOutcome: formData.callOutcome,
     date: formData.date,
   };
-const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   // Fetch proposal on mount
   useEffect(() => {
     const fetchProposal = async () => {
@@ -190,8 +195,9 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
           yourName: "Your Name",
           yourEmail: "your@email.com",
           pdfPages: data.pdfPages,
+          selectedCurrency: data.selectedCurrency,
         };
-
+        setSelectedCurrency(data.selectedCurrency);
         setFormData(updatedData);
         reset(updatedData);
 
@@ -287,6 +293,15 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     </Box>
   );
 
+  const [selectedCurrency, setSelectedCurrency] = useState();
+  console.log("formData.selectedCurrency", selectedCurrency);
+  const handleCurrencyChange = (event, newCurrency) => {
+    if (newCurrency !== null) {
+      setSelectedCurrency(newCurrency);
+      // Agar form data ko update karna hai:
+      formData.selectedCurrency = newCurrency;
+    }
+  };
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -347,7 +362,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       const hasChanges = pdfDetector.hasChanges(store);
 
       const dataToSend = {
-        data: formDataToSave,
+        data: { ...formDataToSave, selectedCurrency },
       };
 
       if (hasChanges) {
@@ -358,6 +373,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
           pricingPage,
           paymentTerms,
           contactPage,
+          selec,
         };
         dataToSend.pdfPages = pdfPages;
       }
@@ -392,8 +408,8 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     try {
       setPdfLoading(true);
 
-    const brandName = formDataToSave?.brandName?.trim() || "Client";
-    const fileName = `${brandName} Proposal.pdf`;
+      const brandName = formDataToSave?.brandName?.trim() || "Client";
+      const fileName = `${brandName} Proposal.pdf`;
 
       const blob = await pdf(
         <CombinedPdfDocument
@@ -441,7 +457,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
           import.meta.env.VITE_APP_BASE_URL
         }/api/proposals/update-proposal/${id}`,
         {
-          data: formDataToSave,
+          data: { ...formDataToSave, selectedCurrency },
           pdfPages,
           pdfPath: uploadRes.data.filePath,
         }
@@ -498,7 +514,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
             label="Your Name *"
             fullWidth
             value={formData.yourName}
-              disabled
+            disabled
             sx={inputStyle}
           />
           <TextField
@@ -592,20 +608,166 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       content: (
         <>
           {sectionHeader(<AttachMoney />, "Costs")}
+          {/* Currency Toggle - 5 Currencies */}
+          <Box sx={{ mb: 4, display: "flex", justifyContent: "start" }}>
+            <ToggleButtonGroup
+              value={selectedCurrency}
+              exclusive
+              onChange={handleCurrencyChange}
+              aria-label="currency selection"
+              sx={{
+                gap: 1,
+                flexWrap: "wrap",
+                "& .MuiToggleButton-root": {
+                  px: { xs: 1.5, sm: 2 },
+                  py: 0.5,
+                  fontSize: { xs: "0.4rem", sm: "0.6rem" },
+                  fontWeight: 700,
+                  border: "2px solid",
+                  borderColor: colorScheme.primary,
+                  borderRadius: 3,
+                  minWidth: 90,
+                  "&.Mui-selected": {
+                    background: colorScheme.gradient,
+                    color: "#fff",
+                    "&:hover": {
+                      background: colorScheme.hoverGradient,
+                    },
+                  },
+                  "&:hover": {
+                    background: `${colorScheme.primary}15`,
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="USD">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>$</Typography>
+                  <Typography>USD</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="PKR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>₨</Typography>
+                  <Typography>PKR</Typography>
+                </Box>
+              </ToggleButton>
+              <ToggleButton value="GBP">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>£</Typography>
+                  <Typography>GBP</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="EUR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.4rem" }}>€</Typography>
+                  <Typography>EUR</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="AED">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                  <Typography sx={{ fontSize: "1.3rem", fontWeight: 800 }}>
+                    د.إ
+                  </Typography>
+                  <Typography>AED</Typography>
+                </Box>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
           <TextField
             label="Advance Percentage"
-            fullWidth
             type="number"
+            fullWidth
             value={formData.advancePercent}
-            onChange={(e) => handleChange("advancePercent", e.target.value)}
-            sx={inputStyle}
+            onChange={(e) => {
+              // Only allow numbers
+              const numericValue = e.target.value.replace(/[^0-9]/g, "");
+              // Limit to 100
+              const limitedValue = numericValue
+                ? Math.min(parseInt(numericValue), 100).toString()
+                : "";
+
+              handleChange("advancePercent", limitedValue);
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography
+                    sx={{ fontWeight: 600, color: colorScheme.primary }}
+                  >
+                    %
+                  </Typography>
+                </InputAdornment>
+              ),
+              endAdornment: formData.advancePercent && (
+                <InputAdornment position="end">
+                  <Typography variant="caption" sx={{ color: "#999" }}>
+                    / 100
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            placeholder="Enter percentage (e.g., 50)"
+            sx={{
+              ...inputStyle,
+              "& input:-webkit-autofill": {
+                WebkitBoxShadow: "0 0 0 100px #fff inset !important",
+                WebkitTextFillColor: "#000 !important",
+                caretColor: "#000",
+              },
+              "& .MuiInputBase-root": {
+                backgroundColor: "#fff !important",
+              },
+            }}
           />
           <TextField
-            label="Additional Costs"
+            label={`Additional Costs (${selectedCurrency})`}
+            type="text"
             fullWidth
-            type="number"
             value={formData.additionalCosts}
-            onChange={(e) => handleChange("additionalCosts", e.target.value)}
+            onChange={(e) => {
+              const numericValue = e.target.value.replace(/[^0-9]/g, "");
+
+              handleChange("additionalCosts", numericValue);
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: "1.4rem",
+                      color: colorScheme.primary,
+                    }}
+                  >
+                    {selectedCurrency === "USD" && "$"}
+                    {selectedCurrency === "GBP" && "£"}
+                    {selectedCurrency === "EUR" && "€"}
+                    {selectedCurrency === "AED" && "د.إ"}
+                    {selectedCurrency === "PKR" && "₨"}
+                  </Typography>
+                </InputAdornment>
+              ),
+              endAdornment: formData.additionalCosts && (
+                <InputAdornment position="end">
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: colorScheme.primary,
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {formatNumberInWords(value, selectedCurrency)}
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            placeholder={`Enter amount in ${selectedCurrency}`}
             sx={inputStyle}
           />
         </>
@@ -633,8 +795,40 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
               <FormHelperText>{errors.callOutcome}</FormHelperText>
             )}
           </FormControl>
-
-          <TextField
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Date"
+              value={formData.date ? dayjs(formData.date) : dayjs()} // ✅ Convert string back to dayjs for display
+              onChange={(newValue) => {
+                // ✅ Convert dayjs to string before saving to form
+                const formattedDate = newValue
+                  ? newValue.format("YYYY-MM-DD")
+                  : "";
+                // onChange(formattedDate);
+                handleChange("date", formattedDate);
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  InputLabelProps: {
+                    shrink: true,
+                  },
+                  sx: {
+                    height: 56,
+                    width: "100%",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    background: "#ffffff",
+                    borderRadius: 2,
+                    mb: 2,
+                    "& .MuiInputBase-root": {
+                      height: 56,
+                    },
+                  },
+                },
+              }}
+            />
+            {/* <TextField
             type="date"
             label="Date"
             fullWidth
@@ -642,7 +836,8 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
             disabled
             InputLabelProps={{ shrink: true }}
             sx={inputStyle}
-          />
+          /> */}
+          </LocalizationProvider>
         </>
       ),
     },
@@ -672,7 +867,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         mr: "-50vw",
       }}
     >
-      <Box sx={{ maxWidth: "1500px", mx: "auto", px: { xs: 2, md: 4 } }}>
+      <Box sx={{ maxWidth: 1800, margin: "0 auto", px: { xs: 2, md: 4 } }}>
         <Box
           sx={{
             display: "flex",
@@ -742,11 +937,24 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
           <>
             <Stepper
               activeStep={activeStep}
-              orientation="vertical"
-              sx={{ mb: 4 }}
+              orientation="horizontal"
+              sx={{
+                mb: 4,
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent:
+                  steps.length % 2 !== 0 ? "center" : "flex-start",
+              }}
             >
               {steps.map((step, index) => (
-                <Step key={step.label}>
+                <Step
+                  key={step.label}
+                  sx={{
+                    mb: 3,
+                    width: index === steps.length - 1 ? "100%" : "50%",
+                    minWidth: index === steps.length - 1 ? "none" : "300px",
+                  }}
+                >
                   <StepLabel
                     onClick={() =>
                       isStepAccessible(index) && handleStepClick(index)

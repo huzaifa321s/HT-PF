@@ -7,7 +7,7 @@ const defaultPackage = {
   price: '0',
   color: '#000',
   items: ['New Feature'],
-
+  currency:'PKR'
 };
 
 

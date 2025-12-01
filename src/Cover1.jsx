@@ -33,10 +33,10 @@ const styles = StyleSheet.create({
   logoTitle: {
     color: "#FF8C00",
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 600,
     letterSpacing: 1.5,
   },
-  logoSubtitle: { color: "#fff", fontSize: 10, letterSpacing: 2.5 },
+  logoSubtitle: { color: "#fff", fontSize: 10, letterSpacing: 2.5 ,},
   mainContainer: { 
   position: "absolute", 
   top: 350, 
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   brandName: {
     color: "#FFF",
     fontSize: 15,
-    fontWeight: "bold",
+    fontWeight: 600,
     letterSpacing: 3,
 
     margin: 0,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   proposalBy: {
     color: "#FFF",
     fontSize: 15,
-    fontWeight: "bold",
+    fontWeight: 600,
     marginTop: 40,
   },
   proposalByOrange: { color: "#FF8C00" },
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   brandTagline: {
     color: "#FF8C00",
     fontSize: 46,
-    fontWeight: 1800,
+    fontWeight: "bold",
     lineHeight: 1,
     margin: 0,
     padding: 0,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   lastWords: {
     color: "#FFFFFF",
     fontSize: 36,
-    fontWeight: "bold",
+    fontWeight: 700,
     lineHeight: 1,
     margin: 0,
     padding: 0,
