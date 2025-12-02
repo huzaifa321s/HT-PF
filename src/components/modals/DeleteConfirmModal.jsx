@@ -36,7 +36,7 @@ const DeleteConfirmModal = ({
     try {
       setLoading(true);
       const res = await axiosInstance.delete(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/delete-proposal/${id}`
+        `/api/proposals/delete-proposal/${id}`
       );
 
       if (res.data.success) {

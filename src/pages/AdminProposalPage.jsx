@@ -71,14 +71,14 @@ const AdminProposalsPage = () => {
   const handleDownload = async (id, clientName) => {
     try {
       const res = await axiosInstance.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/get-single-proposal/${id}`
+        `/api/proposals/get-single-proposal/${id}`
       );
       const pdfPath = res.data.data.pdfPath;
       if (!pdfPath) {
         alert("PDF not found.");
         return;
       }
-      const pdfUrl = `${import.meta.env.VITE_APP_BASE_URL}/${pdfPath}`;
+      const pdfUrl = `/${pdfPath}`;
       window.open(pdfUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       alert("Failed to open PDF.");
@@ -95,7 +95,7 @@ const AdminProposalsPage = () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/get-all-proposals?page=${pageNumber}&limit=5`
+        `/api/proposals/get-all-proposals?page=${pageNumber}&limit=5`
       );
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);

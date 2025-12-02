@@ -436,7 +436,7 @@ const EditProposal = () => {
       formDataUpload.append("proposalId", id);
 
       const uploadRes = await axiosInstance.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/upload-pdf`,
+        `/api/proposals/upload-pdf`,
         formDataUpload,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

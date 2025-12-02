@@ -92,7 +92,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
       const cleanPrompt = prompt.trim();
 
       const res = await axiosInstance.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/transcribe/ai/refine`,
+        `/api/transcribe/ai/refine`,
         {
           field: fieldKey,
           prompt: cleanPrompt,
@@ -172,7 +172,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
       setParseError(null);
 
       const res = await axiosInstance.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/transcribe/ai/extract`,
+        `/api/transcribe/ai/extract`,
         { transcript: input }
       );
 

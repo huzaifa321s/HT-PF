@@ -14,7 +14,7 @@ export default function AudioUploader() {
     const formData = new FormData();
     formData.append('file', file);
 
-    await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/transcribe`, {
+    await fetch(`/api/transcribe`, {
       method: 'POST',
       body: formData,
     });

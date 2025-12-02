@@ -82,7 +82,7 @@ export default function ProposalFormPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axiosInstance.get(`${import.meta.env.VITE_APP_BASE_URL}/api/get-creds`);
+        const res = await axiosInstance.get(`/api/get-creds`);
         if (res.data?.success) {
           setFormData((prev) => ({
             ...prev,
@@ -99,7 +99,7 @@ export default function ProposalFormPage() {
 
   // SSE for audio upload processing
   useEffect(() => {
-    const evtSource = new EventSource(`${import.meta.env.VITE_APP_BASE_URL}/api/transcribe/sse`);
+    const evtSource = new EventSource(`/api/transcribe/sse`);
 
     evtSource.onmessage = (e) => {
       const { event, data } = JSON.parse(e.data);
@@ -197,7 +197,7 @@ export default function ProposalFormPage() {
 
     try {
       const res = await axiosInstance.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/create-proposal`,
+        `/api/proposals/create-proposal`,
         formData,
         { headers: { "Content-Type": "application/json" } }
       );

@@ -68,7 +68,7 @@ const ProposalPage = () => {
   const handleDownload = async (id) => {
     try {
       const res = await axiosInstance.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/get-single-proposal/${id}`
+        `/api/proposals/get-single-proposal/${id}`
       );
       const pdfPath = res.data.data.pdfPath;
       if (!pdfPath) {
@@ -114,7 +114,7 @@ const ProposalPage = () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/get-all-proposals?page=${pageNumber}&limit=5`
+        `/api/proposals/get-all-proposals?page=${pageNumber}&limit=5`
       );
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);

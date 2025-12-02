@@ -38,7 +38,7 @@ export default function BusinessInfoSection({ businessInfo, fullTranscript }) {
       setLoadingKey(fieldKey);
       const cleanPrompt = prompt.replace(/\r?\n/g, " ").trim();
       const res = await axiosInstance.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/transcribe/ai/refine`,
+        `/api/transcribe/ai/refine`,
         {
           field: fieldKey,
           prompt: cleanPrompt,
@@ -91,7 +91,7 @@ export default function BusinessInfoSection({ businessInfo, fullTranscript }) {
     if (!inputText.trim()) return;
     try {
       setExtracting(true);
-      const res = await axiosInstance.post(`${import.meta.env.VITE_APP_BASE_URL}/api/ai/extract`, {
+      const res = await axiosInstance.post(`/api/ai/extract`, {
         text: inputText,
       });
       setBusinessInfo(res.data.businessInfo || {});

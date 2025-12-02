@@ -50,11 +50,11 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       try {
         setLoading(true);
         const res = await axiosInstance.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/api/proposals/get-single-proposal/${id}`
+          `/api/proposals/get-single-proposal/${id}`
         );
         setProposal({ ...res.data.data, isAdmin: res.data.isAdmin });
         if (res.data.data.pdfPath) {
-          setPdfUrl(`${import.meta.env.VITE_APP_BASE_URL}/${res.data.data.pdfPath}`);
+          setPdfUrl(`/${res.data.data.pdfPath}`);
         }
       } catch (error) {
         console.error("Error fetching proposal:", error);
