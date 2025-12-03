@@ -173,9 +173,7 @@ const EditProposal = () => {
       try {
         setLoading(true);
         const res = await axiosInstance.get(
-          `${
-            import.meta.env.VITE_APP_BASE_URL
-          }/api/proposals/get-single-proposal/${id}`
+          `/api/proposals/get-single-proposal/${id}`
         );
         const data = res.data.data;
 
@@ -381,7 +379,7 @@ const EditProposal = () => {
       await axiosInstance.put(
         `${
           import.meta.env.VITE_APP_BASE_URL
-        }/api/proposals/update-proposal/${id}`,
+        }api/proposals/update-proposal/${id}`,
         dataToSend
       );
 
@@ -455,7 +453,7 @@ const EditProposal = () => {
       await axiosInstance.put(
         `${
           import.meta.env.VITE_APP_BASE_URL
-        }/api/proposals/update-proposal/${id}`,
+        }api/proposals/update-proposal/${id}`,
         {
           data: { ...formDataToSave, selectedCurrency },
           pdfPages,

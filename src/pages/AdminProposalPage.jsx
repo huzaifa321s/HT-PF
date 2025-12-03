@@ -78,7 +78,7 @@ const AdminProposalsPage = () => {
         alert("PDF not found.");
         return;
       }
-      const pdfUrl = `/${pdfPath}`;
+      const pdfUrl = pdfPath;
       window.open(pdfUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       alert("Failed to open PDF.");

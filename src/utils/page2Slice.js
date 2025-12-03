@@ -114,13 +114,19 @@ const page2Slice = createSlice({
     addSection: (state, action) => {
       const mode = state.currentMode;
       state[mode].orderedSections ??= [];
+      let id = ''
+      if(action.payload.id){
+      id = action.payload.id
+      }
       const { type, title = "", content = "" } = action.payload;
+      console.log('id ||',id || generateId())
       state[mode].orderedSections.push({
-        id: generateId(),
+        id: id || generateId(),
         type,
         title: type === "plain" ? "" : title,
         content,
       });
+     
     },
 
     toggleInclusion: (state) => {
@@ -130,6 +136,7 @@ const page2Slice = createSlice({
 
     updateSection: (state, action) => {
       const mode = state.currentMode;
+      
       const { id, type, title, content } = action.payload;
       state[mode].orderedSections = (state[mode].orderedSections || []).map((sec) =>
         sec.id === id

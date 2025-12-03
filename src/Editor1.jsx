@@ -183,7 +183,7 @@ const PdfPage1Editor = ({mode}) => {
         >
           <Typography
             variant="h6"
-            fontWeight="bold"
+            fontWeight="medium"
             gutterBottom
             sx={{
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -205,7 +205,7 @@ const PdfPage1Editor = ({mode}) => {
               "& .MuiOutlinedInput-root": {
                 borderRadius: 4,
                 fontSize: "1.4rem",
-                fontWeight: 700,
+                fontWeight: 400,
                 bgcolor: "white",
                 "&:hover": { borderColor: "#667eea" },
               },

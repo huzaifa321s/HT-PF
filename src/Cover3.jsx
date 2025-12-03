@@ -216,7 +216,7 @@ const PdfPageDocument2 = ({
 
                 {/* Sub bullets */}
                 {subLines.map((sub, j) => {
-                  const cleanSub = cleanLine(sub);
+                  const cleanSub = sub;
                   if (!cleanSub) return null;
 
                   return (

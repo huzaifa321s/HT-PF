@@ -25,7 +25,6 @@ import {
   InputLabel,
   Alert,
   Collapse,
-  Grid,
   Table,
   TableBody,
   TableCell,
@@ -35,6 +34,7 @@ import {
   Tabs,
   Tab,
   ButtonGroup,
+  Menu,
 } from "@mui/material";
 import {
   Add,
@@ -48,18 +48,15 @@ import {
   Title,
   FormatListBulleted,
   FormatListNumbered,
-  ArrowUpward,
-  ArrowDownward,
   TableChart,
   AddCircleOutline,
   ViewColumn,
+  MoreVert,
 } from "@mui/icons-material";
 import {
   addSection,
   updateSection,
   deleteSection,
-  moveSectionUp,
-  moveSectionDown,
   resetPage2,
   addTable,
   addTableRow,
@@ -67,7 +64,6 @@ import {
   deleteTableRow,
   updateTableHeaders,
   deleteTable,
-  updatePageHeader,
   addColumnToNumber,
   removeColumnToNumber,
 } from "../src/utils/page2Slice";
@@ -75,9 +71,7 @@ import { showToast } from "../src/utils/toastSlice";
 
 const PdfPageEditor2 = ({ mode }) => {
   const dispatch = useDispatch();
-  console.log("mode 2222222222", mode);
 
-  // Redux State
   const sections = useSelector((state) =>
     mode === "edit-doc"
       ? state.page2?.edit?.orderedSections || []
@@ -88,55 +82,130 @@ const PdfPageEditor2 = ({ mode }) => {
       ? state.page2?.edit?.tables || []
       : state.page2?.create?.tables || []
   );
-  const header = useSelector(
-    (state) =>
-      state.page2?.header || {
-        pageTitle: "",
-        heading: "",
-        subheading: "",
-      }
-  );
-  console.log("section", sections);
-  // Local States
+
   const [tabValue, setTabValue] = useState(0);
-  const [newSection, setNewSection] = useState({
-    type: "title",
-    title: "",
-    content: "",
-  });
+  const [newSection, setNewSection] = useState({ type: "title", title: "", content: "" });
   const [editingId, setEditingId] = useState(null);
-  const [editValues, setEditValues] = useState({
-    type: "title",
-    title: "",
-    content: "",
-  });
+  const [editValues, setEditValues] = useState({ type: "title", title: "", content: "" });
   const [showSuccess, setShowSuccess] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const containerRef = useRef();
-  // Table editing
+
+  // Table states
   const [editingRow, setEditingRow] = useState({ tableId: null, rowId: null });
   const [rowForm, setRowForm] = useState({ col1: "", col2: "", col3: "" });
   const [editingHeaders, setEditingHeaders] = useState({});
+const formatNumberedContent = (content) => {
+    if (!content) return "";
 
+    const lines = content.split("\n");
+    let formattedLines = [];
+    let currentNumber = 1;
+
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+
+      // Check if line starts with number (e.g., "1. ", "2. ", etc.)
+      if (/^\d+\.\s/.test(trimmedLine)) {
+        // Extract the number and text
+        const match = trimmedLine.match(/^(\d+)\.\s*(.*)/);
+        if (match) {
+          formattedLines.push(`${currentNumber}. ${match[2]}`);
+          currentNumber++;
+        }
+      }
+      // Check if line is a bullet point
+      else if (/^[•\-\*]\s/.test(trimmedLine)) {
+        formattedLines.push(`  ${trimmedLine}`);
+      }
+      // Empty line
+      else if (trimmedLine === "") {
+        formattedLines.push("");
+      }
+      // Regular text
+      else {
+        formattedLines.push(trimmedLine);
+      }
+    });
+
+    return formattedLines.join("\n");
+  };
+
+
+const getNextNumber = (content) => {
+  if (!content || content.trim() === "") return 1;
+
+  const lines = content.split("\n");
+  const numbers = [];
+
+  // Har line check karo for numbered items
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    
+    // Bullet points ya indented content ignore karo
+    if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("*")) {
+      return;
+    }
+    
+    // Match number at start of line: "7." or "7. text"
+    const match = trimmed.match(/^(\d+)\.\s*/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      numbers.push(num);
+    }
+  });
+
+  // Highest number return karo
+  const highest = numbers.length > 0 ? Math.max(...numbers) : 0;
+  return highest + 1;
+};
+// Add Sub-bullet function (improved)
+const addSubBullet = () => {
+  const separator = editValues.content && !editValues.content.endsWith('\n') ? '\n' : '';
+  
+  setEditValues({
+    ...editValues,
+    content: editValues.content + separator + '• ',
+  });
+};
+// ADD NEW NUMBER button handler
+const handleAddNumber = () => {
+  const nextNum = getNextNumber(content);
+  
+  // Check: last character dekho
+  const trimmedContent = content.trimEnd();
+  
+  // Agar last me already ek number hai with no text, to usko replace karo
+  const lastLineMatch = trimmedContent.match(/\n(\d+)\.\s*$/);
+  
+  if (lastLineMatch) {
+    // Last empty number hai - replace karo
+    const lastNum = parseInt(lastLineMatch[1], 10);
+    if (lastNum === nextNum - 1) {
+      // Duplicate prevent karo - sirf continue karo
+      setContent(content + "\n" + nextNum + ". ");
+      return;
+    }
+  }
+  
+  // Normal case: new number add karo
+  const newContent = trimmedContent + "\n" + nextNum + ". ";
+  setContent(newContent);
+};
+
+
+  // Add Section
   const handleAddSection = () => {
     const isPlain = newSection.type === "plain";
-    const isNumbered = newSection.type === "numbered";
-
-    // Plain ke liye title check nahi chahiye
     if (!isPlain && !newSection.title.trim()) {
-      dispatch(
-        showToast({ message: "Title is required", severity: "warning" })
-      );
+      dispatch(showToast({ message: "Title is required", severity: "warning" }));
       return;
     }
     if (!newSection.content.trim()) {
-      dispatch(
-        showToast({ message: "Content is required", severity: "warning" })
-      );
+      dispatch(showToast({ message: "Content is required", severity: "warning" }));
       return;
     }
 
-    // ✅ Plain me title empty, baqi sab me title bhejenge
     dispatch(
       addSection({
         type: newSection.type,
@@ -153,20 +222,15 @@ const PdfPageEditor2 = ({ mode }) => {
 
   const startEditSection = (sec) => {
     setEditingId(sec.id);
-    setEditValues({
-      type: sec.type,
-      title: sec.title || "",
-      content: sec.content || "",
-    });
+  
+    setEditValues({ type: sec.type, title: sec.title || "", content: sec.content || "" });
   };
 
   const saveEditSection = () => {
     const isPlain = editValues.type === "plain";
-
     if (!isPlain && !editValues.title.trim()) return;
     if (!editValues.content.trim()) return;
 
-    // ✅ Plain me title empty, baqi sab me title bhejenge
     dispatch(
       updateSection({
         id: editingId,
@@ -185,7 +249,6 @@ const PdfPageEditor2 = ({ mode }) => {
     dispatch(showToast({ message: "All data reset!", severity: "success" }));
   };
 
-  // Add bullet/number helpers for editing
   const addBulletToEdit = () => {
     setEditValues({
       ...editValues,
@@ -193,79 +256,64 @@ const PdfPageEditor2 = ({ mode }) => {
     });
   };
 
-  const addNumberToEdit = () => {
-    const content = editValues.content.trim();
-    const lines = content.split("\n");
-
-    let highestNumber = 0;
-    lines.forEach((line) => {
-      const match = line.trim().match(/^(\d+)\.\s/);
-      if (match) {
-        const num = parseInt(match[1], 10);
-        if (num > highestNumber) highestNumber = num;
-      }
-    });
-
-    const nextNumber = highestNumber + 1;
-
-    setEditValues((prev) => ({
-      ...prev,
-      content:
-        prev.content +
-        (prev.content && !prev.content.endsWith("\n") ? "\n" : "") +
-        `${nextNumber}. `,
-    }));
-  };
+const addNumberToEdit = () => {
+  const content = editValues.content || "";
+  const nextNumber = getNextNumber(content);
+  
+  // Add separator
+  let separator = "";
+  if (content) {
+    if (!content.endsWith('\n')) {
+      separator = '\n\n';
+    } else if (!content.endsWith('\n\n')) {
+      separator = '\n';
+    }
+  }
+  
+  setEditValues({
+    ...editValues,
+    content: content + separator + `${nextNumber}. `,
+  });
+};
 
   // === TABLE HANDLERS ===
   const handleAddTable = (columnCount = 2) => {
     dispatch(addTable({ columnCount }));
-    dispatch(
-      showToast({
-        message: `New ${columnCount}-column table added!`,
-        severity: "success",
-      })
-    );
+    dispatch(showToast({ message: `New ${columnCount}-column table added!`, severity: "success" }));
   };
 
   const startEditRow = (tableId, row, columnCount) => {
     setEditingRow({ tableId, rowId: row.id });
     setRowForm({
-      col1: row.col1,
-      col2: row.col2,
+      col1: row.col1 || "",
+      col2: row.col2 || "",
       col3: columnCount === 3 ? row.col3 || "" : "",
     });
   };
 
   const saveEditRow = () => {
     if (!rowForm.col1.trim()) {
-      dispatch(
-        showToast({ message: "First column is required", severity: "warning" })
-      );
+      dispatch(showToast({ message: "First column is required", severity: "warning" }));
       return;
     }
-    console.log("rowForm", rowForm);
     const table = tables.find((t) => t.id === editingRow.tableId);
-    const updatePayload = {
+    const payload = {
       tableId: editingRow.tableId,
       rowId: editingRow.rowId,
-      col1: rowForm?.col1?.trim(),
-      col2: rowForm?.col2,
+      col1: rowForm.col1.trim(),
+      col2: rowForm.col2,
     };
+    if (table.columnCount === 3) payload.col3 = rowForm.col3.trim();
 
-    if (table?.columnCount === 3) {
-      updatePayload.col3 = rowForm.col3.trim();
-    }
-
-    dispatch(updateTableRow(updatePayload));
+    dispatch(updateTableRow(payload));
     setEditingRow({ tableId: null, rowId: null });
     setRowForm({ col1: "", col2: "", col3: "" });
   };
 
   const formatNumber = (value) => {
     if (!value) return "";
-    const numeric = value.replace(/\D/g, "");
-    return Number(numeric).toLocaleString("en-US");
+    const num = value.replace(/\D/g, "");
+    return Number(num).toLocaleString("en-US");
   };
 
   const startEditHeaders = (tableId, headers, columnCount) => {
@@ -279,126 +327,160 @@ const PdfPageEditor2 = ({ mode }) => {
   };
 
   const saveEditHeaders = (tableId, columnCount) => {
-    const headers = editingHeaders[tableId];
-    if (!headers?.col1?.trim() || !headers?.col2?.trim()) {
-      dispatch(
-        showToast({ message: "Headers cannot be empty", severity: "warning" })
-      );
+    const h = editingHeaders[tableId];
+    if (!h?.col1?.trim() || !h?.col2?.trim()) {
+      dispatch(showToast({ message: "Headers cannot be empty", severity: "warning" }));
       return;
     }
-
-    const updatePayload = {
-      tableId,
-      col1: headers.col1.trim(),
-      col2: headers.col2.trim(),
-    };
-
+    const payload = { tableId, col1: h.col1.trim(), col2: h.col2.trim() };
     if (columnCount === 3) {
-      if (!headers?.col3?.trim()) {
-        dispatch(
-          showToast({ message: "Headers cannot be empty", severity: "warning" })
-        );
+      if (!h.col3?.trim()) {
+        dispatch(showToast({ message: "Header 3 cannot be empty", severity: "warning" }));
         return;
       }
-      updatePayload.col3 = headers.col3.trim();
+      payload.col3 = h.col3.trim();
     }
-
-    dispatch(updateTableHeaders(updatePayload));
+    dispatch(updateTableHeaders(payload));
     setEditingHeaders({});
     dispatch(showToast({ message: "Headers updated!", severity: "success" }));
   };
 
-  // === PREVIEW ===
+  // === PERFECT NUMBERED LIST RENDERING (Add + Edit dono jagah) ===
+const renderNumberedList = (content, title = "") => {
+  if (!content?.trim()) return null;
+
+  // SAME formatting logic as formatNumberedContent
+  const lines = content.split("\n");
+  let formattedBlocks = [];
+  let currentBlock = null;
+  let currentNumber = 1;
+
+  lines.forEach((line) => {
+    const trimmedLine = line.trim();
+
+    // Main numbered item
+    if (/^\d+\.\s/.test(trimmedLine)) {
+      // Previous block save karo
+      if (currentBlock) {
+        formattedBlocks.push(currentBlock);
+      }
+
+      // New block start karo
+      const match = trimmedLine.match(/^(\d+)\.\s*(.*)/);
+      currentBlock = {
+        number: currentNumber,
+        text: match ? match[2] : "",
+        bullets: []
+      };
+      currentNumber++;
+    }
+    // Bullet point
+    else if (/^[•\-\*]\s/.test(trimmedLine)) {
+      if (currentBlock) {
+        const bulletText = trimmedLine.replace(/^[•\-\*]\s*/, "").trim();
+        if (bulletText) {
+          currentBlock.bullets.push(bulletText);
+        }
+      }
+    }
+    // Empty line ya regular text (ignore empty, include text)
+    else if (trimmedLine && currentBlock) {
+      // Agar numbered item ke baad direct text hai (no bullet)
+      currentBlock.bullets.push(trimmedLine);
+    }
+  });
+
+  // Last block add karo
+  if (currentBlock) {
+    formattedBlocks.push(currentBlock);
+  }
+
+  return (
+    <Box>
+      {title && (
+        <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>
+          {title}
+        </Typography>
+      )}
+      {formattedBlocks.map((block, i) => (
+        <Box key={i} sx={{ mb: 2 }}>
+          {/* Main numbered item */}
+          <Typography fontWeight="bold" gutterBottom>
+            {block.number}. {block.text || "(No text)"}
+          </Typography>
+
+          {/* Bullets */}
+          {block.bullets.length > 0 && (
+            <Box sx={{ ml: 4 }}>
+              {block.bullets.map((bullet, j) => (
+                <Box
+                  key={j}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    mt: 0.5
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      mr: 1,
+                      fontSize: "0.9rem",
+                      color: "text.secondary",
+                      mt: 0.2
+                    }}
+                  >
+                    •
+                  </Typography>
+                  <Typography variant="body2" sx={{ flex: 1 }}>
+                    {bullet}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
+  const [formatMenuAnchor, setFormatMenuAnchor] = useState({})
+    const handleFormatMenuOpen = (event, tableId) => {
+    setFormatMenuAnchor({ ...formatMenuAnchor, [tableId]: event.currentTarget })
+  }
+
+  const handleFormatMenuClose = (tableId) => {
+    setFormatMenuAnchor({ ...formatMenuAnchor, [tableId]: null })
+  }
+
+    const toggleNumberFormat = (tableId, col) => {
+    const table = tables.find((t) => t.id === tableId)
+    if (table?.columnNo?.includes(col)) {
+      dispatch(removeColumnToNumber({ id: tableId, col }))
+    } else {
+      dispatch(addColumnToNumber({ id: tableId, col }))
+    }
+    handleFormatMenuClose(tableId)
+  }
   const renderLivePreview = (content, type, title = "") => {
     if (!content?.trim())
-      return (
-        <Typography color="text.secondary">Preview appears here...</Typography>
-      );
+      return <Typography color="text.secondary">Preview appears here...</Typography>;
 
-    if (type === "numbered") {
-      const lines = content.split("\n");
-      let currentBlock = null;
-      const blocks = [];
-
-      lines.forEach((line) => {
-        const trimmed = line.trim();
-        const numberMatch = trimmed.match(/^(\d+)\.\s*(.*)/);
-
-        if (numberMatch) {
-          // New numbered item
-          if (currentBlock) blocks.push(currentBlock);
-          currentBlock = {
-            number: numberMatch[1],
-            main: numberMatch[2].trim(),
-            subitems: [],
-          };
-        } else if (
-          trimmed.startsWith("•") ||
-          trimmed.startsWith("-") ||
-          trimmed.startsWith("·")
-        ) {
-          // Sub-bullet under current numbered item
-          if (currentBlock) {
-            currentBlock.subitems.push(trimmed.replace(/^[-•·]\s*/, "").trim());
-          }
-        } else if (trimmed && currentBlock) {
-          // If someone writes without •, still treat as subitem
-          currentBlock.subitems.push(trimmed);
-        }
-      });
-
-      if (currentBlock) blocks.push(currentBlock);
-
-      return (
-        <>
-          {title && (
-            <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>
-              {title}
-            </Typography>
-          )}
-          {blocks.map((block, i) => (
-            <Box key={i} mb={2}>
-              <Typography fontWeight="bold">
-                {block.number}. {block.main || "(No text)"}
-              </Typography>
-              {block.subitems.length > 0 && (
-                <Box ml={4} mt={0.5}>
-                  {block.subitems.map((sub, j) => (
-                    <Typography
-                      key={j}
-                      variant="body2"
-                      sx={{
-                        display: "list-item",
-                        listStyleType: "disc",
-                        ml: 2,
-                      }}
-                    >
-                      {sub}
-                    </Typography>
-                  ))}
-                </Box>
-              )}
-            </Box>
-          ))}
-        </>
-      );
-    }
+    if (type === "numbered") return renderNumberedList(content, title);
 
     if (type === "bullets") {
       return (
         <>
-          {title && (
-            <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>
-              {title}
-            </Typography>
-          )}
-          {content
-            .split("\n")
-            .filter(Boolean)
-            .map((line, i) => {
-              const cleanLine = line.replace(/^[•·\-]\s*/, "").trim();
-              return <Typography key={i}>• {cleanLine}</Typography>;
-            })}
+          {title && <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>{title}</Typography>}
+          {content.split("\n").filter(Boolean).map((line, i) => {
+            const clean = line.replace(/^[•·\-]\s*/, "").trim();
+            return (
+              <Typography key={i} sx={{ display: "flex", alignItems: "flex-start", mb: 0.5 }}>
+                <span style={{ marginRight: 8 }}>•</span>
+                {clean}
+              </Typography>
+            );
+          })}
         </>
       );
     }
@@ -406,17 +488,59 @@ const PdfPageEditor2 = ({ mode }) => {
     if (type === "title") {
       return (
         <>
-          {title && (
-            <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>
-              {title}
-            </Typography>
-          )}
+          {title && <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>{title}</Typography>}
           <Typography>{content}</Typography>
         </>
       );
     }
 
     return <Typography>{content}</Typography>;
+  };
+
+  // Render section display with proper numbered list technique
+ // Render section display with proper numbered list technique
+  const renderSectionDisplay = (sec) => {
+    if (sec.type === "numbered") {
+      const blocks = sec.content.split(/\n(?=\d+\.\s)/).filter(Boolean);
+      
+      const cleanLine = (line) => line.replace(/^[-•·]\s*/, "").trim();
+
+      return (
+        <Box>
+          {sec.title && <Typography variant="h6" gutterBottom fontWeight="bold" mb={2}>{sec.title}</Typography>}
+          {blocks.map((block, i) => {
+            const lines = block.trim().split("\n");
+            const mainText = lines[0].replace(/^\d+\.\s*/, "").trim();
+            const subLines = lines.slice(1);
+
+            return (
+              <Box key={i} sx={{ mb: 2 }}>
+                <Typography fontWeight="bold" gutterBottom>
+                  {i + 1}. {mainText || "(No text)"}
+                </Typography>
+                {subLines.length > 0 && (
+                  <Box sx={{ ml: 4 }}>
+                    {subLines.map((sub, j) => {
+                      const cleanSub = cleanLine(sub);
+                      if (!cleanSub) return null;
+                      return (
+                        <Box key={j} sx={{ display: "flex", alignItems: "flex-start", mt: 0.5 }}>
+                          <Typography sx={{ mr: 1, fontSize: "0.9rem", color: "text.secondary", mt: 0.2 }}>•</Typography>
+                          <Typography variant="body2" sx={{ flex: 1 }}>{cleanSub}</Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      );
+    }
+
+    // For other types, use the existing renderLivePreview
+    return renderLivePreview(sec.content, sec.type, sec.title);
   };
 
   const getTypeIcon = (type) => {
@@ -431,62 +555,33 @@ const PdfPageEditor2 = ({ mode }) => {
 
   return (
     <Box p={3}>
-      {/* Success Alert */}
       <Collapse in={showSuccess}>
         <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircle />}>
           Section added successfully!
         </Alert>
       </Collapse>
 
-      {/* Header Section */}
-      <Paper
-        elevation={3}
-        sx={{
-          p: 3,
-          mb: 3,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          borderRadius: 5,
-        }}
-      >
-        <Typography variant="h4" color="white" gutterBottom>
-          📄 PDF Page 2 Editor
-        </Typography>
-        <Typography variant="body2" color="white" sx={{ opacity: 0.9 }}>
-          Manage sections, content blocks, and dynamic tables
-        </Typography>
+      <Paper elevation={3} sx={{ p: 3, mb: 3, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", borderRadius: 5 }}>
+        <Typography variant="h4" color="white" gutterBottom>PDF Page 2 Editor</Typography>
+        <Typography variant="body2" color="white" sx={{ opacity: 0.9 }}>Manage sections, content blocks, and dynamic tables</Typography>
       </Paper>
 
-      {/* Tabs */}
       <Paper sx={{ mb: 3, borderRadius: 5 }}>
-        <Tabs
-          value={tabValue}
-          onChange={(e, v) => setTabValue(v)}
-          sx={{ borderRadius: 5 }}
-        >
+        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
           <Tab label="Content Sections" />
           <Tab label="Tables" />
         </Tabs>
       </Paper>
 
-      {/* Tab 1: Content Sections */}
+      {/* === CONTENT SECTIONS TAB === */}
       {tabValue === 0 && (
         <>
-          {/* Add New Section */}
           <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 5 }}>
-            <Typography variant="h6" gutterBottom>
-              ➕ Add New Section
-            </Typography>
+            <Typography variant="h6" gutterBottom>Add New Section</Typography>
             <Stack spacing={2}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="section-type-label">Section Type</InputLabel>
-                <Select
-                  labelId="section-type-label"
-                  value={newSection.type}
-                  label="Section Type"
-                  onChange={(e) =>
-                    setNewSection({ ...newSection, type: e.target.value })
-                  }
-                >
+              <FormControl fullWidth>
+                <InputLabel>Section Type</InputLabel>
+                <Select value={newSection.type} label="Section Type" onChange={(e) => setNewSection({ ...newSection, type: e.target.value })}>
                   <MenuItem value="plain">Plain Text</MenuItem>
                   <MenuItem value="title">Title with Content</MenuItem>
                   <MenuItem value="bullets">Bullet Points</MenuItem>
@@ -494,71 +589,33 @@ const PdfPageEditor2 = ({ mode }) => {
                 </Select>
               </FormControl>
 
-              {/* ✅ Title field sirf plain ke liye hide hoga */}
               {newSection.type !== "plain" && (
-                <TextField
-                  label="Section Title"
-                  fullWidth
-                  value={newSection.title}
-                  onChange={(e) =>
-                    setNewSection({ ...newSection, title: e.target.value })
-                  }
-                />
+                <TextField label="Section Title" fullWidth value={newSection.title} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} />
               )}
 
               <TextField
                 label="Content"
                 fullWidth
                 multiline
-                rows={5}
+                rows={6}
                 value={newSection.content}
-                onChange={(e) =>
-                  setNewSection({ ...newSection, content: e.target.value })
-                }
-                placeholder={
-                  newSection.type === "numbered"
-                    ? "1. Item one\n• Sub-point\n2. Item two"
-                    : "Enter content..."
-                }
+                onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
+                placeholder={newSection.type === "numbered" ? "1. Main point\n• Sub point\n2. Next point" : "Enter content..."}
               />
 
-              {/* Live Preview */}
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: "grey.100",
-                  borderRadius: 1,
-                  wordBreak: "break-word",
-                  overflowWrap: "break-word",
-                }}
-              >
-                <Typography variant="subtitle2" gutterBottom>
-                  📋 Live Preview
-                </Typography>
+              <Box sx={{ p: 2, bgcolor: "grey.100", borderRadius: 1 }}>
+                <Typography variant="subtitle2" gutterBottom>Live Preview</Typography>
                 <Divider sx={{ mb: 1 }} />
-                {renderLivePreview(
-                  newSection.content,
-                  newSection.type,
-                  newSection.title
-                )}
+                {renderLivePreview(newSection.content, newSection.type, newSection.title)}
               </Box>
 
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={handleAddSection}
-                size="large"
-                fullWidth
-              >
+              <Button variant="contained" startIcon={<Add />} onClick={handleAddSection} size="large" fullWidth>
                 Add Section
               </Button>
             </Stack>
           </Paper>
 
-          {/* Existing Sections */}
-          <Typography variant="h6" gutterBottom>
-            📚 All Sections ({sections.length})
-          </Typography>
+          <Typography variant="h6" gutterBottom>All Sections ({sections.length})</Typography>
           {sections.length === 0 ? (
             <Alert severity="info">No sections yet. Add one above!</Alert>
           ) : (
@@ -566,34 +623,15 @@ const PdfPageEditor2 = ({ mode }) => {
               <Card key={sec.id} sx={{ mb: 2, borderRadius: 5 }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                    <Chip
-                      icon={getTypeIcon(sec.type)}
-                      label={sec.type}
-                      size="small"
-                      color="primary"
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      Position: {idx + 1}
-                    </Typography>
+                    <Chip icon={getTypeIcon(sec.type)} label={sec.type} size="small" color="primary" />
+                    <Typography variant="caption" color="text.secondary">Position: {idx + 1}</Typography>
                   </Stack>
 
                   {editingId === sec.id ? (
                     <Stack spacing={2}>
-                      <FormControl fullWidth size="small" variant="outlined">
-                        <InputLabel id={`edit-type-label-${sec.id}`}>
-                          Type
-                        </InputLabel>
-                        <Select
-                          labelId={`edit-type-label-${sec.id}`}
-                          value={editValues.type}
-                          label="Type"
-                          onChange={(e) =>
-                            setEditValues({
-                              ...editValues,
-                              type: e.target.value,
-                            })
-                          }
-                        >
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Type</InputLabel>
+                        <Select value={editValues.type} label="Type" onChange={(e) => setEditValues({ ...editValues, type: e.target.value })}>
                           <MenuItem value="plain">Plain Text</MenuItem>
                           <MenuItem value="title">Title with Content</MenuItem>
                           <MenuItem value="bullets">Bullet Points</MenuItem>
@@ -601,140 +639,85 @@ const PdfPageEditor2 = ({ mode }) => {
                         </Select>
                       </FormControl>
 
-                      {/* ✅ Title field sirf plain ke liye hide hoga */}
                       {editValues.type !== "plain" && (
-                        <TextField
-                          label="Title"
-                          fullWidth
-                          size="small"
-                          value={editValues.title}
-                          onChange={(e) =>
-                            setEditValues({
-                              ...editValues,
-                              title: e.target.value,
-                            })
-                          }
-                        />
+                        <TextField label="Title" fullWidth size="small" value={editValues.title} onChange={(e) => setEditValues({ ...editValues, title: e.target.value })} />
                       )}
 
-                      <TextField
+                     <TextField
                         label="Content"
                         fullWidth
                         multiline
-                        rows={4}
+                        rows={5}
                         size="small"
-                        value={editValues.content}
-                        onChange={(e) =>
-                          setEditValues({
-                            ...editValues,
-                            content: e.target.value,
-                          })
+                        value={
+                          
+                            
+                            editValues.content
                         }
+                        onChange={(e) => {
+                     
+                            setEditValues({
+                              ...editValues,
+                              content: e.target.value,
+                            });
+                          
+                        }}
+                        InputProps={{
+                          style: {
+                            whiteSpace: "pre-wrap",
+                          },
+                        }}
                       />
-
-                      {/* Quick Add Buttons */}
                       {editValues.type === "bullets" && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<FormatListBulleted />}
-                          onClick={addBulletToEdit}
-                        >
+                        <Button size="small" variant="outlined" startIcon={<FormatListBulleted />} onClick={addBulletToEdit}>
                           Add New Bullet
                         </Button>
                       )}
 
-                      {editValues.type === "numbered" && (
-                        <Stack direction="row" spacing={1}>
+                       {editValues.type === "numbered" && (
+                        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                           <Button
                             size="small"
                             variant="outlined"
                             startIcon={<FormatListNumbered />}
                             onClick={addNumberToEdit}
                           >
-                            Add New Number (1.)
+                            Add New Number
                           </Button>
                           <Button
                             size="small"
                             variant="outlined"
                             startIcon={<FormatListBulleted />}
-                            onClick={() => {
-                              setEditValues({
-                                ...editValues,
-                                content:
-                                  editValues.content +
-                                  (editValues.content &&
-                                  !editValues.content.endsWith("\n")
-                                    ? "\n"
-                                    : "") +
-                                  "• ",
-                              });
-                            }}
+                            onClick={addSubBullet}
                           >
-                            Add Sub-bullet (•)
+                            Add Sub-bullet
                           </Button>
                         </Stack>
                       )}
-
                       {/* Live Preview in Edit Mode */}
-                      <Box
-                        sx={{
-                          p: 2,
-                          bgcolor: "grey.100",
-                          borderRadius: 1,
-                          wordBreak: "break-word",
-                          overflowWrap: "break-word",
-                        }}
-                      >
-                        <Typography variant="subtitle2" gutterBottom>
-                          📋 Live Preview
-                        </Typography>
+                      {/* <Box sx={{ p: 2, bgcolor: "grey.100", borderRadius: 1, mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>Live Preview</Typography>
                         <Divider sx={{ mb: 1 }} />
-                        {renderLivePreview(
-                          editValues.content,
-                          editValues.type,
-                          editValues.title
-                        )}
-                      </Box>
+                        {renderLivePreview(editValues.content, editValues.type, editValues.title)}
+                      </Box> */}
                     </Stack>
                   ) : (
-                    <>
-                      <Box sx={{ bgcolor: "grey.50", p: 2, borderRadius: 1 }}>
-                        {renderLivePreview(sec.content, sec.type, sec.title)}
-                      </Box>
-                    </>
+                    <Box sx={{ bgcolor: "grey.50", p: 2, borderRadius: 1 }}>
+                      {renderSectionDisplay(sec)}
+                    </Box>
                   )}
                 </CardContent>
 
                 <CardActions>
                   {editingId === sec.id ? (
                     <>
-                      <Button
-                        size="small"
-                        startIcon={<Save />}
-                        onClick={saveEditSection}
-                      >
-                        Save
-                      </Button>
-                      <Button size="small" onClick={() => setEditingId(null)}>
-                        Cancel
-                      </Button>
+                      <Button size="small" startIcon={<Save />} onClick={saveEditSection}>Save</Button>
+                      <Button size="small" onClick={() => setEditingId(null)}>Cancel</Button>
                     </>
                   ) : (
                     <>
-                      <IconButton
-                        size="small"
-                        onClick={() => startEditSection(sec)}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => dispatch(deleteSection(sec.id))}
-                        color="error"
-                      >
-                        <Delete />
-                      </IconButton>
+                      <IconButton size="small" onClick={() => startEditSection(sec)}><Edit /></IconButton>
+                      <IconButton size="small" onClick={() => dispatch(deleteSection(sec.id))} color="error"><Delete /></IconButton>
                     </>
                   )}
                 </CardActions>
@@ -744,503 +727,299 @@ const PdfPageEditor2 = ({ mode }) => {
         </>
       )}
 
-      {/* Tab 2: Tables */}
+      {/* === TABLES TAB === */}
       {tabValue === 1 && (
         <>
-          {/* Add Table Buttons */}
           <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 5 }}>
-            <Typography variant="h6" gutterBottom>
-              ➕ Add New Table
-            </Typography>
-            <ButtonGroup variant="contained" fullWidth sx={{ borderRadius: 5 }}>
-              <Button
-                sx={{ borderRadius: 5 }}
-                startIcon={<TableChart />}
-                onClick={() => handleAddTable(2)}
-              >
-                Add 2-Column Table
-              </Button>
-              <Button
-                sx={{ borderRadius: 5 }}
-                startIcon={<ViewColumn />}
-                onClick={() => handleAddTable(3)}
-                color="secondary"
-              >
-                Add 3-Column Table
-              </Button>
+            <Typography variant="h6" gutterBottom>Add New Table</Typography>
+            <ButtonGroup variant="contained" fullWidth>
+              <Button startIcon={<TableChart />} onClick={() => handleAddTable(2)}>Add 2-Column Table</Button>
+              <Button startIcon={<ViewColumn />} onClick={() => handleAddTable(3)} color="secondary">Add 3-Column Table</Button>
             </ButtonGroup>
           </Paper>
 
-          {/* Existing Tables */}
-          <Typography variant="h6" gutterBottom>
-            📊 All Tables ({tables.length})
-          </Typography>
+          <Typography variant="h6" gutterBottom>All Tables ({tables.length})</Typography>
           {tables.length === 0 ? (
             <Alert severity="info">No tables yet. Add one above!</Alert>
           ) : (
-            tables.map((table) => (
-              
-              <Card key={table.id} sx={{ mb: 3, borderRadius: 5 }}>
-                                                {console.log('table.columnNo',table.columnNo)}
+          tables.map((table) => (
+          <Card key={table.id} sx={{ mb: 3, borderRadius: 3 }}>
+            <CardContent>
+              {/* Header Section */}
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                <Chip
+                  icon={table.columnCount === 3 ? <ViewColumn /> : <TableChart />}
+                  label={`${table.columnCount}-Column Table`}
+                  color={table.columnCount === 3 ? "secondary" : "primary"}
+                />
+                <Stack direction="row" spacing={1}>
+                  <Tooltip title="Add a new row to this table">
+                    <IconButton size="small" color="primary" onClick={() => dispatch(addTableRow(table.id))}>
+                      <AddCircleOutline />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete this entire table">
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => window.confirm("Delete table?") && dispatch(deleteTable(table.id))}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
 
-                <CardContent>
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    mb={2}
-                  >
-                    <Chip
-                      icon={
-                        table.columnCount === 3 ? (
-                          <ViewColumn />
-                        ) : (
-                          <TableChart />
-                        )
-                      }
-                      label={`${table.columnCount}-Column Table`}
-                      color={table.columnCount === 3 ? "secondary" : "primary"}
-                    />
-                    <Stack direction="row" spacing={1}>
-                      <Tooltip title="Add Row">
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => dispatch(addTableRow(table.id))}
-                        >
-                          <AddCircleOutline />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Table">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => {
-                            if (window.confirm("Delete this entire table?")) {
-                              dispatch(deleteTable(table.id));
-                            }
-                          }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                  </Stack>
+              {/* Table */}
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: "rgba(0, 0, 0, 0.04)" }}>
+                      {editingHeaders[table.id] ? (
+                        <>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={editingHeaders[table.id].col1}
+                              onChange={(e) =>
+                                setEditingHeaders({
+                                  ...editingHeaders,
+                                  [table.id]: {
+                                    ...editingHeaders[table.id],
+                                    col1: e.target.value,
+                                  },
+                                })
+                              }
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={editingHeaders[table.id].col2}
+                              onChange={(e) =>
+                                setEditingHeaders({
+                                  ...editingHeaders,
+                                  [table.id]: {
+                                    ...editingHeaders[table.id],
+                                    col2: e.target.value,
+                                  },
+                                })
+                              }
+                            />
+                          </TableCell>
+                          {table.columnCount === 3 && (
+                            <TableCell sx={{ fontWeight: 600 }}>
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={editingHeaders[table.id].col3}
+                                onChange={(e) =>
+                                  setEditingHeaders({
+                                    ...editingHeaders,
+                                    [table.id]: {
+                                      ...editingHeaders[table.id],
+                                      col3: e.target.value,
+                                    },
+                                  })
+                                }
+                              />
+                            </TableCell>
+                          )}
+                          <TableCell sx={{ width: "80px" }} align="center">
+                            <Tooltip title="Save changes">
+                              <IconButton size="small" onClick={() => saveEditHeaders(table.id, table.columnCount)}>
+                                <Save fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell sx={{ fontWeight: 600 }}>{table.headers.col1}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{table.headers.col2}</TableCell>
+                          {table.columnCount === 3 && (
+                            <TableCell sx={{ fontWeight: 600 }}>{table.headers.col3}</TableCell>
+                          )}
+                          <TableCell sx={{ width: "80px" }} align="center">
+                            {/* Column format menu button */}
+                            <Tooltip title="Format columns">
+                              <IconButton size="small" onClick={(e) => handleFormatMenuOpen(e, table.id)}>
+                                <MoreVert fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            {/* Format menu */}
+                            <Menu
+                              anchorEl={formatMenuAnchor[table.id]}
+                              open={Boolean(formatMenuAnchor[table.id])}
+                              onClose={() => handleFormatMenuClose(table.id)}
+                            >
+                              <MenuItem disabled sx={{ fontSize: "0.85rem" }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                  Column 2: {table.headers.col2}
+                                </Typography>
+                              </MenuItem>
+                              <MenuItem onClick={() => toggleNumberFormat(table.id, 2)}>
+                                {table.columnNo?.includes(2) ? "✓ Format as Number" : "Format as Number"}
+                              </MenuItem>
 
-                  <TableContainer>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          {editingHeaders[table.id] ? (
-                            <>
-                              <TableCell>
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={editingHeaders[table.id].col1}
-                                  onChange={(e) =>
-                                    setEditingHeaders({
-                                      ...editingHeaders,
-                                      [table.id]: {
-                                        ...editingHeaders[table.id],
-                                        col1: e.target.value,
-                                      },
-                                    })
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell>
-                                
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={editingHeaders[table.id].col2}
-                                  onChange={(e) =>
-                                    setEditingHeaders({
-                                      ...editingHeaders,
-                                      [table.id]: {
-                                        ...editingHeaders[table.id],
-                                        col2: e.target.value,
-                                      },
-                                    })
-                                  }
-                                />
-                              </TableCell>
                               {table.columnCount === 3 && (
-                                <TableCell>
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={editingHeaders[table.id].col3}
-                                    onChange={(e) =>
-                                      setEditingHeaders({
-                                        ...editingHeaders,
-                                        [table.id]: {
-                                          ...editingHeaders[table.id],
-                                          col3: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </TableCell>
+                                <>
+                                  <MenuItem disabled sx={{ fontSize: "0.85rem", mt: 1 }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                      Column 3: {table.headers.col3}
+                                    </Typography>
+                                  </MenuItem>
+                                  <MenuItem onClick={() => toggleNumberFormat(table.id, 3)}>
+                                    {table.columnNo?.includes(3) ? "✓ Format as Number" : "Format as Number"}
+                                  </MenuItem>
+                                </>
                               )}
+                            </Menu>
+                          </TableCell>
+                          <TableCell sx={{ width: "50px" }} align="center">
+                            <Tooltip title="Edit column names">
+                              <IconButton
+                                size="small"
+                                onClick={() => startEditHeaders(table.id, table.headers, table.columnCount)}
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  </TableHead>
+
+                  <TableBody>
+                    {table.rows.map((row) => (
+                      <TableRow key={row.id}>
+                        {editingRow.tableId === table.id && editingRow.rowId === row.id ? (
+                          <>
+                            <TableCell>
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={rowForm.col1}
+                                onChange={(e) => setRowForm({ ...rowForm, col1: e.target.value })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={table.columnNo?.includes(2) ? formatNumber(rowForm.col2) : rowForm.col2}
+                                onChange={(e) => setRowForm({ ...rowForm, col2: e.target.value })}
+                              />
+                            </TableCell>
+                            {table.columnCount === 3 && (
                               <TableCell>
-                                <IconButton
+                                <TextField
                                   size="small"
-                                  onClick={() =>
-                                    saveEditHeaders(table.id, table.columnCount)
+                                  fullWidth
+                                  value={table.columnNo?.includes(3) ? formatNumber(rowForm.col3) : rowForm.col3}
+                                  onChange={(e) =>
+                                    setRowForm({
+                                      ...rowForm,
+                                      col3: e.target.value,
+                                    })
                                   }
-                                >
-                                  <Save />
-                                </IconButton>
+                                />
                               </TableCell>
-                            </>
-                          ) : (
-                            <>
-                              <TableCell sx={{ pt: 5 }}>
-                                <strong>{table.headers.col1}</strong>
-                              </TableCell>
-                              <TableCell>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: 1,
-                                  }}
-                                >
-                                  {table?.columnNo?.includes(2) ? (
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      sx={{
-                                        padding: "2px 6px",
-                                        minHeight: "24px",
-                                        lineHeight: 1,
-                                      }}
-                                      onClick={() =>
-                                        dispatch(
-                                          removeColumnToNumber({
-                                            id: table.id,
-                                            col: 2,
-                                          })
-                                        )
-                                      }
-                                    >
-                                      Remove Number Format
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      onClick={() =>
-                                        dispatch(
-                                          addColumnToNumber({
-                                            id: table.id,
-                                            col: 2,
-                                          })
-                                        )
-                                      }
-                                      sx={{
-                                        padding: "2px 6px",
-                                        minHeight: "24px",
-                                        lineHeight: 1,
-                                      }}
-                                      variant="contained"
-                                      size="small"
-                                    >
-                                      Set as Number
-                                    </Button>
-                                  )}
-
-                                  <strong>
-                                    {table.headers.col2} (Format :{" "}
-                                    {table?.columnNo?.includes(2)
-                                      ? "Number"
-                                      : "Text"}
-                                    )
-                                  </strong>
-                                </Box>
-                              </TableCell>
-
-                              {table.columnCount === 3 && (
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      flexDirection: "column",
-                                      gap: 1,
+                            )}
+                            <TableCell colSpan={2} align="center">
+                              <Stack direction="row" spacing={0.5} justifyContent="center">
+                                <Tooltip title="Save changes">
+                                  <IconButton size="small" color="success" onClick={saveEditRow}>
+                                    <Save fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Cancel">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => {
+                                      setEditingRow({
+                                        tableId: null,
+                                        rowId: null,
+                                      })
+                                      setRowForm({
+                                        col1: "",
+                                        col2: "",
+                                        col3: "",
+                                      })
                                     }}
                                   >
-                                    {table?.columnNo?.includes(3) ? (
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{
-                                          padding: "2px 6px",
-                                          minHeight: "24px",
-                                          lineHeight: 1,
-                                        }}
-                                        onClick={() =>
-                                          dispatch(
-                                            removeColumnToNumber({
-                                              id: table.id,
-                                              col: 3,
-                                            })
-                                          )
-                                        }
-                                      >
-                                        Remove Number Format
-                                      </Button>
-                                    ) : (
-                                      <Button
-                                        variant="contained"
-                                        size="small"
-                                        sx={{
-                                          padding: "2px 6px",
-                                          minHeight: "24px",
-                                          lineHeight: 1,
-                                        }}
-                                        onClick={() =>
-                                          dispatch(
-                                            addColumnToNumber({
-                                              id: table.id,
-                                              col: 3,
-                                            })
-                                          )
-                                        }
-                                      >
-                                        Set as Number
-                                      </Button>
-                                    )}
-
-                                    <strong>{table.headers.col3} (Format: 
-                                         {table?.columnNo?.includes(3)
-                                      ? "Number"
-                                      : "Text"})
-                                    </strong>
-                                  </Box>
-                                </TableCell>
-                              )}
-
-                              <TableCell>
-                                <IconButton
-                                  size="small"
-                                  onClick={() =>
-                                    startEditHeaders(
-                                      table.id,
-                                      table.headers,
-                                      table.columnCount
-                                    )
-                                  }
-                                >
-                                  <Edit />
-                                </IconButton>
-                              </TableCell>
-                            </>
-                          )}
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {table.rows.map((row) => (
-                          <TableRow key={row.id}>
-                            {editingRow.tableId === table.id &&
-                            editingRow.rowId === row.id ? (
-                              <>
-                                <TableCell>
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={rowForm.col1}
-                                    onChange={(e) =>
-                                      setRowForm({
-                                        ...rowForm,
-                                        col1: e.target.value,
-                                      })
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={
-                                      table?.columnNo?.includes(2)
-                                        ? formatNumber(rowForm.col2)
-                                        : rowForm.col2
-                                    }
-                                    onChange={(e) => {
-                                      const formatted = formatNumber(
-                                        e.target.value
-                                      );
-
-                                      if (
-                                        table?.columnNo?.includes(2)
-                                      ) {
-                                        setRowForm({
-                                          ...rowForm,
-                                          col2: formatted, // <-- store formatted value like "12,000"
-                                        });
-                                      }
-
-                                      setRowForm({
-                                        ...rowForm,
-                                        col2: e.target.value,
-                                      });
-                                    }}
-                                  />
-                                </TableCell>
-                                {table.columnCount === 3 && (
-                                  <TableCell>
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={
-                                        table?.columnNo?.includes(3)
-                                          ? formatNumber(rowForm.col3)
-                                          : rowForm.col3
-                                      }
-                                      onChange={(e) => {
-                                        const formatted = formatNumber(
-                                          e.target.value
-                                        );
-
-                                        if (
-                                          table?.columnNo?.includes(
-                                           3
-                                          )
-                                        ) {
-                                          setRowForm({
-                                            ...rowForm,
-                                            col3: formatted, // <-- store formatted value like "12,000"
-                                          });
-                                        }
-
-                                        setRowForm({
-                                          ...rowForm,
-                                          col3: e.target.value,
-                                        });
-                                      }}
-                                    />
-                                  </TableCell>
-                                )}
-                                <TableCell>
-                                  <Stack direction="row">
-                                    <IconButton
-                                      size="small"
-                                      onClick={saveEditRow}
-                                    >
-                                      <Save />
-                                    </IconButton>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => {
-                                        setEditingRow({
-                                          tableId: null,
-                                          rowId: null,
-                                        });
-                                        setRowForm({
-                                          col1: "",
-                                          col2: "",
-                                          col3: "",
-                                        });
-                                      }}
-                                    >
-                                      <Delete />
-                                    </IconButton>
-                                  </Stack>
-                                </TableCell>
-                              </>
-                            ) : (
-                              <>
-                                <TableCell>{row.col1}</TableCell>
-                                <TableCell>{row.col2}</TableCell>
-                                {table.columnCount === 3 && (
-                                  <TableCell>{row.col3}</TableCell>
-                                )}
-                                <TableCell>
-                                  <Stack direction="row">
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        startEditRow(
-                                          table.id,
-                                          row,
-                                          table.columnCount
-                                        )
-                                      }
-                                    >
-                                      <Edit />
-                                    </IconButton>
-                                    <IconButton
-                                      size="small"
-                                      color="error"
-                                      onClick={() =>
-                                        dispatch(
-                                          deleteTableRow({
-                                            tableId: table.id,
-                                            rowId: row.id,
-                                          })
-                                        )
-                                      }
-                                    >
-                                      <Delete />
-                                    </IconButton>
-                                  </Stack>
-                                </TableCell>
-                              </>
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell>{row.col1}</TableCell>
+                            <TableCell>{table.columnNo?.includes(2) ? formatNumber(row.col2) : row.col2}</TableCell>
+                            {table.columnCount === 3 && (
+                              <TableCell>{table.columnNo?.includes(3) ? formatNumber(row.col3) : row.col3}</TableCell>
                             )}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    <div ref={containerRef}></div>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            ))
+                            <TableCell colSpan={2} align="center">
+                              <Stack direction="row" spacing={0.5} justifyContent="center">
+                                <Tooltip title="Edit this row">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => startEditRow(table.id, row, table.columnCount)}
+                                  >
+                                    <Edit fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete this row">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() =>
+                                      dispatch(
+                                        deleteTableRow({
+                                          tableId: table.id,
+                                          rowId: row.id,
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        ))
           )}
         </>
       )}
 
       {/* Reset Button */}
       <Box mt={4}>
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<RefreshOutlined />}
-          sx={{ borderRadius: 5 }}
-          onClick={() => setResetOpen(true)}
-          fullWidth
-        >
+        <Button variant="outlined" color="error" startIcon={<RefreshOutlined />} onClick={() => setResetOpen(true)} fullWidth>
           Reset All Data
         </Button>
       </Box>
 
-      {/* Reset Confirmation Dialog */}
-      <Dialog
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        sx={{ borderRadius: 5 }}
-      >
-        <DialogTitle>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <WarningAmber color="error" />
-            <span>Confirm Reset</span>
-          </Stack>
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            This will delete all sections and tables. Continue?
-          </Typography>
-        </DialogContent>
+      <Dialog open={resetOpen} onClose={() => setResetOpen(false)}>
+        <DialogTitle><WarningAmber color="error" /> Confirm Reset</DialogTitle>
+        <DialogContent><Typography>This will delete all sections and tables. Continue?</Typography></DialogContent>
         <DialogActions>
           <Button onClick={() => setResetOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleReset}
-            color="error"
-            variant="contained"
-            sx={{ borderRadius: 5 }}
-          >
-            Reset Everything
-          </Button>
+          <Button onClick={handleReset} color="error" variant="contained">Reset Everything</Button>
         </DialogActions>
       </Dialog>
     </Box>

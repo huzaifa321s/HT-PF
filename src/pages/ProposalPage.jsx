@@ -75,7 +75,7 @@ const ProposalPage = () => {
         alert("PDF not found for this proposal.");
         return;
       }
-      const pdfUrl = `${import.meta.env.VITE_APP_BASE_URL}/${pdfPath}`;
+      const pdfUrl = pdfPath;
       window.open(pdfUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Error opening PDF:", error);

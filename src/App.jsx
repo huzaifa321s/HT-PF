@@ -107,7 +107,7 @@ import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import { addTable } from "./utils/page2Slice";
 // import { usePrompt } from "./hooks/usePrompt";
-
+import Pusher from 'pusher-js';
 export default function App() {
   const pdfRef = useRef();
   const [isLoading, setLoading] = useState(false);
@@ -215,7 +215,7 @@ export default function App() {
 
   // === Socket Setup ===
   useEffect(() => {
-    socketRef.current = io("http://localhost:5000");
+    socketRef.current = io("https://ht-pb.vercel.app");
 
     socketRef.current.on("connect", () => {
       setConnectionStatus(true);
@@ -289,7 +289,10 @@ export default function App() {
       console.log("FULL FINAL TRANSCRIPT:", data);
       console.log("WORD LENGTH:", data.length);
       const extracted = data.extracted;
-      dispatch(setBusinessInfo(extracted));
+if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0){
+
+  dispatch(setBusinessInfo(extracted));
+}
       // Update full transcript
       setFullTranscript(data.text);
       setTranscriptWordLength(data.length);
@@ -555,7 +558,7 @@ export default function App() {
 
     try {
       const res = await axiosInstance.post(
-        "http://localhost:5000/api/proposals/create-proposal",
+      `${import.meta.env.VITE_APP_BASE_URL}api/proposals/create-proposal`,
         { data: data, selectedCurrency: currency, pdfPages },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -576,14 +579,14 @@ export default function App() {
       formData.append("proposalId", proposalId);
 
       const uploadRes = await axiosInstance.post(
-        "http://localhost:5000/api/proposals/upload-pdf",
+        `${import.meta.env.VITE_APP_BASE_URL}api/proposals/upload-pdf`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (!uploadRes.data.success) throw new Error("PDF upload failed");
 
-      const serverPdfUrl = `http://localhost:5000/${uploadRes.data.filePath}`;
+      const serverPdfUrl = `${uploadRes.data.filePath}`;
       setPdfUrl(serverPdfUrl);
 
       dispatch(
@@ -637,7 +640,7 @@ export default function App() {
     fetchProfile();
   }, []); // runs once on mount
 
-  const isValidData = (obj, maxEmptyAllowed = 3) => {
+  const isValidData = (obj, maxEmptyAllowed = 5) => {
     let emptyCount = 0;
 
     for (const key in obj) {
@@ -659,252 +662,260 @@ export default function App() {
     return emptyCount <= maxEmptyAllowed;
   };
 
-  useEffect(() => {
-    const evtSource = new EventSource(
-      "http://localhost:5000/api/transcribe/sse"
-    );
 
-    evtSource.onmessage = (e) => {
-      const { event, data } = JSON.parse(e.data);
-      console.log("SSE Event:", event, data);
 
-      if (
-        event === "upload_status" ||
-        event === "transcription_status" ||
-        event === "pipeline_status"
-      ) {
-        if (!processing) setProcessing(true);
-        setStatus(data.step);
-        dispatch(showToast({ message: "Processing...", severity: "info" }));
-        console.log("dddd", data);
-        if (data.progress) {
-          setProgress(data.progress);
-        } else {
-          setProgress((prev) => Math.min(prev + 10, 90));
-        }
+useEffect(() => {
+  // ✅ Pusher client initialize
+  const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+    cluster: import.meta.env.VITE_PUSHER_CLUSTER || 'ap2'
+  });
 
-        setProcessing(false);
+  const channel = pusher.subscribe('sse-channel');
+
+  // ✅ Bind all events
+  channel.bind_global((event, data) => {
+    console.log("Pusher Event:", event, data);
+
+    if (
+      event === "upload_status" ||
+      event === "transcription_status" ||
+      event === "pipeline_status"
+    ) {
+      if (!processing) setProcessing(true);
+      setStatus(data.step);
+      dispatch(showToast({ message: "Processing...", severity: "info" }));
+      console.log("dddd", data);
+      if (data.progress) {
+        setProgress(data.progress);
+      } else {
+        setProgress((prev) => Math.min(prev + 10, 90));
       }
-      if (event === "complete") {
-        setStatus(data?.step || "Done");
-        const extracted = data.data.extracted ;
+
+      setProcessing(false);
+    }
+
+    if (event === "complete") {
+      setStatus(data?.step || "Done");
+      const extracted = data.data.extracted;
+      if(isValidData(extracted) || extracted?.deliverables?.length || extracted?.quotation?.length > 0){
         dispatch(setBusinessInfo(extracted));
-          if (extracted?.deliverables?.length > 0) {
-            console.log('datassssss')
-            const rows = extracted?.deliverables?.map((row) => ({
-              id: generateId(),
-              col1: row.item || "",
-              col2: row.estimated_time || "",
-            }));
-            dispatch(addTable({ T_ID: "123", rows }));
-             dispatch(
-                    showToast({
-                      message: `${"deliverables"
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-                      severity: "success",
-                    })
-                  );
-          }
-          if (extracted?.quotation?.length > 0) {
-            const rows = extracted?.quotation.map((row) => ({
-              id: generateId(),
-              col1: row.item || "",
-              col2: row.quantity || 0,
-              col3: row.estimated_cost_pkr || "",
-            }));
-            dispatch(
-              addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
-            );
-            dispatch(
-                    showToast({
-                      message: `${"quotation"
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-                      severity: "success",
-                    })
-                  );
-          }
-        console.log("data", data);
+      }
+
+      if (extracted?.deliverables?.length > 0) {
+        console.log('datassssss')
+        const rows = extracted?.deliverables?.map((row) => ({
+          id: generateId(),
+          col1: row.item || "",
+          col2: row.estimated_time || "",
+        }));
+        dispatch(addTable({ T_ID: "123", rows }));
+        dispatch(
+          showToast({
+            message: `${"deliverables"
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+            severity: "success",
+          })
+        );
+      }
+
+      if (extracted?.quotation?.length > 0) {
+        const rows = extracted?.quotation.map((row) => ({
+          id: generateId(),
+          col1: row.item || "",
+          col2: row.quantity || 0,
+          col3: row.estimated_cost_pkr || "",
+        }));
+        dispatch(
+          addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+        );
+        dispatch(
+          showToast({
+            message: `${"quotation"
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+            severity: "success",
+          })
+        );
+      }
+
+      console.log("data", data);
+      
+      dispatch(
+        showToast({
+          message: `✅ Transcription completed${
+            extracted.business_details
+              ? " and business details extracted"
+              : ""
+          } successfully!.`,
+          severity: "success",
+          duration: 4000,
+        })
+      );
+
+      const result = isValidData(extracted);
+
+      setBadges((prev) => ({
+        ...prev,
+        polished: true,
+        business: result || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0,
+      }));
+
+      if (event === "upload_status") {
+        setBadges((prev) => ({ ...prev, audio: true }));
+        setTimeout(
+          () => setBadges((prev) => ({ ...prev, audio: false })),
+          3000
+        );
+      }
+
+      if (result) {
+        setBadges((prev) => ({
+          ...prev,
+          proposal: true,
+          email: true,
+          pdf: true,
+          business: true,
+        }));
+        if (extracted.brand_name)
+          dispatch(setBrandName(extracted.brand_name));
+        if (extracted.project_brief)
+          dispatch(setProjectBrief(extracted.project_brief));
+      }
+      dispatch(setPolishedTranscript(data.data.polished));
+    }
+
+    if (event === "completed_audio") {
+      setStatus("✅ Done!");
+      console.log("data.data", data.data);
+      const extracted = data.data.extracted || {};
+         if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0){
+
+           dispatch(setBusinessInfo(extracted));
+         };
+
+
+      if (history.length > 0 || data.data.polished.length > 0) {
+        const generateId = () => crypto.randomUUID();
         
+        if (data.data.extracted?.deliverables?.length > 0) {
+          console.log('datassssss')
+          const rows = data.data?.extracted?.deliverables?.map((row) => ({
+            id: generateId(),
+            col1: row.item || "",
+            col2: row.estimated_time || "",
+          }));
+          dispatch(addTable({ T_ID: "123", rows }));
           dispatch(
             showToast({
-              message: `✅ Transcription completed${
-                extracted.business_details
-                  ? " and business details extracted"
-                  : ""
-              } successfully!.`,
+              message: `${"deliverables"
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
               severity: "success",
-              duration: 4000,
             })
           );
-          const result = isValidData(extracted);
-
-          setBadges((prev) => ({
-            ...prev,
-            polished: true,
-            business: result || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0 ,
-          }));
-
-          if (event === "upload_status") {
-            setBadges((prev) => ({ ...prev, audio: true }));
-            setTimeout(
-              () => setBadges((prev) => ({ ...prev, audio: false })),
-              3000
-            );
-          }
-
-          if (result) {
-            setBadges((prev) => ({
-              ...prev,
-              proposal: true,
-              email: true,
-              pdf: true,
-              business: true,
-            }));
-            if (extracted.brand_name)
-              dispatch(setBrandName(extracted.brand_name));
-            if (extracted.project_brief)
-              dispatch(setProjectBrief(extracted.project_brief));
-          }
-          dispatch(setPolishedTranscript(data.data.polished));
-        
-      }
-      if (event === "completed_audio") {
-        setStatus("✅ Done!");
-        console.log("data.data", data.data);
-        const extracted = data.data.extracted || {};
-        dispatch(setBusinessInfo(extracted));
-        // Show toast if transcription or extraction exists
-        if (history.length > 0 || data.data.polished.length > 0) {
-          const generateId = () => crypto.randomUUID();
-          if (data.data.extracted?.deliverables?.length > 0) {
-            console.log('datassssss')
-            const rows = data.data?.extracted?.deliverables?.map((row) => ({
-              id: generateId(),
-              col1: row.item || "",
-              col2: row.estimated_time || "",
-            }));
-            dispatch(addTable({ T_ID: "123", rows }));
-             dispatch(
-                    showToast({
-                      message: `${"deliverables"
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-                      severity: "success",
-                    })
-                  );
-          }
-          if (data.data.extracted?.quotation?.length > 0) {
-            const rows = data.data?.extracted?.quotation.map((row) => ({
-              id: generateId(),
-              col1: row.item || "",
-              col2: row.quantity || 0,
-              col3: row.estimated_cost_pkr || "",
-            }));
-            dispatch(
-              addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
-            );
-            dispatch(
-                    showToast({
-                      message: `${"quotation"
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-                      severity: "success",
-                    })
-                  );
-          }
-          // dispatch(
-          //   showToast({
-          //     message: `✅ Transcription completed${
-          //       extracted.business_details
-          //         ? " and business details extracted"
-          //         : ""
-          //     } successfully!.`,
-          //     severity: "success",
-          //     duration: 4000,
-          //   })
-          // );
-
-          setBadges((prev) => ({
-            ...prev,
-            polished: true,
-            business: !!extracted.business_details,
-          }));
-
-          if (event === "upload_status") {
-            setBadges((prev) => ({ ...prev, audio: true }));
-            setTimeout(
-              () => setBadges((prev) => ({ ...prev, audio: false })),
-              3000
-            );
-          }
         }
 
-        // Set polished transcript
-        dispatch(setPolishedTranscript(data.data.polished));
-        console.log("data.data.polished", data.data.polished);
-        setTranscript(data.data.polished);
-
-        // Set progress
-        setProgress(100);
-
-        const updatedData = {
-          ...formData,
-          ...(extracted.business_details && {
-            businessDescription: extracted.business_details,
-          }),
-          ...(extracted.proposed_solution && {
-            proposedSolution: extracted.proposed_solution,
-          }),
-          ...(extracted.recommended_services?.length > 0 && {
-            recommended_services: extracted.recommended_services,
-          }),
-          ...(extracted.project_brief && {
-            projectBrief: extracted.project_brief,
-          }),
-          ...(extracted.brand_name && { brandName: extracted.brand_name }),
-          ...(extracted.brand_tagline && {
-            brandTagline: extracted.brand_tagline,
-          }),
-          ...(extracted.business_type && {
-            businessType: extracted.business_type,
-          }),
-          ...(extracted.industry_title && {
-            industoryTitle: extracted.industry_title,
-          }),
-          ...(extracted.strategic_proposal?.length > 0 && {
-            strategicProposal: extracted.strategic_proposal,
-          }),
-        };
-
-        const result = isValidData(extracted);
-
-        if (result) {
-          setBadges((prev) => ({
-            ...prev,
-            proposal: true,
-            email: true,
-            pdf: true,
+        if (data.data.extracted?.quotation?.length > 0) {
+          const rows = data.data?.extracted?.quotation.map((row) => ({
+            id: generateId(),
+            col1: row.item || "",
+            col2: row.quantity || 0,
+            col3: row.estimated_cost_pkr || "",
           }));
-          if (extracted.brand_name)
-            dispatch(setBrandName(extracted.brand_name));
-          if (extracted.project_brief)
-            dispatch(setProjectBrief(extracted.project_brief));
+          dispatch(
+            addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+          );
+          dispatch(
+            showToast({
+              message: `${"quotation"
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+              severity: "success",
+            })
+          );
         }
 
-        setProcessing(false);
+        setBadges((prev) => ({
+          ...prev,
+          polished: true,
+          business: !!extracted.business_details,
+        }));
+
+        if (event === "upload_status") {
+          setBadges((prev) => ({ ...prev, audio: true }));
+          setTimeout(
+            () => setBadges((prev) => ({ ...prev, audio: false })),
+            3000
+          );
+        }
       }
 
-      if (event === "error") {
-        setStatus(`❌ ${data.message}`);
-        setProcessing(false);
+      dispatch(setPolishedTranscript(data.data.polished));
+      console.log("data.data.polished", data.data.polished);
+      setTranscript(data.data.polished);
+      setProgress(100);
+
+      const updatedData = {
+        ...formData,
+        ...(extracted.business_details && {
+          businessDescription: extracted.business_details,
+        }),
+        ...(extracted.proposed_solution && {
+          proposedSolution: extracted.proposed_solution,
+        }),
+        ...(extracted.recommended_services?.length > 0 && {
+          recommended_services: extracted.recommended_services,
+        }),
+        ...(extracted.project_brief && {
+          projectBrief: extracted.project_brief,
+        }),
+        ...(extracted.brand_name && { brandName: extracted.brand_name }),
+        ...(extracted.brand_tagline && {
+          brandTagline: extracted.brand_tagline,
+        }),
+        ...(extracted.business_type && {
+          businessType: extracted.business_type,
+        }),
+        ...(extracted.industry_title && {
+          industoryTitle: extracted.industry_title,
+        }),
+        ...(extracted.strategic_proposal?.length > 0 && {
+          strategicProposal: extracted.strategic_proposal,
+        }),
+      };
+
+      const result = isValidData(extracted);
+
+      if (result) {
+        setBadges((prev) => ({
+          ...prev,
+          proposal: true,
+          email: true,
+          pdf: true,
+        }));
+        if (extracted.brand_name)
+          dispatch(setBrandName(extracted.brand_name));
+        if (extracted.project_brief)
+          dispatch(setProjectBrief(extracted.project_brief));
       }
-    };
 
-    return () => evtSource.close();
-  }, [processing]);
+      setProcessing(false);
+    }
 
+    if (event === "error") {
+      setStatus(`❌ ${data.message}`);
+      setProcessing(false);
+    }
+  });
+
+  // Cleanup
+  return () => {
+    channel.unbind_all();
+    channel.unsubscribe();
+    pusher.disconnect();
+  };
+}, [processing]);
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -916,7 +927,7 @@ export default function App() {
     const formData = new FormData();
     formData.append("file", file);
 
-    await fetch("http://localhost:5000/api/transcribe", {
+    await fetch(`${import.meta.env.VITE_APP_BASE_URL}api/transcribe`, {
       method: "POST",
       body: formData,
     });

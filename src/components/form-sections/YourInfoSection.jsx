@@ -26,7 +26,7 @@ export default function YourInfoSection({
     async function fetchBDM() {
       try {
         setFetchingBDM(true);
-        const res = await axiosInstance.get(`${import.meta.env.VITE_APP_BASE_URL}/api/bdms/get`);
+        const res = await axiosInstance.get(`${import.meta.env.VITE_APP_BASE_URL}api/bdms/get`);
         setOptions(res.data.data);
       } catch (err) {
         console.error(err);

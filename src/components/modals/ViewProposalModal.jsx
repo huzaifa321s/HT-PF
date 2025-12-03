@@ -54,7 +54,7 @@ const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         );
         setProposal({ ...res.data.data, isAdmin: res.data.isAdmin });
         if (res.data.data.pdfPath) {
-          setPdfUrl(`/${res.data.data.pdfPath}`);
+          setPdfUrl(`${res.data.data.pdfPath}`);
         }
       } catch (error) {
         console.error("Error fetching proposal:", error);

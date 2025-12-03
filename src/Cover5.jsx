@@ -78,11 +78,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
 
   },
-  termNumber: {
-    width: 15,
+ termNumber: {
+    width: 25, // increased from 15 to 25 for proper dot display
     fontSize: 12,
     fontWeight: "bold",
     color: "#000",
+    textAlign: "right", // right-align to ensure dot stays within bounds
   },
   termText: {
     flex: 1,

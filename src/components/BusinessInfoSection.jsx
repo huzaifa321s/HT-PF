@@ -45,7 +45,8 @@ import {
   updateBusinessField,
 } from "../utils/businessInfoSlice";
 import axiosInstance from "../utils/axiosInstance";
-import { addSection, addTable } from "../utils/page2Slice";
+import { addSection, addTable, updateSection } from "../utils/page2Slice";
+import { store } from "../utils/store";
 
 export default function BusinessInfoSection({ fullTranscript }) {
   const dispatch = useDispatch();
@@ -171,10 +172,9 @@ export default function BusinessInfoSection({ fullTranscript }) {
       setExtracting(true);
       setParseError(null);
 
-      const res = await axiosInstance.post(
-        `/api/transcribe/ai/extract`,
-        { transcript: input }
-      );
+      const res = await axiosInstance.post(`/api/transcribe/ai/extract`, {
+        transcript: input,
+      });
 
       let result = res.data;
       if (typeof result === "string") {
@@ -218,7 +218,8 @@ export default function BusinessInfoSection({ fullTranscript }) {
       setExtracting(false);
     }
   };
-
+  const pdfPage3Data = store.getState((s) => s.page);
+  const orderedSections = pdfPage3Data?.page2.create.orderedSections;
   // ✅ Add field to PDF function (empty for now)
   const handleAddToPdf = async (fieldKey, fieldValue) => {
     try {
@@ -245,15 +246,29 @@ export default function BusinessInfoSection({ fullTranscript }) {
         );
       } else {
         // TODO: Implement PDF section addition logic
-        dispatch(
-          addSection({
-            type: "title",
-            title: fieldKey
-              .replace(/_/g, " ") // remove "_"
-              .replace(/\b\w/g, (c) => c.toUpperCase()), // capitalize every word
-            content: fieldValue.trim(),
-          })
-        );
+        if (orderedSections.some((item) => item.id === fieldKey)) {
+          dispatch(
+            updateSection({
+              id: fieldKey,
+              type: "title",
+              title: fieldKey
+                .replace(/_/g, " ") // remove "_"
+                .replace(/\b\w/g, (c) => c.toUpperCase()),
+              content: fieldValue.trim(),
+            })
+          );
+        } else {
+          dispatch(
+            addSection({
+              id: fieldKey,
+              type: "title",
+              title: fieldKey
+                .replace(/_/g, " ") // remove "_"
+                .replace(/\b\w/g, (c) => c.toUpperCase()), // capitalize every word
+              content: fieldValue.trim(),
+            })
+          );
+        }
       }
 
       dispatch(
@@ -278,10 +293,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
 
   // ✅ Check if field is auto-added (deliverables or quotation)
   const isAutoAdded = (key) => {
-    return (
-      key === "deliverables" ||
-      key === "quotation" 
-    );
+    return key === "deliverables" || key === "quotation";
   };
 
   const isAddBtn = (key) => {
@@ -312,9 +324,9 @@ export default function BusinessInfoSection({ fullTranscript }) {
 
     // ✅ DELIVERABLES TABLE
     if (key === "deliverables" && Array.isArray(value)) {
-      const isDeliverableTable = value.length > 0
-console.log('Array',Array.isArray(value));
-console.log('value',value)
+      const isDeliverableTable = value.length > 0;
+      console.log("Array", Array.isArray(value));
+      console.log("value", value);
       if (isDeliverableTable) {
         return (
           <TableContainer
@@ -371,7 +383,7 @@ console.log('value',value)
 
     // ✅ QUOTATION TABLE
     if (key === "quotation" && Array.isArray(value)) {
-      const isQuotationTable = value.length > 0 
+      const isQuotationTable = value.length > 0;
 
       if (isQuotationTable) {
         const total = value.reduce(
@@ -674,7 +686,6 @@ console.log('value',value)
               textAlign: "start",
             }}
           >
-            
             {parseError && (
               <Paper
                 sx={{
@@ -691,7 +702,21 @@ console.log('value',value)
                 </Box>
               </Paper>
             )}
-{entries?.length > 0 && <Button onClick={() => {dispatch(showToast({ message: "Data cleared successfully.", servity: 'success' })),dispatch(setBusinessInfo({}))}}>Clear All Data <Clear/></Button>}
+            {entries?.length > 0 && (
+              <Button
+                onClick={() => {
+                  dispatch(
+                    showToast({
+                      message: "Data cleared successfully.",
+                      servity: "success",
+                    })
+                  ),
+                    dispatch(setBusinessInfo({}));
+                }}
+              >
+                Clear All Data <Clear />
+              </Button>
+            )}
             {entries.length > 0 ? (
               entries.map(([key, value]) => {
                 const promptKey = `${key}_prompt`;
@@ -717,6 +742,7 @@ console.log('value',value)
                       },
                     }}
                   >
+                    {console.log("hasValue", value)}
                     <Box
                       sx={{
                         display: "flex",
@@ -736,70 +762,73 @@ console.log('value',value)
                         }}
                       />
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        {/* ✅ Add to PDF Button with Auto-Added Badge */}
-                        {isAddBtn(key) ? null : isAutoAdded(key) ? (
-                          <Badge
-                            badgeContent="Auto Added"
-                            color="success"
-                            sx={{
-                              "& .MuiBadge-badge": {
-                                fontSize: "0.65rem",
-                                height: 18,
-                                minWidth: 18,
-                                padding: "0 6px",
-                              },
-                            }}
-                          >
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<AddCircleOutline />}
-                              onClick={() => handleAddToPdf(key, value)}
-                              sx={{
-                                borderColor: "#4caf50",
-                                color: "#4caf50",
-                                textTransform: "none",
-                                fontWeight: 600,
-                              }}
-                            >
-                              Add to PDF
-                            </Button>
-                          </Badge>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<AddCircleOutline />}
-                            onClick={() => handleAddToPdf(key, value)}
-                            sx={{
-                              borderColor: "#667eea",
-                              color: "#667eea",
-                              textTransform: "none",
-                              fontWeight: 600,
-                              "&:hover": {
-                                borderColor: "#5568d3",
-                                bgcolor: "rgba(102,126,234,0.05)",
-                              },
-                            }}
-                          >
-                            Add to PDF
-                          </Button>
-                        )}
-
                         {hasValue && (
-                          <Tooltip
-                            title={copiedKey === key ? "Copied!" : "Copy"}
-                          >
-                            <IconButton
-                              onClick={() => handleCopyField(key, value)}
+                          <>
+                            {/* Add to PDF Button with Auto-Added Badge */}
+                            {isAddBtn(key) ? null : isAutoAdded(key) ? (
+                              <Badge
+                                badgeContent="Auto Added"
+                                color="success"
+                                sx={{
+                                  "& .MuiBadge-badge": {
+                                    fontSize: "0.65rem",
+                                    height: 18,
+                                    minWidth: 18,
+                                    padding: "0 6px",
+                                  },
+                                }}
+                              >
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<AddCircleOutline />}
+                                  onClick={() => handleAddToPdf(key, value)}
+                                  sx={{
+                                    borderColor: "#4caf50",
+                                    color: "#4caf50",
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  Add to PDF
+                                </Button>
+                              </Badge>
+                            ) : (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<AddCircleOutline />}
+                                onClick={() => handleAddToPdf(key, value)}
+                                sx={{
+                                  borderColor: "#667eea",
+                                  color: "#667eea",
+                                  textTransform: "none",
+                                  fontWeight: 600,
+                                  "&:hover": {
+                                    borderColor: "#5568d3",
+                                    bgcolor: "rgba(102,126,234,0.05)",
+                                  },
+                                }}
+                              >
+                                Add to PDF
+                              </Button>
+                            )}
+
+                            {/* Copy Button */}
+                            <Tooltip
+                              title={copiedKey === key ? "Copied!" : "Copy"}
                             >
-                              {copiedKey === key ? (
-                                <CheckCircle sx={{ color: "#4caf50" }} />
-                              ) : (
-                                <ContentCopy sx={{ color: "#667eea" }} />
-                              )}
-                            </IconButton>
-                          </Tooltip>
+                              <IconButton
+                                onClick={() => handleCopyField(key, value)}
+                              >
+                                {copiedKey === key ? (
+                                  <CheckCircle sx={{ color: "#4caf50" }} />
+                                ) : (
+                                  <ContentCopy sx={{ color: "#667eea" }} />
+                                )}
+                              </IconButton>
+                            </Tooltip>
+                          </>
                         )}
                       </Box>
                     </Box>

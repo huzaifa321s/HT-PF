@@ -72,13 +72,14 @@ import {
   updateServices,
 } from "./utils/proposalSlice";
 import axiosInstance from "./utils/axiosInstance";
-import { addSection } from "./utils/page2Slice";
+import { addSection, updateSection } from "./utils/page2Slice";
 import { setBrandName } from "./utils/page1Slice";
 import { updateTitle } from "./utils/page3Slice";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { store } from "./utils/store";
 const ProposalFormWithStepper = ({
   control,
   errors,
@@ -210,24 +211,54 @@ const ProposalFormWithStepper = ({
     </Box>
   );
 
+  const pdfPage3Data = store.getState((s) => s.page);
+  const orderedSections = pdfPage3Data?.page2.create.orderedSections;
+  const businessSectionExists = orderedSections.some(item => item.id === "business")
+  const proposedSectionExists = orderedSections.some(item => item.id === "proposed");
   const AddSectionToPDf = (data) => {
     handleNext();
+  orderedSections.some(item => item.id === "business");
 
-    dispatch(
-      addSection({
-        type: "title",
-        title: "Business Description",
+if(businessSectionExists){
+  console.log('updated')
+  dispatch(
+ updateSection({
+        id: "business",
+        type: 'title',
+        title:"Business Description",
         content: data.businessDescription.trim(),
       })
-    );
-    dispatch(
-      addSection({
-        type: "title",
-        title: "Proposed Solution",
+    )
+}else{
+  dispatch(
+    addSection({
+      type: "title",
+      title: "Business Description",
+      content: data.businessDescription.trim(),
+      id:"business"
+    })
+  );
+}
+if(proposedSectionExists){
+  dispatch(
+ updateSection({
+        id: "proposed",
+        type: 'title',
+        title:"Proposed Solution",
         content: data.proposedSolution.trim(),
       })
-    );
-  };
+    )
+}else{
+  dispatch(
+    addSection({
+      type: "title",
+      title: "Proposed Solution",
+      content: data.proposedSolution.trim(),
+      id:"proposed"
+    })
+  );
+}
+};
 
   const handleSubmitData = async (data) => {
     console.log("Form data submitted:", data);

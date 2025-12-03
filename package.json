@@ -51,6 +51,8 @@
     "html2pdf.js": "^0.12.1",
     "jspdf": "^3.0.3",
     "lodash": "^4.17.21",
+    "markdown-it": "^14.1.0",
+    "markdown-list": "^0.1.0",
     "mic-recorder-to-mp3": "^2.2.2",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^3.11.174",
