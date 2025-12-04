@@ -27,8 +27,8 @@ import SpeedIcon from "@mui/icons-material/Speed";
 
 const Footer = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const user =
     typeof window !== "undefined"
       ? JSON.parse(sessionStorage.getItem("user") || "null")
@@ -55,17 +55,19 @@ const Footer = () => {
         mb: "-30px",
         borderTop: "3px solid",
         borderImage: "linear-gradient(90deg, #667eea 0%, #764ba2 100%) 1",
-        "&::before": hasShimmer ? {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: "-100%",
-          width: "100%",
-          height: "100%",
-          background:
-            "linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)",
-          animation: "shimmer 8s infinite",
-        } : {},
+        "&::before": hasShimmer
+          ? {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: "-100%",
+            width: "100%",
+            height: "100%",
+            background:
+              "linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)",
+            animation: "shimmer 8s infinite",
+          }
+          : {},
         "@keyframes shimmer": {
           "0%": { left: "-100%" },
           "100%": { left: "100%" },
@@ -77,38 +79,40 @@ const Footer = () => {
   );
 
   const quickLinks = [
-    { 
-      label: "Dashboard", 
-      path: "/", 
+    {
+      label: "Dashboard",
+      path: "/",
       icon: <DashboardIcon sx={{ fontSize: 18 }} />,
-      show: location.pathname !== "/dashboard"
+      show: location.pathname !== "/dashboard",
     },
-    { 
-      label: "Create Proposal", 
-      path: "/create-proposal", 
+    {
+      label: "Create Proposal",
+      path: "/create-proposal",
       icon: <DescriptionIcon sx={{ fontSize: 18 }} />,
-      show: location.pathname !== "/create-proposal"
+      show: location.pathname !== "/create-proposal",
     },
-    { 
+    {
       label: role === "admin" ? "All Proposals" : "Your Proposals",
       path: role === "admin" ? "/admin/proposals" : "/your-proposals",
       icon: <FolderIcon sx={{ fontSize: 18 }} />,
-      show: location.pathname !== "/your-proposals" && location.pathname !== "/admin/proposals"
+      show:
+        location.pathname !== "/your-proposals" &&
+        location.pathname !== "/admin/proposals",
     },
-    { 
-      label: "Agents Management", 
-      path: "/admin/bdms", 
+    {
+      label: "Agents Management",
+      path: "/admin/bdms",
       icon: <PeopleIcon sx={{ fontSize: 18 }} />,
-      show: role === "admin"
+      show: role === "admin",
     },
-  ].filter(link => link.show);
+  ].filter((link) => link.show);
 
   // Agent ka simple footer
   if (role === "agent") {
     return (
       <FullWidthFooter hasShimmer={false}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center" }}>
+          <Box sx={{ textAlign: "center", }}>
             {/* Logo/Icon */}
             <Box
               sx={{
@@ -123,16 +127,16 @@ const Footer = () => {
                 mb: 2,
               }}
             >
-             <img
-    src="/download.jpg"
-    alt="icon"
-    style={{
-      width: "24px",
-      height: "24px",
-      objectFit: "contain",
-      borderRadius:100
-    }}
-  />
+              <img
+                src="/download.jpg"
+                alt="icon"
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  objectFit: "contain",
+                  borderRadius: 100,
+                }}
+              />
             </Box>
 
             <Typography
@@ -144,15 +148,16 @@ const Footer = () => {
                 WebkitTextFillColor: "transparent",
                 letterSpacing: "-0.5px",
                 mb: 1,
+                ml: 2
               }}
             >
               Proposal Management System
             </Typography>
             <Typography
               variant="body2"
-              sx={{ 
-                color: "#b0bec5", 
-                opacity: 0.8, 
+              sx={{
+                color: "#b0bec5",
+                opacity: 0.8,
                 fontSize: "0.95rem",
                 mb: 2,
               }}
@@ -185,30 +190,30 @@ const Footer = () => {
         <Grid container spacing={5} alignItems="flex-start">
           {/* Left - Brand */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Box
-  sx={{
-    width: 42,
-    height: 42,
-    borderRadius: 2.5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#fff",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-  }}
->
-  <img
-    src="/download.jpg"
-    alt="icon"
-    style={{
-      width: "24px",
-      height: "24px",
-      objectFit: "contain",
-      borderRadius:100
-    }}
-  />
-</Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: '14px' }}>
+              <Box
+                sx={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 2.5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#fff",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                }}
+              >
+                <img
+                  src="/download.jpg"
+                  alt="icon"
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    objectFit: "contain",
+                    borderRadius: 100,
+                  }}
+                />
+              </Box>
 
               <Typography
                 variant="h6"
@@ -225,9 +230,9 @@ const Footer = () => {
             </Box>
             <Typography
               variant="body2"
-              sx={{ 
-                color: "#b0bec5", 
-                lineHeight: 1.7, 
+              sx={{
+                color: "#b0bec5",
+                lineHeight: 1.7,
                 opacity: 0.85,
                 mb: 2,
               }}
@@ -319,10 +324,10 @@ const Footer = () => {
                     },
                   }}
                 >
-                  <Box 
+                  <Box
                     className="link-icon"
-                    sx={{ 
-                      display: "flex", 
+                    sx={{
+                      display: "flex",
                       transition: "transform 0.3s ease",
                       color: "#90caf9",
                     }}
@@ -352,8 +357,8 @@ const Footer = () => {
               System Status
             </Typography>
             <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
-              <Stack 
-                spacing={1.5} 
+              <Stack
+                spacing={1.5}
                 alignItems={{ xs: "flex-start", md: "flex-end" }}
               >
                 {/* Version Badge */}
@@ -368,10 +373,10 @@ const Footer = () => {
                     border: `1px solid ${alpha("#667eea", 0.3)}`,
                   }}
                 >
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: "#b0bec5", 
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#b0bec5",
                       fontWeight: 600,
                       fontSize: "0.85rem",
                     }}
@@ -421,84 +426,108 @@ const Footer = () => {
           </Grid>
         </Grid>
 
-        <Divider 
-          sx={{ 
-            my: 4, 
+        <Divider
+          sx={{
+            my: 4,
             borderColor: "rgba(255,255,255,0.12)",
             borderWidth: 1,
-          }} 
+          }}
         />
 
-        {/* Bottom Section */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#b0bec5",
-              opacity: 0.7,
-              fontSize: "0.9rem",
-            }}
-          >
-            © {new Date().getFullYear()} Proposal Management System — Strictly for Internal Use Only
-          </Typography>
-
-          {/* Status Indicator */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              padding: "4px 12px",
-              borderRadius: 2,
-              background: alpha("#4caf50", 0.1),
-              border: `1px solid ${alpha("#4caf50", 0.3)}`,
-            }}
-          >
-            <Box
+        {/* Bottom Section - 3 Equal Columns */}
+        <Grid container spacing={2} alignItems="center">
+          {/* Left Section - Copyright */}
+          <Grid item xs={12} md={4}>
+            <Typography
+              variant="body2"
               sx={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#4caf50",
-                boxShadow: "0 0 6px rgba(76, 175, 80, 0.8)",
+                color: "#b0bec5",
+                opacity: 0.7,
+                fontSize: "0.9rem",
+                textAlign: { xs: "center", md: "left" },
               }}
-            />
+            >
+              © {new Date().getFullYear()} Proposal Management System
+            </Typography>
             <Typography
               variant="caption"
               sx={{
-                color: "#4caf50",
-                fontWeight: 700,
-                fontSize: "0.75rem",
+                color: "#b0bec5",
+                opacity: 0.5,
+                fontSize: "0.8rem",
+                textAlign: { xs: "center", md: "left" },
+                display: "block",
               }}
             >
-              All Systems Operational
+              Strictly for Internal Use Only
             </Typography>
-          </Box>
-        </Box>
+          </Grid>
+
+          {/* Center Section - Empty/Placeholder */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ textAlign: "center" }}>
+              {/* You can add center content here if needed */}
+            </Box>
+          </Grid>
+
+          {/* Right Section - Status Indicator */}
+          <Grid item xs={12} md={4}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: { xs: "center", md: "flex-end" },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  padding: "4px 12px",
+                  borderRadius: 2,
+                  background: alpha("#4caf50", 0.1),
+                  border: `1px solid ${alpha("#4caf50", 0.3)}`,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#4caf50",
+                    boxShadow: "0 0 6px rgba(76, 175, 80, 0.8)",
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#4caf50",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  All Systems Operational
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
       </Container>
 
       {/* Pulse Animation */}
       <style>
         {`
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-            50% {
-              opacity: 0.7;
-              transform: scale(1.1);
-            }
-          }
-        `}
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.7;
+          transform: scale(1.1);
+        }
+      }
+    `}
       </style>
     </FullWidthFooter>
   );

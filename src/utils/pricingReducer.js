@@ -15,7 +15,7 @@ const modeDefaults = {
   pageTitle: 'Service Packages & Quotation',
   heading: 'Performance Marketing Packages',
   subheading: "Maximize Your Brand's Impact with Our Performance Marketing Packages.\nTailored for Startups, Scaling Brands, & Market Leaders ready to Dominate with Precision.",
-  elements: [],
+  elements: [{id :`el-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,type: 'package',...defaultPackage}],
   gridPackages: [],
   currentPages: 1,
   includeInPdf: true,

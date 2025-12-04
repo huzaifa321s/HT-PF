@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 1.8,
     marginBottom: 6,
-    
+
   },
 
   numberedMain: {
@@ -196,15 +196,18 @@ const PdfPageDocument2 = ({
     }
 
     if (sec.type === "numbered") {
-      const blocks = sec.content.split(/\n(?=\d+\.\s)/).filter(Boolean);
+      const blocks = sec.content
+        .split(/\n(?=\d+\.\s)/)
+        .filter(Boolean);
 
       return (
         <View key={key}>
-          {sec.title && <Text style={styles.sectionTitle}>{sec.title}</Text>}
+          {sec.title ? <Text style={styles.sectionTitle}>{sec.title}</Text> : null}
 
           {blocks.map((block, i) => {
             const lines = block.trim().split("\n");
-            const mainText = lines[0].replace(/^\d+\.\s*/, "").trim();
+            const mainRaw = lines[0];
+            const mainText = mainRaw.replace(/^\d+\.\s*/, "").trim();
             const subLines = lines.slice(1);
 
             return (
@@ -214,10 +217,25 @@ const PdfPageDocument2 = ({
                   {i + 1}. {mainText}
                 </Text>
 
-                {/* Sub bullets */}
+                {/* Sub-lines – exact same logic as renderNumberedToString */}
                 {subLines.map((sub, j) => {
-                  const cleanSub = sub;
-                  if (!cleanSub) return null;
+                  const trimmed = sub.trim();
+                  if (!trimmed) return null;
+
+                  let bullet = "• ";
+                  let cleanText = trimmed;
+
+                  // Case 1: Line already has bullet symbols (•, -, *, etc.) → preserve exact bullet
+                  const bulletMatch = trimmed.match(/^([•·\*•\-\u2022>]+|\-\s|\*\s|•\s)/);
+                  if (bulletMatch) {
+                    bullet = bulletMatch[0];                    // e.g., "• ", "- ", "* "
+                    cleanText = trimmed.slice(bullet.length).trim();
+                  }
+                  // Case 2: Plain text → add default bullet
+                  else {
+                    cleanText = trimmed;
+                    bullet = "• ";
+                  }
 
                   return (
                     <View
@@ -225,25 +243,30 @@ const PdfPageDocument2 = ({
                       style={{
                         flexDirection: "row",
                         alignItems: "flex-start",
-                        marginTop: 6,
+                        // marginTop: 6,
                         marginLeft: 20,
                       }}
-                      wrap={false}
                     >
                       <Text
                         style={{
-                          marginRight: 7,
+                          marginRight: 8,
                           fontSize: 10,
-                          lineHeight: 1.7,
-                          marginTop: 2,
+                          // lineHeight: 18,
+                          marginTop: 3,
+                          color: "#555",
                         }}
                       >
-                        •
+                        {bullet.trim()}
                       </Text>
                       <Text
-                        style={{ flex: 1, fontSize: 10.5, lineHeight: 1.7 }}
+                        style={{
+                          flex: 1,
+                          fontSize: 10.5,
+                          // lineHeight: 18,
+                          color: "#333",
+                        }}
                       >
-                        {cleanSub}
+                        {cleanText}
                       </Text>
                     </View>
                   );
@@ -251,10 +274,12 @@ const PdfPageDocument2 = ({
               </View>
             );
           })}
+
           {(!isLast || tableLength > 0) && <View style={styles.divider} />}
         </View>
       );
     }
+
 
     return null;
   };
@@ -278,8 +303,7 @@ const PdfPageDocument2 = ({
             marginBottom: 14,
           }}
         >
-          {table?.type  ? 'Quotation' : table?.headers?.col1.charAt(0).toUpperCase() +
-            table?.headers?.col1.slice(1).toLowerCase()}
+          {table?.title || "No Title"}
         </Text>
         <View style={styles.tableWrapper}>
           {/* Table Header */}

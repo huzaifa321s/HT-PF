@@ -43,6 +43,7 @@ import { showToast } from "../utils/toastSlice";
 import {
   setBusinessInfo,
   updateBusinessField,
+  setHasNewInsights,
 } from "../utils/businessInfoSlice";
 import axiosInstance from "../utils/axiosInstance";
 import { addSection, addTable, updateSection } from "../utils/page2Slice";
@@ -50,8 +51,10 @@ import { store } from "../utils/store";
 
 export default function BusinessInfoSection({ fullTranscript }) {
   const dispatch = useDispatch();
-  const finalInfo = useSelector((state) => state.businessInfo || {});
-  const [hasNewData, setHasNewData] = useState(false);
+  const businessInfoState = useSelector((state) => state.businessInfo || {});
+  const finalInfo = businessInfoState.data || {};
+  const hasNewInsights = businessInfoState.hasNewInsights || false;
+  // const [hasNewData, setHasNewData] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [editingKey, setEditingKey] = useState(null);
   const [editedPrompt, setEditedPrompt] = useState("");
@@ -75,6 +78,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
     }
   }, [finalInfo, reset]);
 
+  console.log('finalInfo', finalInfo);
   const normalizeValue = (value) => {
     if (value == null) return "";
     if (typeof value === "string") return value.trim();
@@ -185,7 +189,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
           return;
         }
       }
-      setHasNewData(true); // ✅ Badge show karo
+      // setHasNewData(true); // ✅ Badge show karo
       if (result.error === "INSUFFICIENT_TOKENS") {
         window.dispatchEvent(
           new CustomEvent("insufficientTokens", { detail: result })
@@ -203,8 +207,45 @@ export default function BusinessInfoSection({ fullTranscript }) {
       Object.entries(result.data || result || {}).forEach(([k, v]) => {
         normalized[k] = normalizeValue(v);
       });
-
       dispatch(setBusinessInfo(normalized));
+      const generateId = () => crypto.randomUUID();
+      if (normalized?.deliverables?.length > 0) {
+        console.log('datassssss')
+        const rows = normalized?.deliverables?.map((row) => ({
+          id: generateId(),
+          col1: row.item || "",
+          col2: row.estimated_time || "",
+        }));
+        dispatch(addTable({ title: "Deliverables", T_ID: "123", rows }));
+        dispatch(
+          showToast({
+            message: `${"deliverables"
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+            severity: "success",
+          })
+        );
+      }
+
+      if (normalized?.quotation?.length > 0) {
+        const rows = normalized?.quotation.map((row) => ({
+          id: generateId(),
+          col1: row.item || "",
+          col2: row.quantity || 0,
+          col3: row.estimated_cost_pkr || "",
+        }));
+        dispatch(
+          addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
+        );
+        dispatch(
+          showToast({
+            message: `${"quotation"
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+            severity: "success",
+          })
+        );
+      }
       dispatch(
         showToast({ message: "Extracted successfully!", severity: "success" })
       );
@@ -233,7 +274,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
           col2: row.estimated_time || "",
         }));
 
-        dispatch(addTable({ T_ID: "123", rows }));
+        dispatch(addTable({ title: "Deliverables", columnCount: 2, T_ID: "123", rows }));
       } else if (fieldKey === "quotation") {
         const rows = fieldValue.map((row) => ({
           id: generateId(),
@@ -242,7 +283,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
           col3: row.estimated_cost_pkr || "",
         }));
         dispatch(
-          addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+          addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
         );
       } else {
         // TODO: Implement PDF section addition logic
@@ -518,7 +559,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
     return <Typography sx={{ fontWeight: 500 }}>{value}</Typography>;
   };
 
-  const entries = Object.entries(finalInfo).filter(
+  const entries = Object.entries(finalInfo || {}).filter(
     ([k]) => !k.endsWith("_prompt")
   );
 
@@ -535,7 +576,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
             onChange={(event, newValue) => {
               setTabValue(newValue);
               if (newValue === 1) {
-                setHasNewData(false); // ✅ Tab 1 pe click = badge hat jaye
+                dispatch(setHasNewInsights(false)); // ✅ Tab 1 pe click = badge hat jaye
               }
             }}
             variant="fullWidth"
@@ -558,7 +599,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
                 <Badge
                   variant="dot"
                   color="error"
-                  invisible={!hasNewData} // ✅ hasNewData false = badge hidden
+                  invisible={!hasNewInsights} // ✅ hasNewData false = badge hidden
                   sx={{
                     "& .MuiBadge-dot": {
                       right: -2,

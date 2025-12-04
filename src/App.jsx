@@ -191,7 +191,7 @@ export default function App() {
       chargeAmount: "",
       advancePercent: "",
       additionalCosts: "",
-      brandName: "",
+      brandName: "Humantek",
       proposedBy: "",
       projectBrief: "",
       businessType: "",
@@ -289,10 +289,10 @@ export default function App() {
       console.log("FULL FINAL TRANSCRIPT:", data);
       console.log("WORD LENGTH:", data.length);
       const extracted = data.extracted;
-if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0){
+      if (isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0) {
 
-  dispatch(setBusinessInfo(extracted));
-}
+        dispatch(setBusinessInfo(extracted));
+      }
       // Update full transcript
       setFullTranscript(data.text);
       setTranscriptWordLength(data.length);
@@ -558,7 +558,7 @@ if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.q
 
     try {
       const res = await axiosInstance.post(
-      `${import.meta.env.VITE_APP_BASE_URL}api/proposals/create-proposal`,
+        `${import.meta.env.VITE_APP_BASE_URL}api/proposals/create-proposal`,
         { data: data, selectedCurrency: currency, pdfPages },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -664,148 +664,51 @@ if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.q
 
 
 
-useEffect(() => {
-  // ✅ Pusher client initialize
-  const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
-    cluster: import.meta.env.VITE_PUSHER_CLUSTER || 'ap2'
-  });
+  useEffect(() => {
+    // ✅ Pusher client initialize
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_CLUSTER || 'ap2'
+    });
 
-  const channel = pusher.subscribe('sse-channel');
+    const channel = pusher.subscribe('sse-channel');
 
-  // ✅ Bind all events
-  channel.bind_global((event, data) => {
-    console.log("Pusher Event:", event, data);
+    // ✅ Bind all events
+    channel.bind_global((event, data) => {
+      console.log("Pusher Event:", event, data);
 
-    if (
-      event === "upload_status" ||
-      event === "transcription_status" ||
-      event === "pipeline_status"
-    ) {
-      if (!processing) setProcessing(true);
-      setStatus(data.step);
-      dispatch(showToast({ message: "Processing...", severity: "info" }));
-      console.log("dddd", data);
-      if (data.progress) {
-        setProgress(data.progress);
-      } else {
-        setProgress((prev) => Math.min(prev + 10, 90));
+      if (
+        event === "upload_status" ||
+        event === "transcription_status" ||
+        event === "pipeline_status"
+      ) {
+        if (!processing) setProcessing(true);
+        setStatus(data.step);
+        dispatch(showToast({ message: "Processing...", severity: "info" }));
+        console.log("dddd", data);
+        if (data.progress) {
+          setProgress(data.progress);
+        } else {
+          setProgress((prev) => Math.min(prev + 10, 90));
+        }
+
+        setProcessing(false);
       }
 
-      setProcessing(false);
-    }
+      if (event === "complete") {
+        setStatus(data?.step || "Done");
+        const extracted = data.data.extracted;
+        if (isValidData(extracted) || extracted?.deliverables?.length || extracted?.quotation?.length > 0) {
+          dispatch(setBusinessInfo(extracted));
+        }
 
-    if (event === "complete") {
-      setStatus(data?.step || "Done");
-      const extracted = data.data.extracted;
-      if(isValidData(extracted) || extracted?.deliverables?.length || extracted?.quotation?.length > 0){
-        dispatch(setBusinessInfo(extracted));
-      }
-
-      if (extracted?.deliverables?.length > 0) {
-        console.log('datassssss')
-        const rows = extracted?.deliverables?.map((row) => ({
-          id: generateId(),
-          col1: row.item || "",
-          col2: row.estimated_time || "",
-        }));
-        dispatch(addTable({ T_ID: "123", rows }));
-        dispatch(
-          showToast({
-            message: `${"deliverables"
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-            severity: "success",
-          })
-        );
-      }
-
-      if (extracted?.quotation?.length > 0) {
-        const rows = extracted?.quotation.map((row) => ({
-          id: generateId(),
-          col1: row.item || "",
-          col2: row.quantity || 0,
-          col3: row.estimated_cost_pkr || "",
-        }));
-        dispatch(
-          addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
-        );
-        dispatch(
-          showToast({
-            message: `${"quotation"
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
-            severity: "success",
-          })
-        );
-      }
-
-      console.log("data", data);
-      
-      dispatch(
-        showToast({
-          message: `✅ Transcription completed${
-            extracted.business_details
-              ? " and business details extracted"
-              : ""
-          } successfully!.`,
-          severity: "success",
-          duration: 4000,
-        })
-      );
-
-      const result = isValidData(extracted);
-
-      setBadges((prev) => ({
-        ...prev,
-        polished: true,
-        business: result || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0,
-      }));
-
-      if (event === "upload_status") {
-        setBadges((prev) => ({ ...prev, audio: true }));
-        setTimeout(
-          () => setBadges((prev) => ({ ...prev, audio: false })),
-          3000
-        );
-      }
-
-      if (result) {
-        setBadges((prev) => ({
-          ...prev,
-          proposal: true,
-          email: true,
-          pdf: true,
-          business: true,
-        }));
-        if (extracted.brand_name)
-          dispatch(setBrandName(extracted.brand_name));
-        if (extracted.project_brief)
-          dispatch(setProjectBrief(extracted.project_brief));
-      }
-      dispatch(setPolishedTranscript(data.data.polished));
-    }
-
-    if (event === "completed_audio") {
-      setStatus("✅ Done!");
-      console.log("data.data", data.data);
-      const extracted = data.data.extracted || {};
-         if(isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0){
-
-           dispatch(setBusinessInfo(extracted));
-         };
-
-
-      if (history.length > 0 || data.data.polished.length > 0) {
-        const generateId = () => crypto.randomUUID();
-        
-        if (data.data.extracted?.deliverables?.length > 0) {
+        if (extracted?.deliverables?.length > 0) {
           console.log('datassssss')
-          const rows = data.data?.extracted?.deliverables?.map((row) => ({
+          const rows = extracted?.deliverables?.map((row) => ({
             id: generateId(),
             col1: row.item || "",
             col2: row.estimated_time || "",
           }));
-          dispatch(addTable({ T_ID: "123", rows }));
+          dispatch(addTable({ title: "Deliverables", T_ID: "123", rows }));
           dispatch(
             showToast({
               message: `${"deliverables"
@@ -816,15 +719,15 @@ useEffect(() => {
           );
         }
 
-        if (data.data.extracted?.quotation?.length > 0) {
-          const rows = data.data?.extracted?.quotation.map((row) => ({
+        if (extracted?.quotation?.length > 0) {
+          const rows = extracted?.quotation.map((row) => ({
             id: generateId(),
             col1: row.item || "",
             col2: row.quantity || 0,
             col3: row.estimated_cost_pkr || "",
           }));
           dispatch(
-            addTable({ columnCount: 3, T_ID: "321", rows, type: "quotation" })
+            addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
           );
           dispatch(
             showToast({
@@ -836,10 +739,25 @@ useEffect(() => {
           );
         }
 
+        console.log("data", data);
+
+        dispatch(
+          showToast({
+            message: `✅ Transcription completed${extracted.business_details
+              ? " and business details extracted"
+              : ""
+              } successfully!.`,
+            severity: "success",
+            duration: 4000,
+          })
+        );
+
+        const result = isValidData(extracted);
+
         setBadges((prev) => ({
           ...prev,
           polished: true,
-          business: !!extracted.business_details,
+          business: result || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0,
         }));
 
         if (event === "upload_status") {
@@ -849,73 +767,154 @@ useEffect(() => {
             3000
           );
         }
+
+        if (result) {
+          setBadges((prev) => ({
+            ...prev,
+            proposal: true,
+            email: true,
+            pdf: true,
+            business: true,
+          }));
+          if (extracted.brand_name)
+            dispatch(setBrandName(extracted.brand_name));
+          if (extracted.project_brief)
+            dispatch(setProjectBrief(extracted.project_brief));
+        }
+        dispatch(setPolishedTranscript(data.data.polished));
       }
 
-      dispatch(setPolishedTranscript(data.data.polished));
-      console.log("data.data.polished", data.data.polished);
-      setTranscript(data.data.polished);
-      setProgress(100);
+      if (event === "completed_audio") {
+        setStatus("✅ Done!");
+        console.log("data.data", data.data);
+        const extracted = data.data.extracted || {};
+        if (isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0) {
 
-      const updatedData = {
-        ...formData,
-        ...(extracted.business_details && {
-          businessDescription: extracted.business_details,
-        }),
-        ...(extracted.proposed_solution && {
-          proposedSolution: extracted.proposed_solution,
-        }),
-        ...(extracted.recommended_services?.length > 0 && {
-          recommended_services: extracted.recommended_services,
-        }),
-        ...(extracted.project_brief && {
-          projectBrief: extracted.project_brief,
-        }),
-        ...(extracted.brand_name && { brandName: extracted.brand_name }),
-        ...(extracted.brand_tagline && {
-          brandTagline: extracted.brand_tagline,
-        }),
-        ...(extracted.business_type && {
-          businessType: extracted.business_type,
-        }),
-        ...(extracted.industry_title && {
-          industoryTitle: extracted.industry_title,
-        }),
-        ...(extracted.strategic_proposal?.length > 0 && {
-          strategicProposal: extracted.strategic_proposal,
-        }),
-      };
+          dispatch(setBusinessInfo(extracted));
+        };
 
-      const result = isValidData(extracted);
 
-      if (result) {
-        setBadges((prev) => ({
-          ...prev,
-          proposal: true,
-          email: true,
-          pdf: true,
-        }));
-        if (extracted.brand_name)
-          dispatch(setBrandName(extracted.brand_name));
-        if (extracted.project_brief)
-          dispatch(setProjectBrief(extracted.project_brief));
+        if (history.length > 0 || data.data.polished.length > 0) {
+          const generateId = () => crypto.randomUUID();
+
+          if (data.data.extracted?.deliverables?.length > 0) {
+            console.log('datassssss')
+            const rows = data.data?.extracted?.deliverables?.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.estimated_time || "",
+            }));
+            dispatch(addTable({ title: "Deliverables", T_ID: "123", rows }));
+            dispatch(
+              showToast({
+                message: `${"deliverables"
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                severity: "success",
+              })
+            );
+          }
+
+          if (data.data.extracted?.quotation?.length > 0) {
+            const rows = data.data?.extracted?.quotation.map((row) => ({
+              id: generateId(),
+              col1: row.item || "",
+              col2: row.quantity || 0,
+              col3: row.estimated_cost_pkr || "",
+            }));
+            dispatch(
+              addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
+            );
+            dispatch(
+              showToast({
+                message: `${"quotation"
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())} added to PDF`,
+                severity: "success",
+              })
+            );
+          }
+
+          setBadges((prev) => ({
+            ...prev,
+            polished: true,
+            business: !!extracted.business_details,
+          }));
+
+          if (event === "upload_status") {
+            setBadges((prev) => ({ ...prev, audio: true }));
+            setTimeout(
+              () => setBadges((prev) => ({ ...prev, audio: false })),
+              3000
+            );
+          }
+        }
+
+        dispatch(setPolishedTranscript(data.data.polished));
+        console.log("data.data.polished", data.data.polished);
+        setTranscript(data.data.polished);
+        setProgress(100);
+
+        const updatedData = {
+          ...formData,
+          ...(extracted.business_details && {
+            businessDescription: extracted.business_details,
+          }),
+          ...(extracted.proposed_solution && {
+            proposedSolution: extracted.proposed_solution,
+          }),
+          ...(extracted.recommended_services?.length > 0 && {
+            recommended_services: extracted.recommended_services,
+          }),
+          ...(extracted.project_brief && {
+            projectBrief: extracted.project_brief,
+          }),
+          ...(extracted.brand_name && { brandName: extracted.brand_name }),
+          ...(extracted.brand_tagline && {
+            brandTagline: extracted.brand_tagline,
+          }),
+          ...(extracted.business_type && {
+            businessType: extracted.business_type,
+          }),
+          ...(extracted.industry_title && {
+            industoryTitle: extracted.industry_title,
+          }),
+          ...(extracted.strategic_proposal?.length > 0 && {
+            strategicProposal: extracted.strategic_proposal,
+          }),
+        };
+
+        const result = isValidData(extracted);
+
+        if (result) {
+          setBadges((prev) => ({
+            ...prev,
+            proposal: true,
+            email: true,
+            pdf: true,
+          }));
+          if (extracted.brand_name)
+            dispatch(setBrandName(extracted.brand_name));
+          if (extracted.project_brief)
+            dispatch(setProjectBrief(extracted.project_brief));
+        }
+
+        setProcessing(false);
       }
 
-      setProcessing(false);
-    }
+      if (event === "error") {
+        setStatus(`❌ ${data.message}`);
+        setProcessing(false);
+      }
+    });
 
-    if (event === "error") {
-      setStatus(`❌ ${data.message}`);
-      setProcessing(false);
-    }
-  });
-
-  // Cleanup
-  return () => {
-    channel.unbind_all();
-    channel.unsubscribe();
-    pusher.disconnect();
-  };
-}, [processing]);
+    // Cleanup
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+      pusher.disconnect();
+    };
+  }, [processing]);
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1006,37 +1005,58 @@ useEffect(() => {
                 onChange={handleTabChange}
                 variant="scrollable"
                 scrollButtons="auto"
+                allowScrollButtonsMobile
                 sx={{
+                  // Scrollbar styling
+                  "& .MuiTabs-scrollButtons": {
+                    "&.Mui-disabled": { opacity: 0.3 }
+                  },
+                  "& .MuiTabs-scroller": {
+                    // Show scrollbar on small screens
+                    overflowX: { xs: "auto", md: "hidden" },
+                    "&::-webkit-scrollbar": {
+                      height: "6px",
+                      display: { xs: "block", md: "none" }
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      background: "#f1f1f1",
+                      borderRadius: "10px"
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      background: "#667eea",
+                      borderRadius: "10px",
+                      "&:hover": {
+                        background: "#764ba2"
+                      }
+                    }
+                  },
                   "& .MuiTab-root": {
-                    py: 2,
-                    px: 3,
+                    py: { xs: 1.5, md: 2 },
+                    px: { xs: 2, md: 3 },
+                    minHeight: { xs: "48px", md: "auto" },
                     fontWeight: 600,
-                    fontSize: "1rem",
+                    fontSize: { xs: "0.85rem", md: "1rem" },
                     color: "#333",
                     textTransform: "none",
                     borderRadius: 2,
                     transition: "all 0.3s ease",
-                    background:
-                      "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+                    background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
                     boxShadow: "0 4px 12px rgba(102,126,234,0.08)",
                     "&:hover": {
                       transform: "translateY(-2px)",
                       boxShadow: "0 12px 24px rgba(102,126,234,0.15)",
-                      background:
-                        "linear-gradient(135deg, #e0e7ff 0%, #c3cfe2 100%)",
+                      background: "linear-gradient(135deg, #e0e7ff 0%, #c3cfe2 100%)",
                     },
                     "&.Mui-selected": {
                       color: "#fff",
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       boxShadow: "0 12px 32px rgba(102,126,234,0.4)",
                     },
                   },
                   "& .MuiTabs-indicator": {
                     height: 4,
                     borderRadius: 2,
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   },
                 }}
               >
@@ -1045,9 +1065,6 @@ useEffect(() => {
                 <Tab label={renderLabel("🎵 Audio Upload", "audio")} />
                 <Tab label={renderLabel("📧 Email Preview", "email")} />
                 <Tab label={renderLabel("🏢 Business Info", "business")} />
-                <Tab
-                  label={renderLabel("🗒️ Polished Transcript", "polished")}
-                />
               </Tabs>
             </Box>
 
@@ -1117,257 +1134,7 @@ useEffect(() => {
                 </Box>
               )}
 
-              {tabValue === 5 && (
-                <Box sx={{ animation: "fadeIn 0.4s ease" }}>
-                  <Paper
-                    elevation={3}
-                    sx={{
-                      borderRadius: 5,
-                      p: { xs: 3, md: 5 },
-                      minHeight: 350,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      textAlign: "center",
-                      background:
-                        "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-                      color: "text.primary",
-                      gap: 3,
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                      position: "relative",
-                      overflow: "hidden",
-                      "&:hover": {
-                        transform: "translateY(-8px)",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-                      },
-                      "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: "6px",
-                        background:
-                          "linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-                        backgroundSize: "200% 100%",
-                      },
-                      maxWidth: 900,
-                      mx: "auto",
-                    }}
-                  >
-                    {fullTranscript?.trim().length > 0 ||
-                    transcript.trim().length > 0 ||
-                    transcriptRT.trim().length > 0 ? (
-                      <Box
-                        sx={{
-                          width: "100%",
-                          maxHeight: 500,
-                          overflowY: "auto",
-                          textAlign: "left",
-                          fontFamily: '"Inter", "Roboto", sans-serif',
-                          fontSize: "1rem",
-                          lineHeight: 1.8,
-                          color: "text.primary",
-                        }}
-                      >
-                        {/* Header */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            mb: 3,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              bgcolor: "rgba(102, 126, 234, 0.15)",
-                              borderRadius: "50%",
-                              width: 56,
-                              height: 56,
-                              mr: 2,
-                              boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
-                            }}
-                          >
-                            <CheckCircleOutlineRounded
-                              sx={{ fontSize: 32, color: "#667eea" }}
-                            />
-                          </Box>
-                          <Typography
-                            variant="h5"
-                            fontWeight={800}
-                            sx={{
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              WebkitBackgroundClip: "text",
-                              WebkitTextFillColor: "transparent",
-                              letterSpacing: "-0.5px",
-                            }}
-                          >
-                            Polished Transcript
-                          </Typography>
-                        </Box>
 
-                        {/* Transcript Content */}
-                        <Box
-                          sx={{
-                            p: 3,
-                            borderRadius: 3,
-                            bgcolor: "rgba(255,255,255,0.9)",
-                            border: "2px solid rgba(102, 126, 234, 0.15)",
-                            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                            "&::-webkit-scrollbar": {
-                              width: "8px",
-                            },
-                            "&::-webkit-scrollbar-thumb": {
-                              background: "rgba(102, 126, 234, 0.3)",
-                              borderRadius: "4px",
-                            },
-                          }}
-                        >
-                          <TranscriptDisplay
-                            transcriptText={
-                              fullTranscript || transcript || transcriptRT
-                            }
-                          />
-                        </Box>
-                      </Box>
-                    ) : (
-                      <>
-                        {/* Empty State Header */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            mb: 2,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              bgcolor: "rgba(102, 126, 234, 0.15)",
-                              borderRadius: "50%",
-                              width: 80,
-                              height: 80,
-                              boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
-                            }}
-                          >
-                            <Mic sx={{ fontSize: 48, color: "#667eea" }} />
-                          </Box>
-                        </Box>
-
-                        <Typography
-                          variant="h4"
-                          fontWeight={800}
-                          sx={{
-                            mb: 1,
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            letterSpacing: "-0.5px",
-                          }}
-                        >
-                          Polished Transcript
-                        </Typography>
-
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            maxWidth: 500,
-                            mx: "auto",
-                            color: "text.secondary",
-                            fontSize: "1.05rem",
-                            mb: 4,
-                            lineHeight: 1.7,
-                            fontWeight: 500,
-                          }}
-                        >
-                          🎤 Once your live session or audio upload is complete,
-                          your polished transcript will appear here.
-                        </Typography>
-
-                        {/* Action Buttons */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            justifyContent: "center",
-                            gap: 2,
-                            mt: 2,
-                          }}
-                        >
-                          <Button
-                            variant="contained"
-                            size="large"
-                            onClick={() => setTabValue(1)}
-                            sx={{
-                              px: 5,
-                              py: 1.8,
-                              fontWeight: 700,
-                              borderRadius: 3,
-                              fontSize: "1.1rem",
-                              textTransform: "none",
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
-                              "&:hover": {
-                                background:
-                                  "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                                transform: "translateY(-2px)",
-                                boxShadow:
-                                  "0 12px 32px rgba(102, 126, 234, 0.5)",
-                              },
-                              transition: "all 0.3s ease",
-                            }}
-                            startIcon={<i className="fas fa-microphone" />}
-                          >
-                            Start Recording
-                          </Button>
-
-                          <Button
-                            variant="outlined"
-                            size="large"
-                            onClick={() => setTabValue(2)}
-                            sx={{
-                              px: 5,
-                              py: 1.8,
-                              fontWeight: 700,
-                              borderRadius: 3,
-                              fontSize: "1.1rem",
-                              textTransform: "none",
-                              borderColor: "#667eea",
-                              borderWidth: 2,
-                              color: "#667eea",
-                              bgcolor: "rgba(255,255,255,0.7)",
-                              "&:hover": {
-                                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                                borderColor: "#5568d3",
-                                borderWidth: 2,
-                                transform: "translateY(-2px)",
-                                boxShadow:
-                                  "0 8px 24px rgba(102, 126, 234, 0.3)",
-                              },
-                              transition: "all 0.3s ease",
-                            }}
-                            startIcon={<i className="fas fa-upload" />}
-                          >
-                            Upload Audio
-                          </Button>
-                        </Box>
-                      </>
-                    )}
-                  </Paper>
-                </Box>
-              )}
             </Box>
           </Paper>
         </Grid>

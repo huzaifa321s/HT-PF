@@ -24,6 +24,8 @@ import {
   Fade,
   Zoom,
   alpha,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -49,7 +51,7 @@ const AdminProposalsPage = () => {
   const [length, setLength] = useState(0);
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
- const [totalCount,setTotalCount] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
   // ✅ Same color scheme as EditProposal
   const colorScheme = {
     primary: "#667eea",
@@ -58,7 +60,7 @@ const AdminProposalsPage = () => {
     hoverGradient: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
     lightBg: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
   };
-
+  const theme = useTheme();
   const handleView = (id) => {
     setOpen(true);
     setProposalID(id);
@@ -125,7 +127,7 @@ const AdminProposalsPage = () => {
     };
     return statusMap[outcome] || { color: "default", bg: "#f5f5f5" };
   };
-
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
     <Box
       sx={{
@@ -281,9 +283,8 @@ const AdminProposalsPage = () => {
                           <TableCell>Project</TableCell>
                           <TableCell>Client</TableCell>
                           <TableCell>Created By</TableCell>
-                          <TableCell>Platforms</TableCell>
-                          <TableCell>Date</TableCell>
-                          <TableCell>Status</TableCell>
+                          {!isMobile && <TableCell>Date</TableCell>}
+                          {!isMobile && <TableCell>Status</TableCell>}
                           <TableCell align="center">Actions</TableCell>
                         </TableRow>
                       </TableHead>
@@ -307,9 +308,9 @@ const AdminProposalsPage = () => {
                             {/* Project Title */}
                             <TableCell>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                                
-                                  
-                                
+
+
+
                                 <Box>
                                   <Typography fontWeight={600} fontSize="0.95rem">
                                     {p.projectTitle}
@@ -358,44 +359,20 @@ const AdminProposalsPage = () => {
                               />
                             </TableCell>
 
-                            {/* Platforms */}
-                            <TableCell>
-                              {p.developmentPlatforms?.length > 0 ? (
-                                <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
-                                  {p.developmentPlatforms.map((plat, i) => (
-                                    <Chip
-                                      key={i}
-                                      label={plat}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{
-                                        borderColor: colorScheme.primary,
-                                        color: colorScheme.primary,
-                                        fontWeight: 500,
-                                        fontSize: "0.75rem",
-                                      }}
-                                    />
-                                  ))}
-                                </Stack>
-                              ) : (
-                                <Typography variant="body2" color="text.disabled">
-                                  —
-                                </Typography>
-                              )}
-                            </TableCell>
+
 
                             {/* Date */}
-                            <TableCell>
+                            {!isMobile && <TableCell>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                 <CalendarTodayIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                                 <Typography fontSize="0.85rem" color="text.secondary">
                                   {p.date}
                                 </Typography>
                               </Box>
-                            </TableCell>
+                            </TableCell>}
 
                             {/* Status */}
-                            <TableCell>
+                            {!isMobile && <TableCell>
                               <Chip
                                 label={p.callOutcome}
                                 size="small"
@@ -403,12 +380,12 @@ const AdminProposalsPage = () => {
                                   fontWeight: 700,
                                   bgcolor: getStatusColor(p.callOutcome).bg,
                                   color: getStatusColor(p.callOutcome).color === "success" ? "#2e7d32" :
-                                         getStatusColor(p.callOutcome).color === "error" ? "#d32f2f" :
-                                         getStatusColor(p.callOutcome).color === "warning" ? "#ed6c02" : "#0288d1",
+                                    getStatusColor(p.callOutcome).color === "error" ? "#d32f2f" :
+                                      getStatusColor(p.callOutcome).color === "warning" ? "#ed6c02" : "#0288d1",
                                   border: "none",
                                 }}
                               />
-                            </TableCell>
+                            </TableCell>}
 
                             {/* Actions */}
                             <TableCell align="center">

@@ -34,6 +34,7 @@ import {
   DialogContent,
   DialogActions,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Info,
@@ -98,6 +99,7 @@ const ProposalFormWithStepper = ({
   const fieldRefs = {
     clientName: useRef(null),
     clientEmail: useRef(null),
+    brandName: useRef(null),
     projectTitle: useRef(null),
     businessDescription: useRef(null),
     proposedSolution: useRef(null),
@@ -106,7 +108,7 @@ const ProposalFormWithStepper = ({
   // ✅ Step-wise required fields
   const stepFields = {
     0: ["clientName", "clientEmail"],
-    1: ["projectTitle", "businessDescription", "proposedSolution"],
+    1: ["brandName", "projectTitle", "businessDescription", "proposedSolution"],
     2: [],
     3: ["callOutcome"],
     4: [],
@@ -160,7 +162,7 @@ const ProposalFormWithStepper = ({
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 2, sm: 3, md: 4 },
+    p: { xs: 0, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -194,7 +196,7 @@ const ProposalFormWithStepper = ({
         }}
       >
         {React.cloneElement(icon, {
-          sx: { fontSize: 24, color: "#fff" },
+          sx: { fontSize: 12, color: "#fff" },
         })}
       </Box>
       <Typography
@@ -213,56 +215,60 @@ const ProposalFormWithStepper = ({
 
   const pdfPage3Data = store.getState((s) => s.page);
   const orderedSections = pdfPage3Data?.page2.create.orderedSections;
-  const businessSectionExists = orderedSections.some(item => item.id === "business")
-  const proposedSectionExists = orderedSections.some(item => item.id === "proposed");
+  const businessSectionExists = orderedSections.some(
+    (item) => item.id === "business"
+  );
+  const proposedSectionExists = orderedSections.some(
+    (item) => item.id === "proposed"
+  );
   const AddSectionToPDf = (data) => {
     handleNext();
-  orderedSections.some(item => item.id === "business");
+    orderedSections.some((item) => item.id === "business");
 
-if(businessSectionExists){
-  console.log('updated')
-  dispatch(
- updateSection({
-        id: "business",
-        type: 'title',
-        title:"Business Description",
-        content: data.businessDescription.trim(),
-      })
-    )
-}else{
-  dispatch(
-    addSection({
-      type: "title",
-      title: "Business Description",
-      content: data.businessDescription.trim(),
-      id:"business"
-    })
-  );
-}
-if(proposedSectionExists){
-  dispatch(
- updateSection({
-        id: "proposed",
-        type: 'title',
-        title:"Proposed Solution",
-        content: data.proposedSolution.trim(),
-      })
-    )
-}else{
-  dispatch(
-    addSection({
-      type: "title",
-      title: "Proposed Solution",
-      content: data.proposedSolution.trim(),
-      id:"proposed"
-    })
-  );
-}
-};
+    if (businessSectionExists) {
+      console.log("updated");
+      dispatch(
+        updateSection({
+          id: "business",
+          type: "title",
+          title: "Business Description",
+          content: data.businessDescription.trim(),
+        })
+      );
+    } else {
+      dispatch(
+        addSection({
+          type: "title",
+          title: "Business Description",
+          content: data.businessDescription.trim(),
+          id: "business",
+        })
+      );
+    }
+    if (proposedSectionExists) {
+      dispatch(
+        updateSection({
+          id: "proposed",
+          type: "title",
+          title: "Proposed Solution",
+          content: data.proposedSolution.trim(),
+        })
+      );
+    } else {
+      dispatch(
+        addSection({
+          type: "title",
+          title: "Proposed Solution",
+          content: data.proposedSolution.trim(),
+          id: "proposed",
+        })
+      );
+    }
+  };
 
   const handleSubmitData = async (data) => {
     console.log("Form data submitted:", data);
-    console.log('selected',selectedCurrency)
+    console.log("selected", selectedCurrency);
     dispatch(updateField({ field: "clientName", value: data.clientName }));
     dispatch(updateField({ field: "clientEmail", value: data.clientEmail }));
     dispatch(updateField({ field: "brandName", value: data.brandName }));
@@ -277,7 +283,7 @@ if(proposedSectionExists){
       updateField({ field: "proposedSolution", value: data.proposedSolution })
     );
 
-    await handleSubmitForm(data,selectedCurrency);
+    await handleSubmitForm(data, selectedCurrency);
   };
 
   // ✅ Check if a step is accessible
@@ -307,7 +313,7 @@ if(proposedSectionExists){
     if (errors[fieldName] && e.target.value.trim()) {
     }
   };
-
+  const isSmall = useMediaQuery("(max-width:1325px)");
   // Add this state at the top of your component
   const formatNumberDisplay = (value) => {
     if (!value) return "";
@@ -499,14 +505,19 @@ if(proposedSectionExists){
           <Controller
             name="brandName"
             control={control}
+            rules={{ required: "Brand Name is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Brand Name"
+                label="Brand Name *"
                 fullWidth
+                error={!!errors.brandName}
+                helperText={errors.brandName?.message}
+                inputRef={fieldRefs.projectTitle}
                 onChange={(e) => {
                   console.log("e", e.target.value);
                   field.onChange(e);
+
                   dispatch(setBrandName(e.target.value));
                   dispatch(updateTitle(`Proposal For ${e.target.value}`));
                 }}
@@ -595,14 +606,14 @@ if(proposedSectionExists){
                 gap: 1,
                 flexWrap: "wrap",
                 "& .MuiToggleButton-root": {
-                  px: { xs: 1.5, sm: 2 },
-                  py: 0.5,
-                  fontSize: { xs: "0.4rem", sm: "0.6rem" },
+                  px: { xs: 1, sm: 2 },
+                  py: { xs: 0.3, sm: 0.5 },
+                  fontSize: { xs: "0.65rem", sm: "0.85rem" },
                   fontWeight: 700,
                   border: "2px solid",
                   borderColor: colorScheme.primary,
                   borderRadius: 3,
-                  minWidth: 90,
+                  minWidth: { xs: 60, sm: 90 },
                   "&.Mui-selected": {
                     background: colorScheme.gradient,
                     color: "#fff",
@@ -617,38 +628,38 @@ if(proposedSectionExists){
               }}
             >
               <ToggleButton value="USD">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>$</Typography>
-                  <Typography>USD</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>$</Typography>
+                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>USD</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="PKR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>₨</Typography>
-                  <Typography>PKR</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>₨</Typography>
+                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>PKR</Typography>
                 </Box>
               </ToggleButton>
               <ToggleButton value="GBP">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>£</Typography>
-                  <Typography>GBP</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>£</Typography>
+                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>GBP</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="EUR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>€</Typography>
-                  <Typography>EUR</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>€</Typography>
+                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>EUR</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="AED">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.3rem", fontWeight: 800 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1.3rem" }, fontWeight: 800 }}>
                     د.إ
                   </Typography>
-                  <Typography>AED</Typography>
+                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>AED</Typography>
                 </Box>
               </ToggleButton>
             </ToggleButtonGroup>
@@ -858,19 +869,20 @@ if(proposedSectionExists){
                 startIcon={isLoading ? <Timeline /> : <Send />}
                 disabled={isLoading}
                 sx={{
-                  px: 6,
-                  py: 2,
+                  px: { xs: 3, sm: 6 },
+                  py: { xs: 1.5, sm: 2 },
                   borderRadius: 4,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "0.85rem", sm: "1.1rem" },
                   fontWeight: 700,
                   boxShadow: 6,
                   background: colorScheme.gradient,
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: "100%", sm: "none" },
                   "&:hover": {
                     background: colorScheme.hoverGradient,
                     transform: "translateY(-2px)",
                     boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
                   },
-                  width: "100%",
                 }}
               >
                 {isLoading
@@ -917,26 +929,31 @@ if(proposedSectionExists){
   return (
     <>
       <Box
-        sx={{ maxWidth: 1800, margin: "0 auto", p: { xs: 1, sm: 2, md: 3 } }}
+        sx={{
+          maxWidth: 1800,
+          margin: "0 auto",
+          p: { xs: 0, sm: 2, md: 3 },
+        }}
       >
         <Stepper
           activeStep={activeStep}
-          orientation="horizontal"
+          orientation="vertical"
           sx={{
-            mb: 4,
+            mb: { xs: 0, sm: 4 },
             display: "flex",
             flexWrap: "wrap",
-            justifyContent: steps.length % 2 !== 0 ? "center" : "flex-start",
+            justifyContent: "center",
+            p: { xs: 0, sm: 2 },
           }}
         >
           {steps.map((step, index) => (
             <Step
               key={step.label}
-              
               sx={{
-                mb: 3,
-                width: index === steps.length - 1 ? "100%" : "50%",
-                minWidth: index === steps.length - 1 ? "none" : "300px",
+                mb: { xs: 0, sm: 3 },
+                width: "100%",
+                minWidth: { xs: "100%", sm: "300px" },
+                p: { xs: 0, sm: 2 },
               }}
             >
               <StepLabel
@@ -981,14 +998,20 @@ if(proposedSectionExists){
               >
                 {step.label}
               </StepLabel>
-              <StepContent>
-                <Card sx={cardStyle}>
-                  <CardContent>{step.content}</CardContent>
+              <StepContent sx={{ ml: { xs: 0, sm: 3 }, pl: { xs: 0, sm: 3 }, borderLeft: { xs: "none", sm: "1px solid #bdbdbd" } }}>
+                <Card sx={{ ...cardStyle, m: { xs: 0, sm: 2 }, width: "100%" }}>
+                  <CardContent sx={{ p: { xs: 2, sm: 2 }, "&:last-child": { pb: { xs: 2, sm: 3 } } }}>{step.content}</CardContent>
                   <Box
                     sx={{
                       mt: 3,
+                      pb: 2,
+                      px: 2,
                       display: "flex",
                       justifyContent: "space-between",
+                      // ✅ Step 1 ke liye responsive flexDirection
+                      flexDirection: activeStep === 1 && isSmall ? "column" : "row",
+                      gap: activeStep === 1 && isSmall ? 2 : 0,
+                      alignItems: activeStep === 1 && isSmall ? "flex-start" : "center",
                     }}
                   >
                     <Button
@@ -1000,6 +1023,9 @@ if(proposedSectionExists){
                         borderColor: colorScheme.primary,
                         borderRadius: 10,
                         color: colorScheme.primary,
+                        // ✅ Back button ko left corner pe fixed width
+                        width: activeStep === 1 && isSmall ? "auto" : "auto",
+                        alignSelf: "flex-start",
                         "&:hover": {
                           borderColor: colorScheme.secondary,
                           background: `${colorScheme.primary}10`,
@@ -1008,7 +1034,17 @@ if(proposedSectionExists){
                     >
                       Back
                     </Button>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        // ✅ Step 1 ke liye responsive layout
+                        flexDirection: activeStep === 1 && isSmall ? "column" : "row",
+                        width: activeStep === 1 && isSmall ? "100%" : "auto",
+                      }}
+                    >
                       {activeStep === 1 && (
                         <Button
                           onClick={() => {
@@ -1022,11 +1058,13 @@ if(proposedSectionExists){
                           endIcon={<ArrowForward />}
                           sx={{
                             border: "1px solid black",
+                            borderRadius: 10,
+                            // ✅ Full width on small screens
+                            width: isSmall ? "100%" : "auto",
                             "&:hover": {
                               background: colorScheme.hoverGradient,
                               color: "#fff",
                             },
-                            borderRadius: 10,
                           }}
                         >
                           Add These Sections to PDF
@@ -1040,10 +1078,12 @@ if(proposedSectionExists){
                           variant="contained"
                           sx={{
                             background: colorScheme.gradient,
+                            borderRadius: 10,
+                            // ✅ Step 1 pe full width on small screens
+                            width: activeStep === 1 && isSmall ? "100%" : "auto",
                             "&:hover": {
                               background: colorScheme.hoverGradient,
                             },
-                            borderRadius: 10,
                           }}
                         >
                           Next

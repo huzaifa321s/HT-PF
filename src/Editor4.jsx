@@ -57,7 +57,7 @@ import {
   resetPageData,
 } from "../src/utils/pricingReducer";
 
-const PdfEditorPage = ({mode}) => {
+const PdfEditorPage = ({ mode }) => {
   const dispatch = useDispatch();
   const data = mode === 'edit-doc' ? useSelector(
     (state) => state.pricing.edit || { elements: [], gridPackages: [] }
@@ -108,6 +108,10 @@ const PdfEditorPage = ({mode}) => {
               left: 0,
               right: 0,
               height: "6px",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
               background: "linear-gradient(90deg, #f093fb 0%, #f5576c 100%)",
             },
           }}
@@ -302,9 +306,8 @@ const PdfEditorPage = ({mode}) => {
 
         <Divider sx={{ my: 4 }}>
           <Chip
-            label={`Total Blocks: ${
-              (data.elements?.length || 0) + (data.gridPackages?.length || 0)
-            }`}
+            label={`Total Blocks: ${(data.elements?.length || 0) + (data.gridPackages?.length || 0)
+              }`}
             sx={{
               bgcolor: "rgba(102,126,234,0.15)",
               color: "#667eea",
@@ -318,7 +321,7 @@ const PdfEditorPage = ({mode}) => {
         {/* Blocks List */}
         <Stack spacing={4}>
           {(!data.elements || data.elements.length === 0) &&
-          (!data.gridPackages || data.gridPackages.length === 0) ? (
+            (!data.gridPackages || data.gridPackages.length === 0) ? (
             <Paper
               sx={{
                 p: 5,
@@ -453,7 +456,7 @@ const PdfEditorPage = ({mode}) => {
         onClose={() => setResetDialog(false)}
         maxWidth="sm"
         fullWidth
-        sx={{borderRadius:5}}
+        sx={{ borderRadius: 5 }}
       >
         <DialogTitle
           sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}
@@ -474,7 +477,7 @@ const PdfEditorPage = ({mode}) => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button onClick={() => setResetDialog(false)} size="large" sx={{borderRadius:5}}>
+          <Button onClick={() => setResetDialog(false)} size="large" sx={{ borderRadius: 5 }}>
             Cancel
           </Button>
           <Button
@@ -482,7 +485,7 @@ const PdfEditorPage = ({mode}) => {
             variant="contained"
             color="error"
             size="large"
-            sx={{ px: 5, fontWeight: 700 ,borderRadius:5}}
+            sx={{ px: 5, fontWeight: 700, borderRadius: 5 }}
           >
             Yes, Reset Everything
           </Button>
@@ -545,12 +548,12 @@ const StandalonePackage = ({ el }) => {
 
   const [value, setValue] = useState("PKR");
 
-    const handleChange = (event, newValue) => {
+  const handleChange = (event, newValue) => {
     // ToggleButtonGroup with exclusive selection returns null when clicking selected button.
     // We keep selection (don't allow clearing) — if you want to allow clearing, remove this guard.
-    console.log('newVal',newValue)
+    console.log('newVal', newValue)
     if (newValue === null) return;
-    
+
     else setValue(newValue);
     onField("currency", newValue)
   };
@@ -586,9 +589,9 @@ const StandalonePackage = ({ el }) => {
         }}
         placeholder="50000"
         sx={{ fontSize: 6 }}
-        // InputProps hata do ya sirf number dikhao
+      // InputProps hata do ya sirf number dikhao
       />
-        <ToggleButtonGroup
+      <ToggleButtonGroup
         value={el.currency}
         exclusive
         onChange={handleChange}
@@ -724,7 +727,7 @@ const GridPackage = ({ pkg }) => {
         }}
         placeholder="50000"
         sx={{ fontSize: 6 }}
-        // InputProps hata do ya sirf number dikhao
+      // InputProps hata do ya sirf number dikhao
       />
       <Typography fontWeight={700} color="#667eea">
         Features

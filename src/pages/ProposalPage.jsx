@@ -48,7 +48,7 @@ const ProposalPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
-  
+
   const [proposals, setProposals] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -57,7 +57,7 @@ const ProposalPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [proposalID, setProposalID] = useState(null);
   const [length, setLength] = useState(0);
- const [totalCount,setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const handleView = (id) => {
     setOpen(true);
     setProposalID(id);
@@ -383,7 +383,7 @@ const ProposalPage = () => {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)" }}>
-                        {["Title", "Client", "Platform", "Date", "Status", "Actions"].map(
+                        {["Title", "Client", "Date", "Status", "Actions"].map(
                           (header) => (
                             <TableCell
                               key={header}
@@ -409,7 +409,7 @@ const ProposalPage = () => {
                           key={proposal._id}
                           hover
                           sx={{
-                            "&:hover": { 
+                            "&:hover": {
                               bgcolor: "rgba(102,126,234,0.04)",
                               '& .action-buttons': {
                                 opacity: 1,
@@ -421,7 +421,7 @@ const ProposalPage = () => {
                         >
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Avatar
+                              {!isMobile && <Avatar
                                 sx={{
                                   width: 40,
                                   height: 40,
@@ -431,8 +431,8 @@ const ProposalPage = () => {
                                 }}
                               >
                                 {proposal.projectTitle.charAt(0)}
-                              </Avatar>
-                              <Typography fontWeight={600} sx={{ fontSize: '0.95rem' }}>
+                              </Avatar>}
+                              <Typography fontWeight={600} sx={{ fontSize: isMobile ? '0.75rem' : '0.95rem' }}>
                                 {proposal.projectTitle}
                               </Typography>
                             </Box>
@@ -442,29 +442,7 @@ const ProposalPage = () => {
                               {proposal.clientName}
                             </Typography>
                           </TableCell>
-                          <TableCell>
-                            {proposal.developmentPlatforms?.length > 0 ? (
-                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                                {proposal.developmentPlatforms.map((plat, i) => (
-                                  <Chip
-                                    key={i}
-                                    label={plat}
-                                    size="small"
-                                    sx={{
-                                      borderRadius: 2,
-                                      fontWeight: 600,
-                                      fontSize: '0.75rem',
-                                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                                      border: '1px solid rgba(102, 126, 234, 0.3)',
-                                      color: '#667eea',
-                                    }}
-                                  />
-                                ))}
-                              </Stack>
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
+
                           <TableCell>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
                               {proposal.date}
@@ -487,9 +465,9 @@ const ProposalPage = () => {
                             />
                           </TableCell>
                           <TableCell align="center">
-                            <Stack 
-                              direction="row" 
-                              spacing={0.5} 
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
                               justifyContent="center"
                               className="action-buttons"
                               sx={{
@@ -498,7 +476,7 @@ const ProposalPage = () => {
                               }}
                             >
                               <Tooltip title="View Details" arrow>
-                                <IconButton 
+                                <IconButton
                                   onClick={() => handleView(proposal._id)}
                                   sx={{
                                     bgcolor: alpha('#2196f3', 0.1),
@@ -509,7 +487,7 @@ const ProposalPage = () => {
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Edit" arrow>
-                                <IconButton 
+                                <IconButton
                                   onClick={() => handleEdit(proposal._id)}
                                   sx={{
                                     bgcolor: alpha('#667eea', 0.1),

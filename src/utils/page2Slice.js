@@ -66,6 +66,7 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
         { id: generateId(), col1: "Social Media Creative Kit", col2: "45,000" },
         { id: generateId(), col1: "Admin Dashboard", col2: "60,000" },
       ],
+      title: 'Recommended Services',
       columnNO: []
     },
     // Example: 3-column Timeline Table
@@ -82,6 +83,7 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
         { id: generateId(), col1: "Launch", col2: "Final Delivery & Deployment", col3: "Week 13" },
         { id: generateId(), col1: "Support", col2: "30 Days Post-Launch Support", col3: "Week 14-17" },
       ],
+      title: 'Phase',
       columnNO: []
     },
   ],
@@ -115,18 +117,18 @@ const page2Slice = createSlice({
       const mode = state.currentMode;
       state[mode].orderedSections ??= [];
       let id = ''
-      if(action.payload.id){
-      id = action.payload.id
+      if (action.payload.id) {
+        id = action.payload.id
       }
       const { type, title = "", content = "" } = action.payload;
-      console.log('id ||',id || generateId())
+      console.log('id ||', id || generateId())
       state[mode].orderedSections.push({
         id: id || generateId(),
         type,
         title: type === "plain" ? "" : title,
         content,
       });
-     
+
     },
 
     toggleInclusion: (state) => {
@@ -136,7 +138,7 @@ const page2Slice = createSlice({
 
     updateSection: (state, action) => {
       const mode = state.currentMode;
-      
+
       const { id, type, title, content } = action.payload;
       state[mode].orderedSections = (state[mode].orderedSections || []).map((sec) =>
         sec.id === id
@@ -204,7 +206,14 @@ const page2Slice = createSlice({
         });
       }
     },
-
+    addTableTitle: (state, action) => {
+      const mode = state.currentMode;
+      const tableID = action.payload.id;
+       const table = state[mode].tables.find((t) => t.id === tableID);
+  if (table) {
+    table.title = action.payload.title;
+  }
+    },
     addTableRow: (state, action) => {
       const mode = state.currentMode;
       console.log('mss', mode)
@@ -265,26 +274,26 @@ const page2Slice = createSlice({
     },
 
     addColumnToNumber: (state, action) => {
-  const mode = state.currentMode;
-  const table = state[mode].tables.find((t) => t.id === action.payload.id);
+      const mode = state.currentMode;
+      const table = state[mode].tables.find((t) => t.id === action.payload.id);
 
-  console.log('action.payload', action.payload);
+      console.log('action.payload', action.payload);
 
-  if (!table.columnNo) {
-    table.columnNo = []; // safety (first time)
-  }
+      if (!table.columnNo) {
+        table.columnNo = []; // safety (first time)
+      }
 
-  table.columnNo.push(action.payload.col);
-},
+      table.columnNo.push(action.payload.col);
+    },
 
- removeColumnToNumber: (state, action) => {
-  const mode = state.currentMode;
-  const table = state[mode].tables.find((t) => t.id === action.payload.id);
+    removeColumnToNumber: (state, action) => {
+      const mode = state.currentMode;
+      const table = state[mode].tables.find((t) => t.id === action.payload.id);
 
-  table.columnNo = table.columnNo.filter(
-    (item) => item !== action.payload.col
-  );
-},
+      table.columnNo = table.columnNo.filter(
+        (item) => item !== action.payload.col
+      );
+    },
 
     // ✅ Reset specific mode
     resetPage2: (state, action) => {
@@ -314,6 +323,7 @@ export const {
   addColumnToNumber,
   removeColumnToNumber,
   updateTableHeaders,
+  addTableTitle,
   resetPage2,
 } = page2Slice.actions;
 

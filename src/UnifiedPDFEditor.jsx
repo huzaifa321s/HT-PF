@@ -348,32 +348,42 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
       <Paper elevation={8} sx={{ borderRadius: 0 }}>
         {(viewMode === "edit" || viewMode === "split") && (
           <Tabs
-            value={activeTab}
-            onChange={(_, v) => setActiveTab(v)}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              bgcolor: "white",
-              "& .MuiTab-root": {
-                fontWeight: 600,
-                color: "#667eea",
-                "&.Mui-selected": {
-                  color: "#764ba2",
-                  bgcolor: "rgba(102,126,234,0.1)",
-                },
-              },
-              "& .MuiTabs-indicator": {
-                bgcolor: "#764ba2",
-                height: 4,
-                borderRadius: 2,
-              },
-            }}
-          >
-            {visiblePages.map((page) => {
-              const index = pages.indexOf(page);
-              return <Tab key={index} label={page.name} value={index} />;
-            })}
-          </Tabs>
+  value={activeTab}
+  onChange={(_, v) => setActiveTab(v)}
+  variant="scrollable"
+  scrollButtons="auto"
+  sx={{
+    bgcolor: "white",
+    overflowX: "auto", // add this to always show horizontal scroll
+    "& .MuiTab-root": {
+      fontWeight: 600,
+      color: "#667eea",
+      "&.Mui-selected": {
+        color: "#764ba2",
+        bgcolor: "rgba(102,126,234,0.1)",
+      },
+    },
+    "& .MuiTabs-indicator": {
+      bgcolor: "#764ba2",
+      height: 4,
+      borderRadius: 2,
+    },
+    // Optional: always show scrollbar in webkit browsers
+    "&::-webkit-scrollbar": {
+      height: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "#764ba2",
+      borderRadius: 3,
+    },
+  }}
+>
+  {visiblePages.map((page) => {
+    const index = pages.indexOf(page);
+    return <Tab key={index} label={page.name} value={index} />;
+  })}
+</Tabs>
+
         )}
       </Paper>
 

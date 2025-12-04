@@ -47,7 +47,7 @@ import {
 import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 
-const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mode}) => {
+const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
   const dispatch = useDispatch();
   const paymentTerms = mode === 'edit-doc' ? useSelector((s) => s.paymentTerms.edit) : useSelector((s) => s.paymentTerms.create);
 
@@ -139,6 +139,10 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
             color: "white",
             position: "relative",
             overflow: "hidden",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
             "&::before": {
               content: '""',
               position: "absolute",
@@ -174,70 +178,70 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
             border: "1px solid rgba(102,126,234,0.2)",
           }}
         >
-            <Chip
-              icon={<DescriptionOutlined />}
-              label={`Total Terms: ${terms.length}`}
-              sx={{
-                bgcolor: "rgba(102,126,234,0.15)",
-                color: "#667eea",
-                fontWeight: 700,
-                fontSize: { xs: "0.9rem", sm: "1rem" },
-                height: { xs: 36, sm: 40 },
-                width: { xs: "100%", sm: "auto" },
-                marginBottom: 5
-              }}
-            />
+          <Chip
+            icon={<DescriptionOutlined />}
+            label={`Total Terms: ${terms.length}`}
+            sx={{
+              bgcolor: "rgba(102,126,234,0.15)",
+              color: "#667eea",
+              fontWeight: 700,
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+              height: { xs: 36, sm: 40 },
+              width: { xs: "100%", sm: "auto" },
+              marginBottom: 5
+            }}
+          />
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={{ xs: 2, sm: 3 }}
             justifyContent="space-between"
             alignItems="center"
           >
-          
 
-              <Button
-                fullWidth={isSmallScreen}
-                variant="outlined"
-                startIcon={<RefreshOutlined />}
-                onClick={() => setShowResetDialog(true)}
-                sx={{
-                  borderRadius: 4,
-                  border: "2px solid #667eea",
-                  color: "#667eea",
-                  fontWeight: 600,
-                  px: { xs: 3, sm: 4 },
-                  py: 0.4,
-                  "&:hover": {
-                    borderColor: "#764ba2",
-                    bgcolor: "rgba(102,126,234,0.1)",
-                  },
-                }}
-              >
-                Reset Page
-              </Button>
 
-              <Button
-                fullWidth={isSmallScreen}
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => setShowAddDialog(true)}
-                sx={{
-                  borderRadius: 4,
-                  px: { xs: 4, sm: 6 },
-                  py: 1,
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  boxShadow: "0 8px 25px rgba(102,126,234,0.4)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
-                  },
-                }}
-              >
-                Add New Term
-              </Button>
-            
+            <Button
+              fullWidth={isSmallScreen}
+              variant="outlined"
+              startIcon={<RefreshOutlined />}
+              onClick={() => setShowResetDialog(true)}
+              sx={{
+                borderRadius: 4,
+                border: "2px solid #667eea",
+                color: "#667eea",
+                fontWeight: 600,
+                px: { xs: 3, sm: 4 },
+                py: 0.4,
+                "&:hover": {
+                  borderColor: "#764ba2",
+                  bgcolor: "rgba(102,126,234,0.1)",
+                },
+              }}
+            >
+              Reset Page
+            </Button>
+
+            <Button
+              fullWidth={isSmallScreen}
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setShowAddDialog(true)}
+              sx={{
+                borderRadius: 4,
+                px: { xs: 4, sm: 6 },
+                py: 1,
+                fontWeight: 700,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 8px 25px rgba(102,126,234,0.4)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
+                },
+              }}
+            >
+              Add New Term
+            </Button>
+
           </Stack>
         </Paper>
 
@@ -438,7 +442,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
           Add New Payment Term
         </DialogTitle>
-        <DialogContent sx={{ pt: 4, pb: 2 ,mt:3}}>
+        <DialogContent sx={{ pt: 4, pb: 2, mt: 3 }}>
           <TextField
             fullWidth
             multiline
@@ -463,7 +467,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
               px: 6,
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               "&:hover": { background: "#5568d3" },
-              borderRadius:5
+              borderRadius: 5
             }}
           >
             Add Term
@@ -471,7 +475,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
         </DialogActions>
       </Dialog>
 
-      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth fullScreen={isSmallScreen} sx={{borderRadius:5}}>
+      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)} maxWidth="sm" fullWidth fullScreen={isSmallScreen} sx={{ borderRadius: 5 }}>
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3, fontWeight: 700 }}>
           <WarningAmber sx={{ mr: 1 }} /> Reset Payment Terms Page?
         </DialogTitle>
@@ -493,7 +497,7 @@ const PdfPaymentTermsEditorPage = ({ selectedFont = "'Poppins', sans-serif" ,mod
             color="error"
             size="large"
             fullWidth={isSmallScreen}
-            sx={{ px: 5, fontWeight: 700 ,borderRadius:5}}
+            sx={{ px: 5, fontWeight: 700, borderRadius: 5 }}
           >
             Yes, Reset Page
           </Button>

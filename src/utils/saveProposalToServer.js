@@ -11,7 +11,7 @@ export const saveProposalToServer = async () => {
 
     // Only send required slices
     const payload = {
-      businessInfo: state.businessInfo,
+      businessInfo: state.businessInfo?.data || state.businessInfo,
       form: state.form,
       pages: state.pages,
       customContent: state.customContent,
@@ -22,7 +22,7 @@ export const saveProposalToServer = async () => {
 
     // Token
     const token = sessionStorage.getItem("token");
-console.log('==-token',token)
+    console.log('==-token', token)
     const res = await axiosInstance.post(
       "/api/proposals/save",
       payload,

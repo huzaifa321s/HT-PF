@@ -226,7 +226,7 @@ const EditProposal = () => {
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 2, sm: 3, md: 4 },
+    p: { xs: 1, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -300,6 +300,41 @@ const EditProposal = () => {
       formData.selectedCurrency = newCurrency;
     }
   };
+
+  // Format number in words function for currency display
+  const formatNumberInWords = (value, currency) => {
+    if (!value) return "";
+
+    const number = parseInt(value.toString().replace(/[^0-9]/g, ""), 10);
+    if (isNaN(number) || number === 0) return "";
+
+    // Common formatting for USD, GBP, EUR, AED
+    if (["USD", "GBP", "EUR", "AED"].includes(currency)) {
+      if (number >= 1000000000) {
+        return `${(number / 1000000000).toFixed(2)}B`;
+      } else if (number >= 1000000) {
+        return `${(number / 1000000).toFixed(2)}M`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    // PKR - Lakh & Crore
+    if (currency === "PKR") {
+      if (number >= 10000000) {
+        return `${(number / 10000000).toFixed(2)} Crore`;
+      } else if (number >= 100000) {
+        return `${(number / 100000).toFixed(2)} Lakh`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    return number.toLocaleString();
+  };
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -377,9 +412,7 @@ const EditProposal = () => {
       }
 
       await axiosInstance.put(
-        `${
-          import.meta.env.VITE_APP_BASE_URL
-        }api/proposals/update-proposal/${id}`,
+        `${import.meta.env.VITE_APP_BASE_URL}api/proposals/update-proposal/${id}`,
         dataToSend
       );
 
@@ -451,9 +484,7 @@ const EditProposal = () => {
       };
 
       await axiosInstance.put(
-        `${
-          import.meta.env.VITE_APP_BASE_URL
-        }api/proposals/update-proposal/${id}`,
+        `${import.meta.env.VITE_APP_BASE_URL}api/proposals/update-proposal/${id}`,
         {
           data: { ...formDataToSave, selectedCurrency },
           pdfPages,
@@ -613,18 +644,19 @@ const EditProposal = () => {
               exclusive
               onChange={handleCurrencyChange}
               aria-label="currency selection"
+              size="small"
               sx={{
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
                 flexWrap: "wrap",
                 "& .MuiToggleButton-root": {
-                  px: { xs: 1.5, sm: 2 },
-                  py: 0.5,
-                  fontSize: { xs: "0.4rem", sm: "0.6rem" },
+                  px: { xs: 1, sm: 2 },
+                  py: { xs: 0.3, sm: 0.5 },
+                  fontSize: { xs: "0.7rem", sm: "0.9rem" },
                   fontWeight: 700,
                   border: "2px solid",
                   borderColor: colorScheme.primary,
                   borderRadius: 3,
-                  minWidth: 90,
+                  minWidth: { xs: 60, sm: 90 },
                   "&.Mui-selected": {
                     background: colorScheme.gradient,
                     color: "#fff",
@@ -639,35 +671,35 @@ const EditProposal = () => {
               }}
             >
               <ToggleButton value="USD">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>$</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>$</Typography>
                   <Typography>USD</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="PKR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>₨</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>₨</Typography>
                   <Typography>PKR</Typography>
                 </Box>
               </ToggleButton>
               <ToggleButton value="GBP">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>£</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>£</Typography>
                   <Typography>GBP</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="EUR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.4rem" }}>€</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>€</Typography>
                   <Typography>EUR</Typography>
                 </Box>
               </ToggleButton>
 
               <ToggleButton value="AED">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Typography sx={{ fontSize: "1.3rem", fontWeight: 800 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.3rem" }, fontWeight: 800 }}>
                     د.إ
                   </Typography>
                   <Typography>AED</Typography>
@@ -760,7 +792,7 @@ const EditProposal = () => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {formatNumberInWords(value, selectedCurrency)}
+                    {formatNumberInWords(formData.additionalCosts, selectedCurrency)}
                   </Typography>
                 </InputAdornment>
               ),
@@ -826,15 +858,6 @@ const EditProposal = () => {
                 },
               }}
             />
-            {/* <TextField
-            type="date"
-            label="Date"
-            fullWidth
-            value={formData.date}
-            disabled
-            InputLabelProps={{ shrink: true }}
-            sx={inputStyle}
-          /> */}
           </LocalizationProvider>
         </>
       ),
@@ -843,10 +866,10 @@ const EditProposal = () => {
       label: "PDF Review",
       icon: <EditDocument />,
       content: (
-        <>
+        <Box sx={{ mx: { xs: -1, sm: 0 }, px: { xs: 0, sm: 0 } }}>
           {sectionHeader(<EditDocument />, "PDF Review")}
           <UnifiedPdfEditor pdfPages={formData?.pdfPages} mode="edit-doc" />
-        </>
+        </Box>
       ),
     },
   ];
@@ -885,7 +908,7 @@ const EditProposal = () => {
               color: "text.primary",
               fontWeight: 600,
               textTransform: "none",
-              fontSize: "1rem",
+              fontSize: 14,
               py: 1,
               px: 3,
               borderRadius: 3,
@@ -908,9 +931,7 @@ const EditProposal = () => {
           <Typography
             variant="h4"
             sx={{
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
+              textAlign: 'center',
               fontWeight: 800,
               fontSize: { xs: "1.8rem", sm: "2.2rem" },
               background: colorScheme.gradient,
@@ -935,13 +956,12 @@ const EditProposal = () => {
           <>
             <Stepper
               activeStep={activeStep}
-              orientation="horizontal"
+              orientation="vertical"
               sx={{
                 mb: 4,
                 display: "flex",
                 flexWrap: "wrap",
-                justifyContent:
-                  steps.length % 2 !== 0 ? "center" : "flex-start",
+                justifyContent: "center"
               }}
             >
               {steps.map((step, index) => (
@@ -949,8 +969,8 @@ const EditProposal = () => {
                   key={step.label}
                   sx={{
                     mb: 3,
-                    width: index === steps.length - 1 ? "100%" : "50%",
-                    minWidth: index === steps.length - 1 ? "none" : "300px",
+                    width: "100%",
+                    minWidth: "300px",
                   }}
                 >
                   <StepLabel
@@ -1030,7 +1050,7 @@ const EditProposal = () => {
             </Stepper>
 
             <Box
-              sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 4 }}
+              sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 4, px: { xs: 2, sm: 0 } }}
             >
               <Button
                 variant="contained"
@@ -1039,13 +1059,15 @@ const EditProposal = () => {
                 onClick={handleSubmit}
                 disabled={loading || pdfLoading}
                 sx={{
-                  px: 6,
-                  py: 2,
+                  px: { xs: 3, sm: 6 },
+                  py: { xs: 1.5, sm: 2 },
                   borderRadius: 4,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
                   fontWeight: 700,
                   boxShadow: 6,
                   background: colorScheme.gradient,
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: "300px", sm: "none" },
                   "&:hover": { background: colorScheme.hoverGradient },
                 }}
               >

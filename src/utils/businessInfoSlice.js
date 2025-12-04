@@ -1,21 +1,29 @@
 // src/utils/businessInfoSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {};
+const initialState = {
+  data: {},
+  hasNewInsights: false,
+};
 
 const businessInfoSlice = createSlice({
   name: "businessInfo",
   initialState,
   reducers: {
     setBusinessInfo: (state, action) => {
-      return action.payload || {}; // full clean replace
+      state.data = action.payload || {};
+      state.hasNewInsights = true;
     },
     updateBusinessField: (state, action) => {
       const { key, value } = action.payload;
-      state[key] = value; // update single field
+      if (!state.data) state.data = {};
+      state.data[key] = value;
+    },
+    setHasNewInsights: (state, action) => {
+      state.hasNewInsights = action.payload;
     },
   },
 });
 
-export const { setBusinessInfo, updateBusinessField } = businessInfoSlice.actions;
+export const { setBusinessInfo, updateBusinessField, setHasNewInsights } = businessInfoSlice.actions;
 export default businessInfoSlice.reducer;

@@ -43,7 +43,7 @@ import { useLocation, useNavigate } from "react-router";
 
 const Navbar = ({ onNavigate, currentPath }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const profileOpen = Boolean(anchorEl);
@@ -86,12 +86,12 @@ const Navbar = ({ onNavigate, currentPath }) => {
     },
     ...(role === "admin"
       ? [
-          {
-            label: "BDOs Management",
-            path: "/admin/bdms",
-            icon: <AssessmentIcon />,
-          },
-        ]
+        {
+          label: "BDOs Management",
+          path: "/admin/bdms",
+          icon: <AssessmentIcon />,
+        },
+      ]
       : []),
   ];
 
@@ -108,19 +108,19 @@ const Navbar = ({ onNavigate, currentPath }) => {
       onClick={() => setMobileOpen(false)}
     >
       {/* Drawer Header */}
-      <Box 
-        sx={{ 
-          p: 3, 
+      <Box
+        sx={{
+          p: 3,
           background: "rgba(255,255,255,0.1)",
           backdropFilter: "blur(10px)",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <Avatar 
-            sx={{ 
-              width: 50, 
+          <Avatar
+            sx={{
+              width: 50,
               height: 50,
-              bgcolor: "#fff", 
+              bgcolor: "#fff",
               color: "#667eea",
               fontWeight: 800,
               fontSize: "1.3rem",
@@ -129,9 +129,11 @@ const Navbar = ({ onNavigate, currentPath }) => {
           >
             {user?.name?.[0]?.toUpperCase() || "U"}
           </Avatar>
- 
         </Box>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)", fontSize: "0.75rem" }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "rgba(255,255,255,0.8)", fontSize: "0.75rem" }}
+        >
           {user?.email || "user@example.com"}
         </Typography>
       </Box>
@@ -159,21 +161,21 @@ const Navbar = ({ onNavigate, currentPath }) => {
                     bgcolor: "rgba(255,255,255,0.3)",
                   },
                 },
-                "&:hover": { 
+                "&:hover": {
                   bgcolor: "rgba(255,255,255,0.15)",
                   transform: "translateX(4px)",
                 },
               }}
             >
-              <ListItemIcon 
-                sx={{ 
+              <ListItemIcon
+                sx={{
                   color: "#fff",
                   minWidth: 40,
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
                   fontWeight: isActive ? 700 : 500,
@@ -189,15 +191,13 @@ const Navbar = ({ onNavigate, currentPath }) => {
 
       {/* Bottom Actions */}
       <List sx={{ px: 2, py: 2 }}>
-  
-
         <ListItemButton
           onClick={handleLogout}
           sx={{
             borderRadius: 2.5,
             transition: "all 0.3s ease",
             background: "rgba(244, 67, 54, 0.2)",
-            "&:hover": { 
+            "&:hover": {
               bgcolor: "rgba(244, 67, 54, 0.3)",
               transform: "translateX(4px)",
             },
@@ -206,7 +206,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
           <ListItemIcon sx={{ color: "#fff", minWidth: 40 }}>
             <LogoutIcon />
           </ListItemIcon>
-          <ListItemText 
+          <ListItemText
             primary="Logout"
             primaryTypographyProps={{ fontSize: "0.95rem" }}
           />
@@ -221,13 +221,16 @@ const Navbar = ({ onNavigate, currentPath }) => {
           background: "rgba(0,0,0,0.1)",
         }}
       >
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.7rem" }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.7rem" }}
+        >
           Proposal System v1.0.3
         </Typography>
       </Box>
     </Box>
   );
-
+  const isSmall = useMediaQuery("(max-width:1325px)");
   return (
     <>
       <AppBar
@@ -252,9 +255,9 @@ const Navbar = ({ onNavigate, currentPath }) => {
             edge="start"
             aria-label="menu"
             onClick={handleDrawerToggle}
-            sx={{ 
-              mr: 1, 
-              display: { md: "none" },
+            sx={{
+              mr: 1,
+              display: isSmall ? "inline-flex" : "none",
               background: "rgba(255,255,255,0.1)",
               "&:hover": {
                 background: "rgba(255,255,255,0.2)",
@@ -279,30 +282,30 @@ const Navbar = ({ onNavigate, currentPath }) => {
             }}
           >
             <Box
-  sx={{
-    width: 42,
-    height: 42,
-    borderRadius: 2.5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#fff",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-  }}
->
-  <img
-    src="/download.jpg"
-    alt="icon"
-    style={{
-      width: "24px",
-      height: "24px",
-      objectFit: "contain",
-      borderRadius:100
-    }}
-  />
-</Box>
+              sx={{
+                width: 42,
+                height: 42,
+                borderRadius: 2.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#fff",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+            >
+              <img
+                src="/download.jpg"
+                alt="icon"
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  objectFit: "contain",
+                  borderRadius: 100,
+                }}
+              />
+            </Box>
 
-            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+            <Box sx={{ display: isSmall ? "none" : "block" }}>
               <Typography
                 variant="h6"
                 fontWeight="800"
@@ -322,7 +325,9 @@ const Navbar = ({ onNavigate, currentPath }) => {
                   fontWeight: 500,
                 }}
               >
-                {role === "admin" ? "Business Development Manager" : "Business Development Officer"}
+                {role === "admin"
+                  ? "Business Development Manager"
+                  : "Business Development Officer"}
               </Typography>
             </Box>
           </Box>
@@ -330,7 +335,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
           <Box sx={{ flexGrow: 1 }} />
 
           {/* Desktop nav */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
+          <Box sx={{ display: isSmall ? "none" : "flex", gap: 1 }}>
             {navItems.map((item) => {
               const isActive = activePath === item.path;
               return (
@@ -350,8 +355,10 @@ const Navbar = ({ onNavigate, currentPath }) => {
                     fontSize: "0.95rem",
                     borderRadius: 2.5,
                     transition: "all 0.3s ease",
-                    boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-                    "&:hover": { 
+                    boxShadow: isActive
+                      ? "0 4px 12px rgba(0,0,0,0.15)"
+                      : "none",
+                    "&:hover": {
                       backgroundColor: "rgba(255,255,255,0.2)",
                       transform: "translateY(-2px)",
                     },
@@ -365,8 +372,6 @@ const Navbar = ({ onNavigate, currentPath }) => {
 
           {/* Action Icons */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
-         
-
             {/* Profile Dropdown */}
             <Tooltip title="Account" arrow>
               <Button
@@ -399,7 +404,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
                 </Avatar>
                 {!isMobile && (
                   <Typography variant="body2" fontWeight={600}>
-                    {user?.name?.split(' ')[0] || "User"}
+                    {user?.name?.split(" ")[0] || "User"}
                   </Typography>
                 )}
               </Button>
@@ -409,14 +414,14 @@ const Navbar = ({ onNavigate, currentPath }) => {
               anchorEl={anchorEl}
               open={profileOpen}
               onClose={handleProfileClose}
-              PaperProps={{ 
-                elevation: 8, 
-                sx: { 
-                  mt: 1.5, 
+              PaperProps={{
+                elevation: 8,
+                sx: {
+                  mt: 1.5,
                   minWidth: 220,
                   borderRadius: 2,
                   overflow: "hidden",
-                } 
+                },
               }}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
@@ -425,11 +430,19 @@ const Navbar = ({ onNavigate, currentPath }) => {
               <Box
                 sx={{
                   p: 2,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "#fff",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    mb: 1,
+                  }}
+                >
                   <Avatar
                     sx={{
                       width: 40,
@@ -451,7 +464,13 @@ const Navbar = ({ onNavigate, currentPath }) => {
                   </Box>
                 </Box>
                 <Chip
-                  icon={role === "admin" ? <AdminPanelSettingsIcon sx={{ fontSize: 14 }} /> : <PersonIcon sx={{ fontSize: 14 }} />}
+                  icon={
+                    role === "admin" ? (
+                      <AdminPanelSettingsIcon sx={{ fontSize: 14 }} />
+                    ) : (
+                      <PersonIcon sx={{ fontSize: 14 }} />
+                    )
+                  }
                   label={role === "admin" ? "BDM" : "Agent"}
                   size="small"
                   sx={{
@@ -475,31 +494,32 @@ const Navbar = ({ onNavigate, currentPath }) => {
                 sx={{
                   py: 1.5,
                   gap: 1.5,
-                  "&:hover": { 
+                  "&:hover": {
                     backgroundColor: alpha("#667eea", 0.08),
                   },
                 }}
               >
                 <ListItemIcon>
-                  <AccountCircleIcon fontSize="small" sx={{ color: "#667eea" }} />
+                  <AccountCircleIcon
+                    fontSize="small"
+                    sx={{ color: "#667eea" }}
+                  />
                 </ListItemIcon>
                 <Typography variant="body2" fontWeight={500}>
                   My Profile
                 </Typography>
               </MenuItem>
 
-              
-
               <Divider />
 
               <MenuItem
                 onClick={handleLogout}
-                sx={{ 
+                sx={{
                   py: 1.5,
                   gap: 1.5,
-                  "&:hover": { 
+                  "&:hover": {
                     backgroundColor: alpha("#f44336", 0.08),
-                  } 
+                  },
                 }}
               >
                 <ListItemIcon>
@@ -521,7 +541,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
         PaperProps={{
           sx: {
             width: 280,
-          }
+          },
         }}
       >
         {drawer}
