@@ -15,6 +15,8 @@ import {
   DialogContent,
   DialogActions,
   LinearProgress,
+  Card,
+  CardContent,
 } from "@mui/material";
 import {
   Save,
@@ -23,6 +25,8 @@ import {
   CheckCircle,
   AutoAwesome,
   DoneAll,
+  Person, // Added for section header icon
+  Business, // Added for section header icon
 } from "@mui/icons-material";
 
 import { setBrandName, setBrandTagline, resetPage1 } from "../src/utils/page1Slice";
@@ -30,9 +34,11 @@ import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
 
-const PdfPage1Editor = ({mode}) => {
+const PdfPage1Editor = ({ mode }) => {
   const dispatch = useDispatch();
-  const page1 = useSelector((state) => mode === 'edit-doc' ? state.page1Slice.edit : state.page1Slice.create);
+  const page1 = useSelector((state) =>
+    mode === "edit-doc" ? state.page1Slice.edit : state.page1Slice.create
+  );
 
   // Local state (for instant UI response)
   const [local, setLocal] = useState({
@@ -40,8 +46,8 @@ const PdfPage1Editor = ({mode}) => {
     brandTagline: page1.brandTagline || "",
   });
 
-  const [isSaving, setIsSaving] = useState(false);     // Visual saving indicator
-  const [justSaved, setJustSaved] = useState(false);   // Success flash
+  const [isSaving, setIsSaving] = useState(false); // Visual saving indicator
+  const [justSaved, setJustSaved] = useState(false); // Success flash
   const [resetDialog, setResetDialog] = useState(false);
 
   // Sync Redux → Local state (only when Redux actually changes)
@@ -82,199 +88,178 @@ const PdfPage1Editor = ({mode}) => {
       const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       await axiosInstance.post(`/api/proposals/pages/reset/page1/${user.id}`);
       setResetDialog(false);
-      dispatch(showToast({ message: "Cover page reset successfully!", severity: "success" }));
+      dispatch(
+        showToast({ message: "Cover page reset successfully!", severity: "success" })
+      );
     } catch (err) {
       dispatch(showToast({ message: "Reset failed!", severity: "error" }));
     }
   };
 
+  // Styles from ProposalFormwithStepper
+  const colorScheme = {
+    primary: "#667eea",
+    secondary: "#764ba2",
+    success: "#4CAF50",
+    warning: "#FF9800",
+    error: "#f44336",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    hoverGradient: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+  };
+
+  const cardStyle = {
+    mb: 3,
+    p: { xs: 0, sm: 3, md: 4 },
+    background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+    border: "2px solid #e0e7ff",
+    borderRadius: 3,
+    boxShadow: "0 4px 20px rgba(102, 126, 234, 0.1)",
+  };
+
+  const inputStyle = {
+    mb: 2,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 2,
+      background: "#fff",
+      "&:hover": {
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: colorScheme.primary,
+        },
+      },
+    },
+  };
+
+  const sectionHeader = (icon, title) => (
+    <Box sx={{ display: "flex", alignItems: "center", mb: 3, mt: 2 }}>
+      <Box
+        sx={{
+          p: 1.5,
+          mr: 2,
+          background: colorScheme.gradient,
+          borderRadius: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {React.cloneElement(icon, {
+          sx: { fontSize: 20, color: "#fff" },
+        })}
+      </Box>
+      <Typography
+        variant="h5"
+        sx={{
+          fontWeight: 700,
+          background: colorScheme.gradient,
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        {title}
+      </Typography>
+    </Box>
+  );
+
   return (
- <Box
+    <Box
       sx={{
-        p: { xs: 2, sm: 3 },
+        p: { xs: 1.5, sm: 3 },
         height: "100%",
         overflowY: "auto",
         overflowX: "hidden",
-        bgcolor: "#f8f9ff",
+        bgcolor: "#fff",
       }}
     >
-      <Stack spacing={3}>
+      <Card sx={cardStyle}>
+        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          {sectionHeader(<Business />, "Cover Page Editor")}
 
-        {/* Premium Gradient Header */}
-        <Paper
-          elevation={10}
-          sx={{
-            p: 4,
-            borderRadius: 5,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "6px",
-              background: "linear-gradient(90deg, #f093fb 0%, #f5576c 50%, #4facfe 100%)",
-            },
-          }}
-        >
-          <Typography variant="h4" fontWeight={900} gutterBottom sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}>
-            Cover Page Editor
-          </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.95, fontWeight: 500 }}>
+          <Typography variant="body1" sx={{ mb: 3, color: "text.secondary" }}>
             Your brand’s first impression starts here
           </Typography>
-        </Paper>
 
-        {/* Saving Status */}
-        {isSaving && (
-          <Alert
-            icon={<AutoAwesome sx={{ color: "#667eea" }} />}
-            severity="info"
-            sx={{
-              borderRadius: 4,
-              bgcolor: "rgba(102,126,234,0.08)",
-              border: "1px solid rgba(102,126,234,0.3)",
-            }}
-          >
-            <LinearProgress
+          {/* Saving Status */}
+          {isSaving && (
+            <Alert
+              icon={<AutoAwesome sx={{ color: "#667eea" }} />}
+              severity="info"
               sx={{
-                height: 8,
+                mb: 3,
                 borderRadius: 4,
-                bgcolor: "rgba(102,126,234,0.1)",
-                "& .MuiLinearProgress-bar": {
-                  background: "linear-gradient(90deg, #667eea, #764ba2)",
-                },
+                bgcolor: "rgba(102,126,234,0.08)",
+                border: "1px solid rgba(102,126,234,0.3)",
               }}
-            />
-            <Typography variant="body2" mt={1} fontWeight={600}>
-              Saving your changes...
+            >
+              <LinearProgress
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  bgcolor: "rgba(102,126,234,0.1)",
+                  "& .MuiLinearProgress-bar": {
+                    background: "linear-gradient(90deg, #667eea, #764ba2)",
+                  },
+                }}
+              />
+              <Typography variant="body2" mt={1} fontWeight={600}>
+                Saving your changes...
+              </Typography>
+            </Alert>
+          )}
+
+          {justSaved && (
+            <Alert
+              icon={<DoneAll sx={{ color: "#4caf50" }} />}
+              severity="success"
+              sx={{
+                mb: 3,
+                borderRadius: 4,
+                bgcolor: "rgba(76,175,80,0.1)",
+                border: "1px solid rgba(76,175,80,0.3)",
+              }}
+            >
+              <Typography fontWeight={600}>All changes saved instantly!</Typography>
+            </Alert>
+          )}
+
+          {/* Brand Name */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Brand Name
             </Typography>
-          </Alert>
-        )}
+            <TextField
+              fullWidth
+              value={local.brandName}
+              onChange={(e) => handleChange("brandName", e.target.value)}
+              placeholder="e.g. Nexus Digital Solutions"
+              variant="outlined"
+              sx={inputStyle}
+              helperText="Appears as the main title on cover page"
+            />
+          </Box>
 
-        {justSaved && (
-          <Alert
-            icon={<DoneAll sx={{ color: "#4caf50" }} />}
-            severity="success"
-            sx={{
-              borderRadius: 4,
-              bgcolor: "rgba(76,175,80,0.1)",
-              border: "1px solid rgba(76,175,80,0.3)",
-            }}
-          >
-            <Typography fontWeight={600}>All changes saved instantly!</Typography>
-          </Alert>
-        )}
+          {/* Brand Tagline */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Brand Tagline
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={local.brandTagline}
+              onChange={(e) => handleChange("brandTagline", e.target.value)}
+              placeholder="e.g. Building Tomorrow's Digital Experiences Today"
+              variant="outlined"
+              sx={inputStyle}
+              helperText="Keep it short, powerful & memorable (under 12 words recommended)"
+            />
+          </Box>
 
-        {/* Brand Name */}
-        <Paper
-          elevation={6}
-          sx={{
-            p: { xs: 3, md: 4 },
-            borderRadius: 5,
-            border: "1px solid rgba(102,126,234,0.15)",
-            transition: "0.3s",
-            "&:hover": { boxShadow: "0 12px 32px rgba(102,126,234,0.15)" },
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight="medium"
-            gutterBottom
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Brand Name
-          </Typography>
-          <TextField
-            fullWidth
-            value={local.brandName}
-            onChange={(e) => handleChange("brandName", e.target.value)}
-            placeholder="e.g. Nexus Digital Solutions"
-            variant="outlined"
-            size="large"
-            sx={{
-              mt: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 4,
-                fontSize: "1.4rem",
-                fontWeight: 400,
-                bgcolor: "white",
-                "&:hover": { borderColor: "#667eea" },
-              },
-            }}
-          />
-          <Typography variant="body2" color="text.secondary" mt={2}>
-            Appears as the main title on cover page
-          </Typography>
-        </Paper>
-
-        {/* Brand Tagline */}
-        <Paper
-          elevation={6}
-          sx={{
-            p: { xs: 3, md: 4 },
-            borderRadius: 5,
-            border: "1px solid rgba(102,126,234,0.15)",
-            transition: "0.3s",
-            "&:hover": { boxShadow: "0 12px 32px rgba(102,126,234,0.15)" },
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            gutterBottom
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Brand Tagline
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            rows={5}
-            value={local.brandTagline}
-            onChange={(e) => handleChange("brandTagline", e.target.value)}
-            placeholder="e.g. Building Tomorrow's Digital Experiences Today"
-            variant="outlined"
-            sx={{
-              mt: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 4,
-                bgcolor: "white",
-              },
-              "& textarea": { lineHeight: 1.8, fontSize: "1.1rem" },
-            }}
-          />
-          <Typography variant="body2" color="text.secondary" mt={2}>
-            Keep it short, powerful & memorable (under 12 words recommended)
-          </Typography>
-        </Paper>
-
-        {/* Action Buttons */}
-        <Paper
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: 5,
-            background: "linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%)",
-            border: "1px solid rgba(102,126,234,0.2)",
-          }}
-        >
+          {/* Action Buttons */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            spacing={3}
-            justifyContent="space-between"
+            spacing={2}
+            justifyContent="flex-end"
             alignItems="center"
           >
             <Button
@@ -282,18 +267,18 @@ const PdfPage1Editor = ({mode}) => {
               startIcon={<RefreshOutlined />}
               onClick={() => setResetDialog(true)}
               sx={{
-                borderRadius: 4,
-                border: "2px solid #667eea",
-                color: "#667eea",
+                borderRadius: 10,
+                borderColor: colorScheme.primary,
+                color: colorScheme.primary,
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
                 "&:hover": {
-                  borderColor: "#764ba2",
+                  borderColor: colorScheme.secondary,
                   bgcolor: "rgba(102,126,234,0.08)",
                 },
               }}
-              fullWidth={{ xs: true, sm: false }}
+              fullWidth
             >
               Reset Page
             </Button>
@@ -303,35 +288,39 @@ const PdfPage1Editor = ({mode}) => {
               startIcon={<Save />}
               onClick={handleSaveNow}
               sx={{
-                borderRadius: 4,
+                borderRadius: 10,
                 fontWeight: 700,
-                fontSize: "0.9rem",
-                px: 3,
-                height:70,
-                py: 3,
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                boxShadow: "0 8px 25px rgba(102,126,234,0.4)",
+                px: 4,
+                py: 1.5,
+                background: colorScheme.gradient,
+                boxShadow: 6,
                 "&:hover": {
-                  background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                  transform: "translateY(-3px)",
-                  boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
+                  background: colorScheme.hoverGradient,
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
                 },
               }}
-              fullWidth={{ xs: true, sm: false }}
+              fullWidth
             >
               Save Changes Now
             </Button>
           </Stack>
-        </Paper>
-
-
-      </Stack>
+        </CardContent>
+      </Card>
 
       {/* Reset Confirmation Dialog */}
-      <Dialog open={resetDialog} onClose={() => setResetDialog(false)} maxWidth="sm" sx={{borderRadius:5}} fullWidth>
+      <Dialog
+        open={resetDialog}
+        onClose={() => setResetDialog(false)}
+        maxWidth="sm"
+        sx={{ borderRadius: 5 }}
+        fullWidth
+      >
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3 }}>
-          <WarningAmber sx={{ mr: 1, verticalAlign: "middle" }} />
-          Confirm Reset
+          <Box display="flex" alignItems="center">
+            <WarningAmber sx={{ mr: 1 }} />
+            Confirm Reset
+          </Box>
         </DialogTitle>
         <DialogContent sx={{ pt: 4 }}>
           <Typography variant="h6" gutterBottom>
@@ -344,8 +333,8 @@ const PdfPage1Editor = ({mode}) => {
             This action cannot be undone!
           </Alert>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button onClick={() => setResetDialog(false)} size="large">
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+          <Button onClick={() => setResetDialog(false)} size="large" sx={{ borderRadius: 10 }} fullWidth>
             Cancel
           </Button>
           <Button
@@ -353,7 +342,8 @@ const PdfPage1Editor = ({mode}) => {
             variant="contained"
             color="error"
             size="large"
-            sx={{ px: 4, fontWeight: 600,borderRadius:5 }}
+            sx={{ px: 4, fontWeight: 600, borderRadius: 10 }}
+            fullWidth
           >
             Yes, Reset Everything
           </Button>

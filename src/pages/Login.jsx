@@ -75,57 +75,63 @@ const Login = () => {
   };
 
   return (
-
-      <Box
+    <Box
+      sx={{
+        minHeight: "100vh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", // Gradient moved to background
+        m: 0,
+        p: 0,
+        overflow: "hidden",
+      }}
+    >
+      <Paper
+        elevation={3}
         sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "background.default",
-          width: "100vw",
-        position: "relative",
-        left: "50%",
-        right: "50%",
-        marginLeft: "-50vw",
-        marginTop: "-30px",
-        marginBottom:"-30px",
-        marginRight: "-50vw",
+          p: { xs: 2.5, sm: 4, md: 5 },
+          borderRadius: { xs: 3, sm: 5 },
+          bgcolor: "rgba(255, 255, 255, 0.9)", // Glassy white card
+          backdropFilter: "blur(10px)",
+          transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          border: "1px solid rgba(255, 255, 255, 0.3)",
+          position: "relative",
+          "&:hover": {
+            transform: { xs: "none", sm: "translateY(-8px)" },
+            boxShadow: { xs: "0 10px 20px rgba(0,0,0,0.1)", sm: "0 20px 40px rgba(0,0,0,0.15)" },
+          },
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: { xs: "4px", sm: "6px" },
+            background:
+              "linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+            backgroundSize: "200% 100%",
+            animation: loading ? "shimmer 2s infinite" : "none",
+            borderTopLeftRadius: { xs: 12, sm: 20 },
+            borderTopRightRadius: { xs: 12, sm: 20 },
+          },
+          "@keyframes shimmer": {
+            "0%": { backgroundPosition: "-200% 0" },
+            "100%": { backgroundPosition: "200% 0" },
+          },
+          width: "100%",
+          maxWidth: { xs: "90%", sm: "480px" }, // Adjusted max-width
         }}
       >
-        <Paper
-          elevation={3}
+        <Box
           sx={{
-            p: { xs: 3, sm: 4, md: 5 },
-            mb: 4,
-            borderRadius: 5,
-            background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            border: "3px solid transparent",
-            position: "relative",
-            overflow: "hidden",
-            "&:hover": {
-              transform: "translateY(-8px)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-            },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "6px",
-              background:
-                "linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-              backgroundSize: "200% 100%",
-              animation: loading ? "shimmer 2s infinite" : "none",
-            },
-            "@keyframes shimmer": {
-              "0%": { backgroundPosition: "-200% 0" },
-              "100%": { backgroundPosition: "200% 0" },
-            },
-            width: "100%",
-            maxWidth: "sm",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: { xs: 3, sm: 4 },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
           }}
         >
           <Box
@@ -133,164 +139,163 @@ const Login = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              mb: 4,
+              bgcolor: "rgba(102, 126, 234, 0.15)",
+              borderRadius: "50%",
+              width: { xs: 56, sm: 64 },
+              height: { xs: 56, sm: 64 },
+              mr: { xs: 0, sm: 2 },
+              boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
             }}
           >
-            <Box
+            <LoginIcon sx={{ fontSize: { xs: 32, sm: 36 }, color: "#667eea" }} />
+          </Box>
+          <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
+            <Typography
+              variant="h4"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: "rgba(102, 126, 234, 0.15)",
-                borderRadius: "50%",
-                width: 64,
-                height: 64,
-                mr: 2,
-                boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                letterSpacing: "-0.5px",
+                fontSize: { xs: "1.75rem", sm: "2.125rem" },
               }}
             >
-              <LoginIcon sx={{ fontSize: 36, color: "#667eea" }} />
-            </Box>
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                {isAdminLogin ? "Admin Login" : "Login"}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-                Login to manage your proposals
-              </Typography>
-            </Box>
-          </Box>
-
-          {error && (
-            <Alert
-              severity="error"
+              {isAdminLogin ? "Admin Login" : "Login"}
+            </Typography>
+            <Typography
+              variant="body2"
               sx={{
-                mb: 2,
+                color: "text.secondary",
+                mt: 0.5,
+                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+              }}
+            >
+              Login to manage your proposals
+            </Typography>
+          </Box>
+        </Box>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 2,
+              borderRadius: 3,
+              bgcolor: "rgba(244, 67, 54, 0.9)",
+              color: "#fff",
+              "& .MuiAlert-message": {
+                fontSize: "1rem",
+                fontWeight: 600,
+                background:
+                  "linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              },
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mx: "auto", width: "100%", maxWidth: 480 }}>
+          <TextField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            required
+            margin="normal"
+            variant="outlined"
+            InputProps={{
+              sx: { fontSize: "1rem", lineHeight: 1.8, fontFamily: '"Inter", "Roboto", sans-serif' },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                bgcolor: "rgba(255,255,255,0.9)",
+                "& fieldset": { borderColor: "rgba(102, 126, 234, 0.3)", borderWidth: 2 },
+                "&:hover fieldset": { borderColor: "rgba(102, 126, 234, 0.5)" },
+                "&.Mui-focused fieldset": { borderColor: "#667eea" },
+              },
+            }}
+          />
+
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            required
+            margin="normal"
+            variant="outlined"
+            InputProps={{
+              sx: { fontSize: "1rem", lineHeight: 1.8, fontFamily: '"Inter", "Roboto", sans-serif' },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                bgcolor: "rgba(255,255,255,0.9)",
+                "& fieldset": { borderColor: "rgba(102, 126, 234, 0.3)", borderWidth: 2 },
+                "&:hover fieldset": { borderColor: "rgba(102, 126, 234, 0.5)" },
+                "&.Mui-focused fieldset": { borderColor: "#667eea" },
+              },
+            }}
+          />
+
+          <Tooltip title="Login to your account" arrow>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={loading}
+              sx={{
+                mt: 3,
+                py: 1.8,
                 borderRadius: 3,
-                bgcolor: "rgba(244, 67, 54, 0.9)",
-                color: "#fff",
-                "& .MuiAlert-message": {
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                textTransform: "none",
+                fontSize: "1.1rem",
+                fontWeight: 700,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
                 },
+                "&:disabled": { background: "linear-gradient(135deg, #ccc 0%, #999 100%)" },
+                transition: "all 0.3s ease",
               }}
             >
-              {error}
-            </Alert>
-          )}
+              {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Login"}
+            </Button>
+          </Tooltip>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mx: "auto", width: "100%", maxWidth: 480 }}>
-            <TextField
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-              variant="outlined"
-              InputProps={{
-                sx: { fontSize: "1rem", lineHeight: 1.8, fontFamily: '"Inter", "Roboto", sans-serif' },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "rgba(255,255,255,0.9)",
-                  "& fieldset": { borderColor: "rgba(102, 126, 234, 0.3)", borderWidth: 2 },
-                  "&:hover fieldset": { borderColor: "rgba(102, 126, 234, 0.5)" },
-                  "&.Mui-focused fieldset": { borderColor: "#667eea" },
-                },
-              }}
-            />
-
-            <TextField
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-              variant="outlined"
-              InputProps={{
-                sx: { fontSize: "1rem", lineHeight: 1.8, fontFamily: '"Inter", "Roboto", sans-serif' },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "rgba(255,255,255,0.9)",
-                  "& fieldset": { borderColor: "rgba(102, 126, 234, 0.3)", borderWidth: 2 },
-                  "&:hover fieldset": { borderColor: "rgba(102, 126, 234, 0.5)" },
-                  "&.Mui-focused fieldset": { borderColor: "#667eea" },
-                },
-              }}
-            />
-
-            <Tooltip title="Login to your account" arrow>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                disabled={loading}
+          {isAdminLogin && (
+            <Typography align="center" sx={{ mt: 3, color: "text.secondary" }}>
+              Agent?{" "}
+              <Link
+                component="button"
+                variant="body1"
+                onClick={() => navigate("/login")}
                 sx={{
-                  mt: 3,
-                  py: 1.8,
-                  borderRadius: 3,
-                  textTransform: "none",
-                  fontSize: "1.1rem",
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(102, 126, 234, 0.5)",
-                  },
-                  "&:disabled": { background: "linear-gradient(135deg, #ccc 0%, #999 100%)" },
-                  transition: "all 0.3s ease",
+                  fontWeight: 600,
+                  color: "#667eea",
+                  "&:hover": { color: "#5568d3", textDecoration: "underline" },
                 }}
               >
-                {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Login"}
-              </Button>
-            </Tooltip>
-
-            {isAdminLogin && (
-              <Typography align="center" sx={{ mt: 3, color: "text.secondary" }}>
-                Agent?{" "}
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => navigate("/login")}
-                  sx={{
-                    fontWeight: 600,
-                    color: "#667eea",
-                    "&:hover": { color: "#5568d3", textDecoration: "underline" },
-                  }}
-                >
-                  Login here
-                </Link>
-              </Typography>
-            )}
-          </Box>
-        </Paper>
-      </Box>
-  
+                Login here
+              </Link>
+            </Typography>
+          )}
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

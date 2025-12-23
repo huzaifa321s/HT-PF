@@ -21,6 +21,8 @@ import {
   TableHead,
   TableRow,
   Badge,
+  Card,
+  CardContent,
 } from "@mui/material";
 import {
   Business,
@@ -78,7 +80,38 @@ export default function BusinessInfoSection({ fullTranscript }) {
     }
   }, [finalInfo, reset]);
 
-  console.log('finalInfo', finalInfo);
+  // Styles from ProposalFormwithStepper
+  const colorScheme = {
+    primary: "#667eea",
+    secondary: "#764ba2",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    hoverGradient: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+    lightBg: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+  };
+
+  const cardStyle = {
+    mb: 3,
+    p: { xs: 2, sm: 3, md: 4 },
+    background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+    border: "2px solid #e0e7ff",
+    borderRadius: 3,
+    boxShadow: "0 4px 20px rgba(102, 126, 234, 0.1)",
+  };
+
+  const inputStyle = {
+    mb: 2,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 2,
+      background: "#fff",
+      "&:hover": {
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: colorScheme.primary,
+        },
+      },
+    },
+  };
+
+  console.log("finalInfo", finalInfo);
   const normalizeValue = (value) => {
     if (value == null) return "";
     if (typeof value === "string") return value.trim();
@@ -210,7 +243,7 @@ export default function BusinessInfoSection({ fullTranscript }) {
       dispatch(setBusinessInfo(normalized));
       const generateId = () => crypto.randomUUID();
       if (normalized?.deliverables?.length > 0) {
-        console.log('datassssss')
+        console.log("datassssss");
         const rows = normalized?.deliverables?.map((row) => ({
           id: generateId(),
           col1: row.item || "",
@@ -235,7 +268,13 @@ export default function BusinessInfoSection({ fullTranscript }) {
           col3: row.estimated_cost_pkr || "",
         }));
         dispatch(
-          addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
+          addTable({
+            title: "Quotation",
+            columnCount: 3,
+            T_ID: "321",
+            rows,
+            type: "quotation",
+          })
         );
         dispatch(
           showToast({
@@ -274,7 +313,9 @@ export default function BusinessInfoSection({ fullTranscript }) {
           col2: row.estimated_time || "",
         }));
 
-        dispatch(addTable({ title: "Deliverables", columnCount: 2, T_ID: "123", rows }));
+        dispatch(
+          addTable({ title: "Deliverables", columnCount: 2, T_ID: "123", rows })
+        );
       } else if (fieldKey === "quotation") {
         const rows = fieldValue.map((row) => ({
           id: generateId(),
@@ -283,7 +324,13 @@ export default function BusinessInfoSection({ fullTranscript }) {
           col3: row.estimated_cost_pkr || "",
         }));
         dispatch(
-          addTable({ title: "Quotation", columnCount: 3, T_ID: "321", rows, type: "quotation" })
+          addTable({
+            title: "Quotation",
+            columnCount: 3,
+            T_ID: "321",
+            rows,
+            type: "quotation",
+          })
         );
       } else {
         // TODO: Implement PDF section addition logic
@@ -372,18 +419,20 @@ export default function BusinessInfoSection({ fullTranscript }) {
         return (
           <TableContainer
             component={Paper}
+            elevation={0}
             sx={{
               boxShadow: "0 4px 12px rgba(102,126,234,0.15)",
               borderRadius: 3,
+              border: "1px solid #e0e7ff",
             }}
           >
             <Table>
               <TableHead>
-                <TableRow sx={{ bgcolor: "rgba(102,126,234,0.08)" }}>
-                  <TableCell sx={{ fontWeight: 700, color: "#667eea" }}>
+                <TableRow sx={{ background: colorScheme.gradient }}>
+                  <TableCell sx={{ fontWeight: 700, color: "#fff" }}>
                     Deliverable
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "#667eea" }}>
+                  <TableCell sx={{ fontWeight: 700, color: "#fff" }}>
                     Estimated Delivery Time
                   </TableCell>
                 </TableRow>
@@ -435,25 +484,27 @@ export default function BusinessInfoSection({ fullTranscript }) {
         return (
           <TableContainer
             component={Paper}
+            elevation={0}
             sx={{
               boxShadow: "0 4px 12px rgba(102,126,234,0.15)",
               borderRadius: 3,
+              border: "1px solid #e0e7ff",
             }}
           >
             <Table>
               <TableHead>
-                <TableRow sx={{ bgcolor: "rgba(102,126,234,0.08)" }}>
-                  <TableCell sx={{ fontWeight: 700, color: "#667eea" }}>
+                <TableRow sx={{ background: colorScheme.gradient }}>
+                  <TableCell sx={{ fontWeight: 700, color: "#fff" }}>
                     Item
                   </TableCell>
                   <TableCell
-                    sx={{ fontWeight: 700, color: "#667eea" }}
+                    sx={{ fontWeight: 700, color: "#fff" }}
                     align="center"
                   >
                     Quantity
                   </TableCell>
                   <TableCell
-                    sx={{ fontWeight: 700, color: "#667eea" }}
+                    sx={{ fontWeight: 700, color: "#fff" }}
                     align="right"
                   >
                     Estimated Cost (PKR)
@@ -569,7 +620,13 @@ export default function BusinessInfoSection({ fullTranscript }) {
         {/* Tabs */}
         <Paper
           elevation={4}
-          sx={{ borderRadius: 4, overflow: "hidden", mb: 4 }}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            mb: 4,
+            background: "#fff",
+            border: "1px solid #e0e7ff",
+          }}
         >
           <Tabs
             value={tabValue}
@@ -581,11 +638,20 @@ export default function BusinessInfoSection({ fullTranscript }) {
             }}
             variant="fullWidth"
             sx={{
-              bgcolor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "& .MuiTab-root": { color: "#000", fontWeight: 600 },
-              "& .Mui-selected": {
-                color: "#000 !important",
-                bgcolor: "rgba(255,255,255,0.15)",
+              "& .MuiTab-root": {
+                color: "text.secondary",
+                fontWeight: 600,
+                textTransform: "none",
+                fontSize: "1rem",
+                py: 2,
+                "&.Mui-selected": {
+                  color: colorScheme.primary,
+                  background: "rgba(102, 126, 234, 0.05)",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                backgroundColor: colorScheme.primary,
+                height: 3,
               },
             }}
           >
@@ -618,103 +684,100 @@ export default function BusinessInfoSection({ fullTranscript }) {
 
         {/* Tab 1: Input */}
         {tabValue === 0 && (
-          <Paper
-            sx={{
-              p: 5,
-              borderRadius: 4,
-              background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: "50%",
-                  bgcolor: "rgba(102,126,234,0.15)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mr: 3,
-                }}
-              >
-                <AutoAwesome sx={{ fontSize: 40, color: "#667eea" }} />
-              </Box>
-              <Box>
-                <Typography
-                  variant="h4"
+          <Card elevation={0} sx={cardStyle}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+                <Box
                   sx={{
-                    fontWeight: 800,
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    background: colorScheme.gradient,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mr: 3,
+                    boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
                   }}
                 >
-                  Extract Business Info
-                </Typography>
-                <Typography color="text.secondary">
-                  Paste your transcript to analyze with AI
-                </Typography>
-              </Box>
-            </Box>
-
-            <form onSubmit={handleSubmit(handleExtractInfo)}>
-              <Controller
-                name="transcript"
-                control={control}
-                rules={{
-                  required: "Transcript required",
-                  minLength: { value: 100, message: "Minimum 100 characters" },
-                }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    multiline
-                    minRows={12}
-                    maxRows={20}
-                    placeholder="Paste your full client conversation or transcript here..."
-                    error={!!errors.transcript}
-                    helperText={errors.transcript?.message}
+                  <AutoAwesome sx={{ fontSize: 32, color: "#fff" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
                     sx={{
-                      mb: 4,
-                      "& .MuiOutlinedInput-root": {
-                        bgcolor: "white",
-                        borderRadius: 3,
-                        fontSize: "1.05rem",
-                      },
+                      fontWeight: 800,
+                      background: colorScheme.gradient,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
                     }}
-                  />
-                )}
-              />
+                  >
+                    Extract Business Info
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Paste your transcript to analyze with AI
+                  </Typography>
+                </Box>
+              </Box>
 
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={extracting}
-                startIcon={
-                  extracting ? <CircularProgress size={28} /> : <AutoAwesome />
-                }
-                sx={{
-                  py: 2,
-                  px: 8,
-                  borderRadius: 4,
-                  fontWeight: 800,
-                  fontSize: "1.2rem",
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                  },
-                }}
-              >
-                {extracting ? "Analyzing..." : "Extract with AI"}
-              </Button>
-            </form>
-          </Paper>
+              <form onSubmit={handleSubmit(handleExtractInfo)}>
+                <Controller
+                  name="transcript"
+                  control={control}
+                  rules={{
+                    required: "Transcript required",
+                    minLength: {
+                      value: 100,
+                      message: "Minimum 100 characters",
+                    },
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      multiline
+                      minRows={12}
+                      maxRows={20}
+                      placeholder="Paste your full client conversation or transcript here..."
+                      error={!!errors.transcript}
+                      helperText={errors.transcript?.message}
+                      sx={inputStyle}
+                    />
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={extracting}
+                  startIcon={
+                    extracting ? (
+                      <CircularProgress size={28} color="inherit" />
+                    ) : (
+                      <AutoAwesome />
+                    )
+                  }
+                  sx={{
+                    py: 1.5,
+                    px: 6,
+                    borderRadius: 3,
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
+                    background: colorScheme.gradient,
+                    textTransform: "none",
+                    boxShadow: "0 8px 20px rgba(102, 126, 234, 0.4)",
+                    "&:hover": {
+                      background: colorScheme.hoverGradient,
+                      boxShadow: "0 12px 24px rgba(102, 126, 234, 0.5)",
+                    },
+                  }}
+                >
+                  {extracting ? "Analyzing..." : "Extract with AI"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         )}
 
         {/* Tab 2: Results */}
@@ -732,7 +795,8 @@ export default function BusinessInfoSection({ fullTranscript }) {
                 sx={{
                   p: 3,
                   bgcolor: "rgba(244,67,54,0.05)",
-                  border: "2px solid rgba(244,67,54,0.3)",
+                  border: "1px solid rgba(244,67,54,0.3)",
+                  borderRadius: 3,
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -744,19 +808,25 @@ export default function BusinessInfoSection({ fullTranscript }) {
               </Paper>
             )}
             {entries?.length > 0 && (
-              <Button
-                onClick={() => {
-                  dispatch(
-                    showToast({
-                      message: "Data cleared successfully.",
-                      servity: "success",
-                    })
-                  ),
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => {
+                    dispatch(
+                      showToast({
+                        message: "Data cleared successfully.",
+                        severity: "success",
+                      })
+                    );
                     dispatch(setBusinessInfo({}));
-                }}
-              >
-                Clear All Data <Clear />
-              </Button>
+                  }}
+                  startIcon={<Clear />}
+                  sx={{ borderRadius: 2, textTransform: "none" }}
+                >
+                  Clear All Data
+                </Button>
+              </Box>
             )}
             {entries.length > 0 ? (
               entries.map(([key, value]) => {
@@ -767,244 +837,284 @@ export default function BusinessInfoSection({ fullTranscript }) {
                   (typeof value !== "object" || Object.keys(value).length > 0);
 
                 return (
-                  <Paper
+                  <Card
                     key={key}
-                    elevation={6}
+                    elevation={0}
                     sx={{
-                      p: 4,
-                      borderRadius: 4,
-                      width: "100%",
-                      background:
-                        "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-                      border: "1px solid rgba(102,126,234,0.15)",
-                      transition: "0.3s",
+                      ...cardStyle,
+                      p: 0, // Reset padding for CardContent
+                      transition: "all 0.3s ease",
                       "&:hover": {
-                        boxShadow: "0 16px 40px rgba(102,126,234,0.22)",
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 12px 30px rgba(102, 126, 234, 0.2)",
+                        borderColor: colorScheme.primary,
                       },
                     }}
                   >
-                    {console.log("hasValue", value)}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mb: 2,
-                      }}
-                    >
-                      <Chip
-                        icon={getIcon(key)}
-                        label={key.replace(/_/g, " ")}
+                    <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                      {console.log("hasValue", value)}
+                      <Box
                         sx={{
-                          textTransform: "capitalize",
-                          fontWeight: 700,
-                          bgcolor: "rgba(102,126,234,0.12)",
-                          color: "#667eea",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mb: 3,
+                          flexWrap: "wrap",
+                          gap: 2,
                         }}
-                      />
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        {hasValue && (
-                          <>
-                            {/* Add to PDF Button with Auto-Added Badge */}
-                            {isAddBtn(key) ? null : isAutoAdded(key) ? (
-                              <Badge
-                                badgeContent="Auto Added"
-                                color="success"
-                                sx={{
-                                  "& .MuiBadge-badge": {
-                                    fontSize: "0.65rem",
-                                    height: 18,
-                                    minWidth: 18,
-                                    padding: "0 6px",
-                                  },
-                                }}
-                              >
+                      >
+                        <Chip
+                          icon={getIcon(key)}
+                          label={key.replace(/_/g, " ")}
+                          sx={{
+                            textTransform: "capitalize",
+                            fontWeight: 700,
+                            fontSize: "1rem",
+                            py: 2.5,
+                            px: 1,
+                            borderRadius: 3,
+                            background: "rgba(102,126,234,0.1)",
+                            color: colorScheme.primary,
+                            border: "1px solid rgba(102,126,234,0.2)",
+                            "& .MuiChip-icon": { color: colorScheme.primary },
+                          }}
+                        />
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          {hasValue && (
+                            <>
+                              {/* Add to PDF Button with Auto-Added Badge */}
+                              {isAddBtn(key) ? null : isAutoAdded(key) ? (
+                                <Badge
+                                  badgeContent="Auto Added"
+                                  color="success"
+                                  sx={{
+                                    "& .MuiBadge-badge": {
+                                      fontSize: "0.65rem",
+                                      height: 18,
+                                      minWidth: 18,
+                                      padding: "0 6px",
+                                    },
+                                  }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<AddCircleOutline />}
+                                    onClick={() => handleAddToPdf(key, value)}
+                                    sx={{
+                                      borderColor: "#4caf50",
+                                      color: "#4caf50",
+                                      textTransform: "none",
+                                      fontWeight: 600,
+                                      borderRadius: 2,
+                                    }}
+                                  >
+                                    Add to PDF
+                                  </Button>
+                                </Badge>
+                              ) : (
                                 <Button
                                   variant="outlined"
                                   size="small"
                                   startIcon={<AddCircleOutline />}
                                   onClick={() => handleAddToPdf(key, value)}
                                   sx={{
-                                    borderColor: "#4caf50",
-                                    color: "#4caf50",
+                                    borderColor: colorScheme.primary,
+                                    color: colorScheme.primary,
                                     textTransform: "none",
                                     fontWeight: 600,
+                                    borderRadius: 2,
+                                    "&:hover": {
+                                      borderColor: colorScheme.secondary,
+                                      bgcolor: "rgba(102,126,234,0.05)",
+                                    },
                                   }}
                                 >
                                   Add to PDF
                                 </Button>
-                              </Badge>
-                            ) : (
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AddCircleOutline />}
-                                onClick={() => handleAddToPdf(key, value)}
-                                sx={{
-                                  borderColor: "#667eea",
-                                  color: "#667eea",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  "&:hover": {
-                                    borderColor: "#5568d3",
-                                    bgcolor: "rgba(102,126,234,0.05)",
-                                  },
-                                }}
-                              >
-                                Add to PDF
-                              </Button>
-                            )}
+                              )}
 
-                            {/* Copy Button */}
-                            <Tooltip
-                              title={copiedKey === key ? "Copied!" : "Copy"}
-                            >
-                              <IconButton
-                                onClick={() => handleCopyField(key, value)}
+                              {/* Copy Button */}
+                              <Tooltip
+                                title={copiedKey === key ? "Copied!" : "Copy"}
                               >
-                                {copiedKey === key ? (
-                                  <CheckCircle sx={{ color: "#4caf50" }} />
-                                ) : (
-                                  <ContentCopy sx={{ color: "#667eea" }} />
-                                )}
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        )}
+                                <IconButton
+                                  onClick={() => handleCopyField(key, value)}
+                                  sx={{
+                                    border: "1px solid #e0e7ff",
+                                    borderRadius: 2,
+                                  }}
+                                >
+                                  {copiedKey === key ? (
+                                    <CheckCircle sx={{ color: "#4caf50" }} />
+                                  ) : (
+                                    <ContentCopy
+                                      sx={{ color: colorScheme.primary }}
+                                    />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                        </Box>
                       </Box>
-                    </Box>
 
-                    <Divider sx={{ mb: 3 }} />
+                      <Divider sx={{ mb: 3, borderColor: "#e0e7ff" }} />
 
-                    <Box sx={{ minHeight: 80, mb: prompt ? 3 : 0 }}>
-                      {/* ✅ Pass key to renderValue */}
-                      {renderValue(value, key)}
-                    </Box>
+                      <Box sx={{ minHeight: 80, mb: prompt ? 3 : 0 }}>
+                        {/* ✅ Pass key to renderValue */}
+                        {renderValue(value, key)}
+                      </Box>
 
-                    {prompt && (
-                      <Box
-                        sx={{
-                          p: 3,
-                          borderRadius: 3,
-                          bgcolor: "rgba(255,152,0,0.08)",
-                          border: "2px dashed rgba(255,152,0,0.3)",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
+                      {prompt && (
+                        <Box
                           sx={{
-                            fontWeight: 700,
-                            color: "#f57c00",
-                            mb: 2,
-                            display: "flex",
-                            alignItems: "center",
+                            p: 3,
+                            borderRadius: 3,
+                            bgcolor: "#fff9f0",
+                            border: "1px dashed #ffb74d",
                           }}
                         >
-                          <Lightbulb sx={{ fontSize: 22, mr: 1 }} />
-                          {key.replace(/_/g, " ")} Prompt
-                        </Typography>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 700,
+                              color: "#f57c00",
+                              mb: 2,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Lightbulb sx={{ fontSize: 22, mr: 1 }} />
+                            {key.replace(/_/g, " ")} Prompt
+                          </Typography>
 
-                        {editingKey === key ? (
-                          <>
-                            <TextField
-                              multiline
-                              fullWidth
-                              minRows={4}
-                              value={editedPrompt}
-                              onChange={(e) => setEditedPrompt(e.target.value)}
-                              sx={{ mb: 2 }}
-                            />
-                            <Box sx={{ display: "flex", gap: 2 }}>
-                              <Button
-                                variant="contained"
-                                startIcon={<Save />}
-                                onClick={() => {
-                                  dispatch(
-                                    updateBusinessField({
-                                      key: promptKey,
-                                      value: editedPrompt,
-                                    })
-                                  );
-                                  setEditingKey(null);
-                                }}
-                              >
-                                Save
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                onClick={() => setEditingKey(null)}
-                              >
-                                Cancel
-                              </Button>
-                            </Box>
-                          </>
-                        ) : (
-                          <>
-                            <Typography
-                              sx={{
-                                mb: 2,
-                                whiteSpace: "pre-wrap",
-                                lineHeight: 1.7,
-                              }}
-                            >
-                              {prompt}
-                            </Typography>
-                            <Box sx={{ display: "flex", gap: 2 }}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => handleSendPrompt(key, prompt)}
-                                disabled={loadingKey === key}
-                                startIcon={
-                                  loadingKey === key ? (
-                                    <CircularProgress size={18} />
-                                  ) : null
+                          {editingKey === key ? (
+                            <>
+                              <TextField
+                                multiline
+                                fullWidth
+                                minRows={4}
+                                value={editedPrompt}
+                                onChange={(e) =>
+                                  setEditedPrompt(e.target.value)
                                 }
                                 sx={{
-                                  bgcolor: "#ff9800",
-                                  "&:hover": { bgcolor: "#f57c00" },
+                                  mb: 2,
+                                  "& .MuiOutlinedInput-root": {
+                                    bgcolor: "#fff",
+                                  },
+                                }}
+                              />
+                              <Box sx={{ display: "flex", gap: 2 }}>
+                                <Button
+                                  variant="contained"
+                                  startIcon={<Save />}
+                                  onClick={() => {
+                                    dispatch(
+                                      updateBusinessField({
+                                        key: promptKey,
+                                        value: editedPrompt,
+                                      })
+                                    );
+                                    setEditingKey(null);
+                                  }}
+                                  sx={{
+                                    bgcolor: "#f57c00",
+                                    "&:hover": { bgcolor: "#ef6c00" },
+                                  }}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => setEditingKey(null)}
+                                  sx={{ color: "#f57c00", borderColor: "#f57c00" }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Box>
+                            </>
+                          ) : (
+                            <>
+                              <Typography
+                                sx={{
+                                  mb: 2,
+                                  whiteSpace: "pre-wrap",
+                                  lineHeight: 1.7,
+                                  color: "#4a4a4a",
                                 }}
                               >
-                                Refine
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<Edit />}
-                                onClick={() => {
-                                  setEditingKey(key);
-                                  setEditedPrompt(prompt);
-                                }}
-                              >
-                                Edit
-                              </Button>
-                            </Box>
-                          </>
-                        )}
-                      </Box>
-                    )}
-                  </Paper>
+                                {prompt}
+                              </Typography>
+                              <Box sx={{ display: "flex", gap: 2 }}>
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleSendPrompt(key, prompt)}
+                                  disabled={loadingKey === key}
+                                  startIcon={
+                                    loadingKey === key ? (
+                                      <CircularProgress size={18} />
+                                    ) : null
+                                  }
+                                  sx={{
+                                    bgcolor: "#ff9800",
+                                    "&:hover": { bgcolor: "#f57c00" },
+                                    boxShadow: "none",
+                                  }}
+                                >
+                                  Refine
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<Edit />}
+                                  onClick={() => {
+                                    setEditingKey(key);
+                                    setEditedPrompt(prompt);
+                                  }}
+                                  sx={{
+                                    color: "#f57c00",
+                                    borderColor: "#f57c00",
+                                    "&:hover": {
+                                      borderColor: "#ef6c00",
+                                      bgcolor: "rgba(255,152,0,0.05)",
+                                    },
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                              </Box>
+                            </>
+                          )}
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
                 );
               })
             ) : (
-              <Paper
+              <Card
+                elevation={0}
                 sx={{
-                  p: 10,
+                  ...cardStyle,
                   textAlign: "center",
-                  border: "2px dashed rgba(102,126,234,0.3)",
-                  borderRadius: 4,
+                  py: 10,
+                  border: "2px dashed #e0e7ff",
+                  background: "transparent",
                 }}
               >
                 <AutoAwesome
-                  sx={{ fontSize: 80, color: "#667eea", opacity: 0.4 }}
+                  sx={{ fontSize: 80, color: "#e0e7ff", mb: 2 }}
                 />
-                <Typography variant="h5" color="text.secondary" sx={{ mt: 3 }}>
+                <Typography variant="h5" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
                   No data extracted yet
                 </Typography>
                 <Typography color="text.secondary">
                   Go to the first tab and paste a transcript to begin
                 </Typography>
-              </Paper>
+              </Card>
             )}
           </Box>
         )}

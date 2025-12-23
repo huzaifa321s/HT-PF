@@ -24,6 +24,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import SecurityIcon from "@mui/icons-material/Security";
 import SpeedIcon from "@mui/icons-material/Speed";
+import { Facebook, Twitter, LinkedIn, Instagram } from "@mui/icons-material"; // Added social icons for fuller look
 
 const Footer = () => {
   const theme = useTheme();
@@ -36,41 +37,39 @@ const Footer = () => {
   const role = user?.role || "agent";
   const location = useLocation();
 
+  // Styles from ProposalFormwithStepper
+  const colorScheme = {
+    primary: "#667eea",
+    secondary: "#764ba2",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    hoverGradient: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+    lightBg: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+  };
+
   // Common full-width footer wrapper
   const FullWidthFooter = ({ children, hasShimmer = true }) => (
     <Box
       component="footer"
       sx={{
-        mb: 0,
-        background: "linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)",
-        color: "#e0e0e0",
-        py: { xs: 5, md: 6 },
+        mt: 8,
+        background: colorScheme.lightBg,
+        color: "#2d3748",
+        py: { xs: 6, md: 8 },
         position: "relative",
         overflow: "hidden",
-        width: "100vw",
-        left: "50%",
-        right: "50%",
-        ml: "-50vw",
-        mr: "-50vw",
-        mb: "-30px",
-        borderTop: "3px solid",
-        borderImage: "linear-gradient(90deg, #667eea 0%, #764ba2 100%) 1",
-        "&::before": hasShimmer
-          ? {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)",
-            animation: "shimmer 8s infinite",
-          }
-          : {},
-        "@keyframes shimmer": {
-          "0%": { left: "-100%" },
-          "100%": { left: "100%" },
+        width: "100%",
+        mt: 0,
+        mb: 0,
+        borderTop: "1px solid #e0e7ff",
+        boxShadow: "0 -4px 20px rgba(102, 126, 234, 0.05)",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "4px",
+          background: colorScheme.gradient,
         },
       }}
     >
@@ -112,43 +111,62 @@ const Footer = () => {
     return (
       <FullWidthFooter hasShimmer={false}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             {/* Logo/Icon */}
             <Box
               sx={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 70,
-                height: 70,
+                width: 60,
+                height: 60,
                 borderRadius: "50%",
-                background: "#fff",
-                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.4)",
+                background: colorScheme.gradient,
+                boxShadow: "0 8px 20px rgba(102, 126, 234, 0.3)",
                 mb: 2,
+                p: 0.5,
               }}
             >
-              <img
-                src="/download.jpg"
-                alt="icon"
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  objectFit: "contain",
-                  borderRadius: 100,
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: "50%",
+                  bgcolor: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                <img
+                  src="/download.jpg"
+                  alt="icon"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    objectFit: "contain",
+                    borderRadius: "50%",
+                  }}
+                />
+              </Box>
             </Box>
 
             <Typography
               variant="h5"
               sx={{
                 fontWeight: 800,
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: colorScheme.gradient,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 letterSpacing: "-0.5px",
                 mb: 1,
-                ml: 2
               }}
             >
               Proposal Management System
@@ -156,13 +174,14 @@ const Footer = () => {
             <Typography
               variant="body2"
               sx={{
-                color: "#b0bec5",
-                opacity: 0.8,
+                color: "text.secondary",
                 fontSize: "0.95rem",
-                mb: 2,
+                mb: 3,
+                maxWidth: 500,
               }}
             >
-              © {new Date().getFullYear()} — Internal Use Only
+              Streamlining your workflow with premium tools. ©{" "}
+              {new Date().getFullYear()} — Internal Use Only
             </Typography>
 
             {/* Status Chip */}
@@ -171,10 +190,10 @@ const Footer = () => {
               label="System Online"
               size="small"
               sx={{
-                background: alpha("#4caf50", 0.15),
-                color: "#4caf50",
+                background: alpha("#4caf50", 0.1),
+                color: "#2e7d32",
                 fontWeight: 600,
-                border: `1px solid ${alpha("#4caf50", 0.3)}`,
+                border: `1px solid ${alpha("#4caf50", 0.2)}`,
               }}
             />
           </Box>
@@ -187,54 +206,87 @@ const Footer = () => {
   return (
     <FullWidthFooter hasShimmer={true}>
       <Container maxWidth="lg">
-        <Grid container spacing={5} alignItems="flex-start">
+        <Grid container spacing={{ xs: 4, md: 6 }} alignItems="flex-start">
           {/* Left - Brand */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: '14px' }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 2,
+                gap: "14px",
+              }}
+            >
               <Box
                 sx={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 2.5,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 3,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "#fff",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  background: colorScheme.gradient,
+                  boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
+                  p: "2px",
                 }}
               >
-                <img
-                  src="/download.jpg"
-                  alt="icon"
-                  style={{
-                    width: "24px",
-                    height: "24px",
-                    objectFit: "contain",
-                    borderRadius: 100,
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 2.5,
+                    bgcolor: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <img
+                    src="/download.jpg"
+                    alt="icon"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      objectFit: "contain",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </Box>
               </Box>
 
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 800,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                Proposal Management System
-              </Typography>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    background: colorScheme.gradient,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Proposal
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#2d3748",
+                    lineHeight: 1.2,
+                    fontSize: "1rem",
+                  }}
+                >
+                  Management System
+                </Typography>
+              </Box>
             </Box>
             <Typography
               variant="body2"
               sx={{
-                color: "#b0bec5",
+                color: "text.secondary",
                 lineHeight: 1.7,
-                opacity: 0.85,
-                mb: 2,
+                mb: 3,
+                maxWidth: 300,
               }}
             >
               Streamlining proposal creation, review, and internal collaboration
@@ -250,7 +302,7 @@ const Footer = () => {
                 sx={{
                   background: alpha("#667eea", 0.1),
                   color: "#667eea",
-                  border: `1px solid ${alpha("#667eea", 0.3)}`,
+                  border: `1px solid ${alpha("#667eea", 0.2)}`,
                   fontWeight: 600,
                   fontSize: "0.75rem",
                 }}
@@ -261,8 +313,8 @@ const Footer = () => {
                 size="small"
                 sx={{
                   background: alpha("#4caf50", 0.1),
-                  color: "#4caf50",
-                  border: `1px solid ${alpha("#4caf50", 0.3)}`,
+                  color: "#2e7d32",
+                  border: `1px solid ${alpha("#4caf50", 0.2)}`,
                   fontWeight: 600,
                   fontSize: "0.75rem",
                 }}
@@ -273,8 +325,8 @@ const Footer = () => {
                 size="small"
                 sx={{
                   background: alpha("#2196f3", 0.1),
-                  color: "#2196f3",
-                  border: `1px solid ${alpha("#2196f3", 0.3)}`,
+                  color: "#1565c0",
+                  border: `1px solid ${alpha("#2196f3", 0.2)}`,
                   fontWeight: 600,
                   fontSize: "0.75rem",
                 }}
@@ -287,17 +339,19 @@ const Footer = () => {
             <Typography
               variant="subtitle1"
               sx={{
-                fontWeight: 700,
-                color: "#90caf9",
-                mb: 2.5,
+                fontWeight: 800,
+                background: colorScheme.gradient,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                mb: 3,
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
-                fontSize: "0.9rem",
+                fontSize: "0.85rem",
               }}
             >
               Quick Access
             </Typography>
-            <Stack spacing={1.5}>
+            <Stack spacing={1}>
               {quickLinks.map((link, index) => (
                 <Link
                   key={index}
@@ -306,20 +360,20 @@ const Footer = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: 1.5,
-                    color: "#e0e0e0",
+                    color: "text.secondary",
                     fontSize: "0.95rem",
                     fontWeight: 500,
                     textDecoration: "none",
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transition: "all 0.2s ease",
                     padding: "8px 12px",
                     borderRadius: 2,
-                    background: "transparent",
                     "&:hover": {
-                      color: "#667eea",
-                      transform: "translateX(8px)",
-                      background: alpha("#667eea", 0.08),
+                      color: colorScheme.primary,
+                      background: "white",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                      transform: "translateX(5px)",
                       "& .link-icon": {
-                        transform: "scale(1.2) rotate(5deg)",
+                        color: colorScheme.primary,
                       },
                     },
                   }}
@@ -328,8 +382,8 @@ const Footer = () => {
                     className="link-icon"
                     sx={{
                       display: "flex",
-                      transition: "transform 0.3s ease",
-                      color: "#90caf9",
+                      color: "#a0aec0",
+                      transition: "color 0.2s",
                     }}
                   >
                     {link.icon}
@@ -340,134 +394,54 @@ const Footer = () => {
             </Stack>
           </Grid>
 
-          {/* Right - System Info */}
-          <Grid item xs={12} md={4}>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 700,
-                color: "#90caf9",
-                mb: 2.5,
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-                fontSize: "0.9rem",
-                textAlign: { xs: "left", md: "right" },
-              }}
-            >
-              System Status
-            </Typography>
-            <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
-              <Stack
-                spacing={1.5}
-                alignItems={{ xs: "flex-start", md: "flex-end" }}
-              >
-                {/* Version Badge */}
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 1,
-                    padding: "6px 16px",
-                    borderRadius: 2,
-                    background: alpha("#667eea", 0.1),
-                    border: `1px solid ${alpha("#667eea", 0.3)}`,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#b0bec5",
-                      fontWeight: 600,
-                      fontSize: "0.85rem",
-                    }}
-                  >
-                    Version: 1.0.3
-                  </Typography>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: "#4caf50",
-                      boxShadow: "0 0 8px rgba(76, 175, 80, 0.6)",
-                      animation: "pulse 2s infinite",
-                    }}
-                  />
-                </Box>
 
-                {/* Environment Badge */}
-                <Chip
-                  label="Production (Internal)"
-                  size="small"
-                  sx={{
-                    background: alpha("#ff9800", 0.15),
-                    color: "#ffa726",
-                    fontWeight: 600,
-                    fontSize: "0.8rem",
-                    border: `1px solid ${alpha("#ff9800", 0.3)}`,
-                  }}
-                />
-
-                {/* Access Badge */}
-                <Chip
-                  icon={<SecurityIcon sx={{ fontSize: 14 }} />}
-                  label="Restricted Access"
-                  size="small"
-                  sx={{
-                    background: alpha("#f44336", 0.15),
-                    color: "#ef5350",
-                    fontWeight: 600,
-                    fontSize: "0.8rem",
-                    border: `1px solid ${alpha("#f44336", 0.3)}`,
-                  }}
-                />
-              </Stack>
-            </Box>
-          </Grid>
         </Grid>
 
         <Divider
           sx={{
             my: 4,
-            borderColor: "rgba(255,255,255,0.12)",
-            borderWidth: 1,
+            borderColor: "#e0e7ff",
           }}
         />
 
-        {/* Bottom Section - 3 Equal Columns */}
+        {/* Bottom Section */}
         <Grid container spacing={2} alignItems="center">
           {/* Left Section - Copyright */}
           <Grid item xs={12} md={4}>
             <Typography
               variant="body2"
               sx={{
-                color: "#b0bec5",
-                opacity: 0.7,
+                color: "text.secondary",
                 fontSize: "0.9rem",
                 textAlign: { xs: "center", md: "left" },
+                fontWeight: 500,
               }}
             >
               © {new Date().getFullYear()} Proposal Management System
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#b0bec5",
-                opacity: 0.5,
-                fontSize: "0.8rem",
-                textAlign: { xs: "center", md: "left" },
-                display: "block",
-              }}
-            >
-              Strictly for Internal Use Only
-            </Typography>
           </Grid>
 
-          {/* Center Section - Empty/Placeholder */}
+          {/* Center Section - Socials (Optional) */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ textAlign: "center" }}>
-              {/* You can add center content here if needed */}
-            </Box>
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent="center"
+              sx={{ opacity: 0.7 }}
+            >
+              {[Facebook, Twitter, LinkedIn, Instagram].map((Icon, i) => (
+                <IconButton
+                  key={i}
+                  size="small"
+                  sx={{
+                    color: "#a0aec0",
+                    "&:hover": { color: colorScheme.primary, bgcolor: "white" },
+                  }}
+                >
+                  <Icon fontSize="small" />
+                </IconButton>
+              ))}
+            </Stack>
           </Grid>
 
           {/* Right Section - Status Indicator */}
@@ -483,25 +457,19 @@ const Footer = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 1,
-                  padding: "4px 12px",
-                  borderRadius: 2,
+                  padding: "6px 14px",
+                  borderRadius: 20,
                   background: alpha("#4caf50", 0.1),
-                  border: `1px solid ${alpha("#4caf50", 0.3)}`,
+                  border: `1px solid ${alpha("#4caf50", 0.2)}`,
                 }}
               >
-                <Box
-                  sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#4caf50",
-                    boxShadow: "0 0 6px rgba(76, 175, 80, 0.8)",
-                  }}
+                <CheckCircleIcon
+                  sx={{ fontSize: 14, color: "#2e7d32" }}
                 />
                 <Typography
                   variant="caption"
                   sx={{
-                    color: "#4caf50",
+                    color: "#2e7d32",
                     fontWeight: 700,
                     fontSize: "0.75rem",
                   }}
@@ -518,14 +486,9 @@ const Footer = () => {
       <style>
         {`
       @keyframes pulse {
-        0%, 100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.7;
-          transform: scale(1.1);
-        }
+        0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
       }
     `}
       </style>
