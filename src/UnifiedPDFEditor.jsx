@@ -78,7 +78,17 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isVerySmall = useMediaQuery("(max-width:350px)");
 
-  const [viewMode, setViewMode] = useState("split");
+
+
+  // Mobile: default to 'edit', Desktop: default to 'split'
+  const [viewMode, setViewMode] = useState(isMobile ? "edit" : "split");
+
+  // Sync viewMode when switching devices
+  useEffect(() => {
+    if (isMobile && viewMode === "split") {
+      setViewMode("edit");
+    }
+  }, [isMobile]);
   const [activeTab, setActiveTab] = useState(0);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -348,7 +358,6 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
               </Box>
             </Box>
 
-            {/* Mobile View Mode Toggle (Shown here for better space usage on mobile) */}
             {isMobile && (
               <ToggleButtonGroup
                 size="small"
@@ -372,13 +381,10 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
                 }}
               >
                 <ToggleButton value="edit">
-                  <Edit fontSize="small" />
-                </ToggleButton>
-                <ToggleButton value="split">
-                  <ViewQuilt fontSize="small" />
+                  <Edit fontSize="small" sx={{ mr: 1 }} /> Editor
                 </ToggleButton>
                 <ToggleButton value="preview">
-                  <PictureAsPdf fontSize="small" />
+                  <PictureAsPdf fontSize="small" sx={{ mr: 1 }} /> Preview
                 </ToggleButton>
               </ToggleButtonGroup>
             )}
@@ -594,13 +600,13 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
           <Box
             sx={{
               width: { xs: "100%", md: viewMode === "edit" ? "100%" : "50%" },
-              height: { xs: viewMode === "split" ? "50%" : "100%", md: "100%" },
+              display: { xs: viewMode === "edit" ? "flex" : "none", md: "flex" },
+              height: "100%",
               overflowY: "auto",
               bgcolor: "#fff",
               borderRight:
                 viewMode === "split" ? "1px solid #e0e7ff" : "none",
               borderBottom: { xs: viewMode === "split" ? "1px solid #e0e7ff" : "none", md: "none" },
-              display: "flex",
               flexDirection: "column",
             }}
           >
@@ -636,11 +642,11 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc" }) => {
           <Box
             sx={{
               flex: 1,
-              height: { xs: viewMode === "split" ? "50%" : "100%", md: "100%" },
+              display: { xs: viewMode === "preview" ? "flex" : "none", md: "flex" },
+              height: "100%",
               bgcolor: "#2d3436", // Darker background for PDF preview
               overflow: "hidden",
               position: "relative",
-              display: "flex",
               flexDirection: "column",
             }}
           >

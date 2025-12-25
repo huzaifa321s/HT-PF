@@ -5,7 +5,7 @@
 export const parseMixedContent = (text) => {
     if (!text || typeof text !== 'string') return [];
 
-    // Split into blocks separated by one or more empty lines
+    // Split into Blocks
     const rawBlocks = text.split(/\n\s*\n/).filter(block => block.trim());
     const structuredBlocks = [];
 
@@ -15,7 +15,6 @@ export const parseMixedContent = (text) => {
 
         const firstLine = lines[0].trim();
 
-        // Check if it's a list (Numbered: "1. ", "2. ")
         if (firstLine.match(/^\d+\.\s/)) {
             structuredBlocks.push({
                 type: 'numbered',
@@ -23,7 +22,6 @@ export const parseMixedContent = (text) => {
                 content: lines.join('\n')
             });
         }
-        // Check if it's a list (Bullets: "• ", "- ", "* ", "> ")
         else if (firstLine.match(/^[•·\*•\-\u2022>]\s/)) {
             structuredBlocks.push({
                 type: 'bullets',
@@ -31,16 +29,13 @@ export const parseMixedContent = (text) => {
                 content: lines.join('\n')
             });
         }
-        // Title + Content or Just Plain Text
         else if (lines.length === 1) {
-            // Heuristic: short single line is likely a Title
             if (firstLine.length < 80 && !firstLine.match(/[.?!]$/)) {
                 structuredBlocks.push({ type: 'title', title: firstLine, content: '' });
             } else {
                 structuredBlocks.push({ type: 'plain', content: firstLine });
             }
         } else {
-            // Block with multiple lines. If the first line is short and looks like a header, treat as Title + Content.
             if (lines[0].length < 100 && !lines[0].match(/[.?!]$/)) {
                 structuredBlocks.push({
                     type: 'title',
@@ -57,8 +52,7 @@ export const parseMixedContent = (text) => {
 };
 
 /**
- * Parses a string into a table structure (title, headers, rows).
- * Detects delimiters like Tabs (Excel), Commas (CSV), or Equals (.env).
+ * Parses a string into a table structure.
  */
 export const parseSmartTable = (text) => {
     if (!text || typeof text !== "string") return null;
@@ -69,24 +63,21 @@ export const parseSmartTable = (text) => {
     let title = "";
     let dataLines = [...lines];
 
-    // Heuristic: If first line has no obvious delimiter but second line does, first is title
     const delimiterRegex = /\t|,|=|:/;
     if (lines.length > 1 && !delimiterRegex.test(lines[0]) && delimiterRegex.test(lines[1])) {
         title = lines[0];
         dataLines = lines.slice(1);
     }
 
-    // Detect delimiter
-    let delimiter = "\t"; // Default for Excel/Sheets
+    let delimiter = "\t";
     const firstDataLine = dataLines[0];
 
     if (firstDataLine.includes("\t")) delimiter = "\t";
     else if (firstDataLine.includes(",")) delimiter = ",";
     else if (firstDataLine.includes("=")) delimiter = "=";
     else if (firstDataLine.includes(":")) delimiter = ":";
-    else delimiter = /\s{2,}/; // Multiple spaces
+    else delimiter = /\s{2,}/;
 
-    // Map rows
     let headers = { col1: "Item", col2: "Value", col3: "Note" };
     let finalRowsData = [...dataLines];
 
@@ -94,7 +85,6 @@ export const parseSmartTable = (text) => {
         const firstLineParts = dataLines[0].split(delimiter).map(p => p.trim());
         const secondLineParts = dataLines[1].split(delimiter).map(p => p.trim());
 
-        // Heuristic: If first line parts look like headers (e.g., words like Service, Cost, Item)
         const headerKeywords = /service|cost|price|item|desc|title|timeline|date|qty|quantity/i;
         const isHeader = firstLineParts.some(p => headerKeywords.test(p)) ||
             (firstLineParts.length === secondLineParts.length);
@@ -118,15 +108,8 @@ export const parseSmartTable = (text) => {
         };
     });
 
-    // Determine column count based on max columns found in any row or headers
-    // CRITICAL: Only count a column if it actually has data in at least one row or header.
-    // We trim and filter out anything that is just whitespace.
     const hasCol3 = (headers.col3 && headers.col3.trim().length > 0 && !["Column 3", "Note"].includes(headers.col3)) ||
         rows.some(r => r.col3 && r.col3.trim().length > 0);
-
-    const hasCol2 = (headers.col2 && headers.col2.trim().length > 0) ||
-        rows.some(r => r.col2 && r.col2.trim().length > 0) ||
-        hasCol3;
 
     const finalColumnCount = hasCol3 ? 3 : 2;
 
@@ -142,24 +125,15 @@ export const parseSmartTable = (text) => {
             const row = { id: Date.now() + Math.random(), col1: r.col1, col2: r.col2 };
             if (finalColumnCount === 3) row.col3 = r.col3;
             else if (r.col3 && r.col3.trim()) {
-                // If we decided on 2 cols but col3 had data (unlikely with hasCol3 check), 
-                // we could append it to col2, but for now we follow the user's wish for strict 2/3.
+                // Ignore extra col in 2 col mode
             }
             return row;
         })
     };
 };
 
-/**
- * Splits text into segments for bold rendering.
- * Supports: 
- * 1. **bold text** 
- * 2. Label: (Auto-bolds text ending in colon at start or after newline)
- */
 export const parseInlineBold = (text) => {
     if (!text) return [{ text: "", bold: false }];
-
-    // Step 1: Handle explicit Markdown bold **text**
     const mdRegex = /\*\*(.*?)\*\*/g;
     let segments = [];
     let lastIndex = 0;
@@ -177,7 +151,6 @@ export const parseInlineBold = (text) => {
         segments.push({ text: text.substring(lastIndex), bold: false });
     }
 
-    // Step 2: Handle "Label:" auto-bolding (if not already bold and at start/newline)
     let finalSegments = [];
     segments.forEach(seg => {
         if (seg.bold) {
@@ -203,4 +176,116 @@ export const parseInlineBold = (text) => {
     });
 
     return finalSegments;
+};
+
+/**
+ * Advanced Parser: HTML -> Redux Section Objects
+ * Splits a single HTML blob into multiple section objects (Title, Bullets, Numbered).
+ */
+export const parseMixedToReduxSections = (html) => {
+    if (!html) return [];
+
+    // Pre-clean: Replace nbsp with space, &amp; with & (plus space), remove newlines
+    const cleanBox = html
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '& ')
+        .replace(/\n/g, '');
+
+    // Split block logic
+    const portions = cleanBox.split(/(?=<h[1-6])|(?=<p)|(?=<ul)|(?=<ol)/).filter(p => p.trim());
+
+    const sections = [];
+    let currentSection = null;
+
+    portions.forEach((part) => {
+        const textContent = part.replace(/<[^>]+>/g, '').trim();
+        if (!textContent) return;
+
+        // --- Header Detection ---
+        const isHTag = /^<h[1-6]/.test(part);
+        const isBoldPara = /^<p[^>]*>.*<(?:b|strong)>.*<\/(?:b|strong)>.*<\/p>$/.test(part) &&
+            textContent.length < 100;
+
+        // Heuristic for unstyled titles
+        const isPara = /^<p/.test(part);
+        const isImplicitHeader = isPara &&
+            textContent.length > 2 &&
+            textContent.length < 85 &&
+            !/[.?!]$/.test(textContent) &&
+            !/^(?:note|nb|ps):/i.test(textContent);
+
+        const isHeader = isHTag || isBoldPara || isImplicitHeader;
+
+        const isListUl = /^<ul/.test(part);
+        const isListOl = /^<ol/.test(part);
+
+        if (isHeader) {
+            // Check for "Double Title" scenario
+            // If previous section is Title AND has NO content yet,
+            // treat this new header as a SUBTITLE (content) of the previous one.
+            if (currentSection && currentSection.type === 'title' && !currentSection.content) {
+                // Merge as bold content
+                currentSection.content = `<strong>${textContent}</strong>`;
+            } else {
+                // Standard new section
+                if (currentSection) {
+                    sections.push(currentSection);
+                }
+                currentSection = {
+                    type: 'title',
+                    title: textContent,
+                    content: ''
+                };
+            }
+        } else if (isListUl || isListOl) {
+            // Merge title (absorb previous empty title)
+            let listTitle = "";
+            if (currentSection && currentSection.type === 'title' && !currentSection.content) {
+                listTitle = currentSection.title;
+                currentSection = null;
+            } else if (currentSection) {
+                sections.push(currentSection);
+                currentSection = null;
+            }
+
+            // Extract List content
+            const items = part.match(/<li[^>]*>(.*?)<\/li>/g);
+            let formattedList = "";
+            if (items) {
+                items.forEach((item, idx) => {
+                    const val = item.replace(/<\/?li[^>]*>/g, '').replace(/<[^>]+>/g, '')
+                        .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '& ').trim();
+                    if (isListOl) formattedList += `${idx + 1}. ${val}\n`;
+                    else formattedList += `• ${val}\n`;
+                });
+            }
+
+            sections.push({
+                type: isListOl ? 'numbered' : 'bullets',
+                title: listTitle,
+                content: formattedList.trim()
+            });
+
+        } else if (isPara) {
+            // Standard Paragraph
+            if (currentSection && currentSection.type === 'title') {
+                currentSection.content += (currentSection.content ? '\n\n' : '') + textContent;
+            } else {
+                // Orphan
+                if (currentSection) sections.push(currentSection);
+
+                currentSection = {
+                    type: 'title',
+                    title: '',
+                    content: textContent
+                };
+            }
+        }
+    });
+
+    if (currentSection) {
+        sections.push(currentSection);
+    }
+
+    return sections;
 };

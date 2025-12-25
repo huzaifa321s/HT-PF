@@ -25,6 +25,8 @@ import {
   DialogActions,
   ToggleButton,
   ToggleButtonGroup,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   RefreshOutlined,
@@ -71,6 +73,10 @@ const PdfEditorPage = ({ mode }) => {
       : useSelector(
         (state) => state.pricing.create || { elements: [], gridPackages: [] }
       );
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [addAnchor, setAddAnchor] = useState(null);
   const [resetDialog, setResetDialog] = useState(false);
 
@@ -101,7 +107,7 @@ const PdfEditorPage = ({ mode }) => {
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 0, sm: 3, md: 4 },
+    p: { xs: 1.5, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -449,7 +455,8 @@ const PdfEditorPage = ({ mode }) => {
             onClose={() => setResetDialog(false)}
             maxWidth="sm"
             fullWidth
-            sx={{ borderRadius: 5 }}
+            fullScreen={isMobile}
+            sx={{ borderRadius: isMobile ? 0 : 5 }}
           >
             <DialogTitle
               sx={{
@@ -476,7 +483,7 @@ const PdfEditorPage = ({ mode }) => {
                 removed.
               </Typography>
             </DialogContent>
-            <DialogActions sx={{ p: 3, gap: 2 }}>
+            <DialogActions sx={{ p: 3, gap: 2, flexDirection: key => isMobile ? "column" : "row" }}>
               <Button
                 onClick={() => setResetDialog(false)}
                 size="large"

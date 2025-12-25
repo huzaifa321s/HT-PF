@@ -236,7 +236,7 @@ const PdfPaymentTermsEditorPage = ({
   return (
     <Box
       sx={{
-        p: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1.5, sm: 3, md: 4 },
         height: "100%",
         display: "flex",
         flexDirection: "column",

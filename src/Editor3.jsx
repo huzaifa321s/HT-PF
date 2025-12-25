@@ -35,6 +35,8 @@ import {
   Tab,
   ButtonGroup,
   Menu,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
@@ -56,6 +58,8 @@ import {
   MoreVert,
   AutoFixHigh,
   DeleteSweep,
+  PlaylistAdd,
+  InfoOutlined,
 } from "@mui/icons-material";
 import {
   addSection,
@@ -73,10 +77,13 @@ import {
   addColumnToNumber,
   removeColumnToNumber,
   addTableTitle,
+  addMultipleRowsWithData,
 } from "../src/utils/page2Slice";
 import { generateId } from "../src/utils/page2Slice";
 import { showToast } from "../src/utils/toastSlice";
-import { parseMixedContent, parseSmartTable, parseInlineBold } from "../src/utils/pdfParsers";
+import { parseMixedContent, parseSmartTable, parseInlineBold, parseMixedToReduxSections } from "../src/utils/pdfParsers";
+
+const MAX_ROWS = 12;
 
 const PdfPageEditor2 = ({ mode }) => {
   const dispatch = useDispatch();
@@ -91,6 +98,9 @@ const PdfPageEditor2 = ({ mode }) => {
       ? state.page2?.edit?.tables || []
       : state.page2?.create?.tables || []
   );
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [tabValue, setTabValue] = useState(0);
   const [newSection, setNewSection] = useState({
@@ -107,6 +117,78 @@ const PdfPageEditor2 = ({ mode }) => {
     col2: "",
     col3: ""
   });
+
+  // Bulk Paste State
+  const [bulkPasteModal, setBulkPasteModal] = useState({ open: false, tableId: null, columnCount: 2 });
+  const [bulkPasteContent, setBulkPasteContent] = useState("");
+
+  const handleBulkPasteOpen = (tableId, columnCount) => {
+    setBulkPasteModal({ open: true, tableId, columnCount });
+    setBulkPasteContent("");
+  };
+
+  const handleBulkPasteClose = () => {
+    setBulkPasteModal({ open: false, tableId: null, columnCount: 2 });
+    setBulkPasteContent("");
+  };
+
+  const handleBulkPasteSubmit = () => {
+    if (!bulkPasteContent.trim()) {
+      handleBulkPasteClose();
+      return;
+    }
+
+    const currentTable = tables.find(t => t.id === bulkPasteModal.tableId);
+    if (!currentTable) return;
+
+    const lines = bulkPasteContent.split('\n').filter(l => l.trim());
+
+    // Check limit
+    if (currentTable.rows.length + lines.length > MAX_ROWS) {
+      dispatch(showToast({
+        message: `Cannot add ${lines.length} rows. Table limit is ${MAX_ROWS} rows (Current: ${currentTable.rows.length}).`,
+        severity: "error"
+      }));
+      return;
+    }
+
+    const newRows = [];
+
+    lines.forEach(line => {
+      let parts = [];
+      if (line.includes("\t")) parts = line.split("\t");
+      else if (line.includes("=")) parts = line.split("=");
+      else if (line.includes(":")) parts = line.split(":");
+      else if (line.includes(",")) parts = line.split(",");
+      else if (line.includes("  ")) parts = line.split(/\s{3,}/);
+      else parts = [line];
+
+      const rowObj = { col1: "", col2: "", col3: "" };
+      const cleanedParts = parts.map(p => p.trim());
+
+      // Smart fill logic
+      let pIdx = 0;
+      for (let i = 1; i <= bulkPasteModal.columnCount; i++) {
+        if (pIdx < cleanedParts.length) {
+          rowObj[`col${i}`] = cleanedParts[pIdx++];
+        }
+      }
+
+      if (rowObj.col1 || rowObj.col2 || rowObj.col3) {
+        newRows.push(rowObj);
+      }
+    });
+
+    if (newRows.length > 0) {
+      dispatch(addMultipleRowsWithData({
+        tableId: bulkPasteModal.tableId,
+        rows: newRows
+      }));
+      dispatch(showToast({ message: `${newRows.length} rows added successfully!`, severity: "success" }));
+    }
+
+    handleBulkPasteClose();
+  };
   const [editValues, setEditValues] = useState({
     type: "title",
     title: "",
@@ -135,7 +217,7 @@ const PdfPageEditor2 = ({ mode }) => {
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 2, sm: 3, md: 4 },
+    p: { xs: 1.5, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -318,7 +400,31 @@ const PdfPageEditor2 = ({ mode }) => {
 
   // Add Section
   const handleAddSection = () => {
-    const isPlain = newSection.type === "plain" || newSection.type === "mixed";
+    // Handling Mixed Content Splitting
+    if (newSection.type === "mixed") {
+      const parsedSections = parseMixedToReduxSections(newSection.content);
+
+      if (parsedSections.length === 0) {
+        dispatch(showToast({ message: "No content detected to add", severity: "warning" }));
+        return;
+      }
+
+      parsedSections.forEach(sec => {
+        dispatch(addSection({
+          type: sec.type,
+          title: sec.title,
+          content: sec.content
+        }));
+      });
+
+      setNewSection({ type: "title", title: "", content: "" });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      dispatch(showToast({ message: `${parsedSections.length} sections created from mixed content!`, severity: "success" }));
+      return;
+    }
+
+    const isPlain = newSection.type === "plain";
     if (!isPlain && !newSection.title.trim()) {
       dispatch(
         showToast({ message: "Title is required", severity: "warning" })
@@ -440,6 +546,8 @@ const PdfPageEditor2 = ({ mode }) => {
     setSmartPasteText("");
     dispatch(showToast({ message: "Table structured successfully!", severity: "success" }));
   };
+
+
 
   const startEditRow = (tableId, row, columnCount) => {
     setEditingRow({ tableId, rowId: row.id });
@@ -708,10 +816,62 @@ const PdfPageEditor2 = ({ mode }) => {
     const text = e.clipboardData.getData("text");
     if (!text) return;
 
+    // --- BULK ADD LOGIC (if multiple lines) ---
+    if (text.includes('\n')) {
+      e.preventDefault();
+
+      const targetTable = tables.find(t => t.id === targetTableId);
+      if (!targetTable) return;
+
+      const lines = text.split('\n').filter(l => l.trim());
+
+      if (targetTable.rows.length + lines.length > MAX_ROWS) {
+        dispatch(showToast({ message: `Cannot add rows. Limit is ${MAX_ROWS}.`, severity: "error" }));
+        return;
+      }
+
+      const newRows = [];
+
+      lines.forEach(line => {
+        let parts = [];
+        if (line.includes("\t")) parts = line.split("\t");
+        else if (line.includes("=")) parts = line.split("=");
+        else if (line.includes(":")) parts = line.split(":");
+        else if (line.includes(",")) parts = line.split(",");
+        else if (line.includes("  ")) parts = line.split(/\s{2,}/);
+        else parts = [line]; // Single value in line
+
+        const rowObj = { col1: "", col2: "", col3: "" };
+        const cleanedParts = parts.map(p => p.trim());
+
+        let pIdx = 0;
+        for (let i = 1; i <= columnCount; i++) {
+          if (i >= colIndex && pIdx < cleanedParts.length) {
+            rowObj[`col${i}`] = cleanedParts[pIdx++];
+          }
+        }
+
+        if (rowObj.col1 || rowObj.col2 || rowObj.col3) {
+          newRows.push(rowObj);
+        }
+      });
+
+      if (newRows.length > 0) {
+        dispatch(addMultipleRowsWithData({
+          tableId: targetTableId,
+          rows: newRows
+        }));
+        dispatch(showToast({ message: `${newRows.length} rows added!`, severity: "success" }));
+      }
+      return;
+    }
+
+    // --- EXISTING SINGLE ROW LOGIC ---
     let parts = [];
     if (text.includes("\t")) parts = text.split("\t");
     else if (text.includes("=")) parts = text.split("=");
     else if (text.includes(":")) parts = text.split(":");
+    else if (text.includes(",")) parts = text.split(",");
     else if (text.includes("  ")) parts = text.split(/\s{2,}/);
 
     if (parts.length > 1) {
@@ -735,6 +895,12 @@ const PdfPageEditor2 = ({ mode }) => {
 
   const handleQuickAdd = (tableId) => {
     if (!quickAddRow.col1.trim() && !quickAddRow.col2.trim()) return;
+
+    const table = tables.find(t => t.id === tableId);
+    if (table && table.rows.length >= MAX_ROWS) {
+      dispatch(showToast({ message: `Row limit reached (${MAX_ROWS})`, severity: "error" }));
+      return;
+    }
 
     dispatch(addRowWithData({
       tableId,
@@ -1315,19 +1481,41 @@ const PdfPageEditor2 = ({ mode }) => {
                       }}
                     />
                     <Stack direction="row" spacing={1}>
-                      <Tooltip title="Add a new row to this table">
-                        <IconButton
-                          size="small"
-                          onClick={() => dispatch(addTableRow(table.id))}
-                          sx={{
-                            color: colorScheme.primary,
-                            "&:hover": {
-                              background: `${colorScheme.primary}15`,
-                            },
-                          }}
-                        >
-                          <AddCircleOutline />
-                        </IconButton>
+                      <Tooltip title={table.rows.length >= MAX_ROWS ? `Limit Reached (${MAX_ROWS} rows)` : "Bulk Add Rows (Paste from Excel/CSV)"}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={table.rows.length >= MAX_ROWS}
+                            onClick={() => handleBulkPasteOpen(table.id, table.columnCount)}
+                            sx={{
+                              color: colorScheme.secondary,
+                              "&:hover": {
+                                background: `${colorScheme.secondary}15`,
+                              },
+                              "&.Mui-disabled": { opacity: 0.5 }
+                            }}
+                          >
+                            <PlaylistAdd />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={table.rows.length >= MAX_ROWS ? `Limit Reached (${MAX_ROWS} rows)` : "Add a new row to this table"}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={table.rows.length >= MAX_ROWS}
+                            onClick={() => dispatch(addTableRow(table.id))}
+                            sx={{
+                              color: colorScheme.primary,
+                              "&:hover": {
+                                background: `${colorScheme.primary}15`,
+                              },
+                              "&.Mui-disabled": { opacity: 0.5 }
+                            }}
+                          >
+                            <AddCircleOutline />
+                          </IconButton>
+                        </span>
                       </Tooltip>
                       <Tooltip title="Delete this entire table">
                         <IconButton
@@ -1825,7 +2013,14 @@ const PdfPageEditor2 = ({ mode }) => {
         </Button>
       </Box>
 
-      <Dialog open={resetOpen} onClose={() => setResetOpen(false)}>
+      <Dialog
+        open={resetOpen}
+        onClose={() => setResetOpen(false)}
+        maxWidth="sm"
+        fullScreen={isMobile}
+        sx={{ borderRadius: isMobile ? 0 : 5 }}
+        fullWidth
+      >
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <WarningAmber color="error" /> Confirm Reset
         </DialogTitle>
@@ -1834,10 +2029,49 @@ const PdfPageEditor2 = ({ mode }) => {
             This will delete all sections and tables. Continue?
           </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
           <Button onClick={() => setResetOpen(false)}>Cancel</Button>
           <Button onClick={handleReset} color="error" variant="contained">
             Reset Everything
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk Paste Modal */}
+      <Dialog
+        open={bulkPasteModal.open}
+        onClose={handleBulkPasteClose}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <PlaylistAdd color="primary" /> Bulk Add Rows
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Paste your data below (Excel, CSV, or Text). Each line will be a new row.<br />
+            Columns can be separated by <b>Tabs, Commas, Equals (=), or Colons (:)</b>.
+          </Alert>
+          <TextField
+            autoFocus
+            multiline
+            rows={10}
+            fullWidth
+            placeholder={`Item 1, Value 1\nItem 2, Value 2\nItem 3, Value 3`}
+            value={bulkPasteContent}
+            onChange={(e) => setBulkPasteContent(e.target.value)}
+            sx={inputStyle}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleBulkPasteClose} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleBulkPasteSubmit}
+            variant="contained"
+            startIcon={<PlaylistAdd />}
+            sx={{ background: colorScheme.gradient }}
+          >
+            Add Rows
           </Button>
         </DialogActions>
       </Dialog>
@@ -1855,10 +2089,10 @@ const PdfPageEditor2 = ({ mode }) => {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ color: "text.secondary" }}>
-            Kya aap waqayi is table aur iska saara data delete karna chahte hain? Ye amal wapas nahi liya ja sakta.
+            Do you really want to delete this table and all of its data? This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 0 }}>
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: isMobile ? "column" : "row" }}>
           <Button
             onClick={() => setDeleteConfirmOpen(false)}
             variant="outlined"

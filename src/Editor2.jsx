@@ -18,6 +18,8 @@ import {
   Card,
   CardContent,
   LinearProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 import {
@@ -48,6 +50,8 @@ import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
 
 const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
   const page3 =
     mode === "edit-doc"
@@ -199,7 +203,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 0, sm: 3, md: 4 },
+    p: { xs: 1.5, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -262,7 +266,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
       }}
     >
       <Card sx={cardStyle}>
-        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        <CardContent sx={{ p: { xs: 1, sm: 3, md: 4 } }}>
           {sectionHeader(<Description />, "About Humantek")}
           <Typography variant="body1" sx={{ mb: 3, color: "text.secondary" }}>
             Craft your company story with precision
@@ -598,8 +602,11 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
       <Dialog
         open={resetDialog}
         onClose={() => setResetDialog(false)}
+        open={resetDialog}
+        onClose={() => setResetDialog(false)}
         maxWidth="sm"
-        sx={{ borderRadius: 5 }}
+        fullScreen={isMobile}
+        sx={{ borderRadius: isMobile ? 0 : 5 }}
         fullWidth
       >
         <DialogTitle
@@ -619,7 +626,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
             permanently deleted.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: isMobile ? "column" : "row" }}>
           <Button onClick={() => setResetDialog(false)} size="large" sx={{ borderRadius: 10 }} fullWidth>
             Cancel
           </Button>

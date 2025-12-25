@@ -244,6 +244,23 @@ const page2Slice = createSlice({
         });
       }
     },
+    addMultipleRowsWithData: (state, action) => {
+      // Payload: { tableId, rows: [ {col1, col2, col3}, ... ] }
+      const mode = state.currentMode;
+      const { tableId, rows } = action.payload;
+      const table = state[mode].tables.find((t) => t.id === tableId);
+
+      if (table && rows && rows.length > 0) {
+        rows.forEach(r => {
+          table.rows.push({
+            id: generateId(),
+            col1: r.col1 || "",
+            col2: r.col2 || "",
+            ...(table.columnCount === 3 && { col3: r.col3 || "" })
+          });
+        });
+      }
+    },
 
     updateTableRow: (state, action) => {
       const mode = state.currentMode;
@@ -387,6 +404,7 @@ export const {
   removeColumnToNumber,
   updateTableHeaders,
   addTableTitle,
+  addMultipleRowsWithData,
   resetPage2,
 } = page2Slice.actions;
 

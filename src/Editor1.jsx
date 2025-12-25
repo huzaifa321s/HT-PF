@@ -17,6 +17,8 @@ import {
   LinearProgress,
   Card,
   CardContent,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Save,
@@ -39,6 +41,9 @@ const PdfPage1Editor = ({ mode }) => {
   const page1 = useSelector((state) =>
     mode === "edit-doc" ? state.page1Slice.edit : state.page1Slice.create
   );
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Local state (for instant UI response)
   const [local, setLocal] = useState({
@@ -109,7 +114,8 @@ const PdfPage1Editor = ({ mode }) => {
 
   const cardStyle = {
     mb: 3,
-    p: { xs: 0, sm: 3, md: 4 },
+    mb: 3,
+    p: { xs: 1.5, sm: 3, md: 4 },
     background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
     border: "2px solid #e0e7ff",
     borderRadius: 3,
@@ -171,7 +177,7 @@ const PdfPage1Editor = ({ mode }) => {
       }}
     >
       <Card sx={cardStyle}>
-        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        <CardContent sx={{ p: { xs: 1, sm: 3, md: 4 } }}>
           {sectionHeader(<Business />, "Cover Page Editor")}
 
           <Typography variant="body1" sx={{ mb: 3, color: "text.secondary" }}>
@@ -313,7 +319,8 @@ const PdfPage1Editor = ({ mode }) => {
         open={resetDialog}
         onClose={() => setResetDialog(false)}
         maxWidth="sm"
-        sx={{ borderRadius: 5 }}
+        fullScreen={isMobile}
+        sx={{ borderRadius: isMobile ? 0 : 5 }}
         fullWidth
       >
         <DialogTitle sx={{ bgcolor: "#667eea", color: "white", py: 3 }}>
@@ -333,7 +340,7 @@ const PdfPage1Editor = ({ mode }) => {
             This action cannot be undone!
           </Alert>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+        <DialogActions sx={{ p: 3, gap: 2, flexDirection: isMobile ? "column" : "row" }}>
           <Button onClick={() => setResetDialog(false)} size="large" sx={{ borderRadius: 10 }} fullWidth>
             Cancel
           </Button>

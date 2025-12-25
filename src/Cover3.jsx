@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     overflow: "hidden",
     borderRadius: 6,
-    marginBottom: 28,
+    marginBottom: 20,
   },
 
   tableHeader: {
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
 
   tableHeaderCell: {
-    padding: 14,
+    padding: 10,
     fontWeight: "bold",
     fontSize: 11,
     color: "#fff",
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
   },
 
   tableCell: {
-    padding: 12,
-    fontSize: 10.5,
+    padding: 8,
+    fontSize: 10,
     textAlign: "start",
     flex: 1,
   },
