@@ -1,0 +1,763 @@
+// src/UnifiedPDFEditor.jsx
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  Box,
+  Paper,
+  Tabs,
+  Tab,
+  Button,
+  Typography,
+  ToggleButton,
+  ToggleButtonGroup,
+  CircularProgress,
+  Chip,
+  Switch,
+  FormControlLabel,
+  Stack,
+  Card,
+  CardContent,
+  Divider,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import {
+  Visibility,
+  Edit,
+  Download,
+  Description,
+  AutoFixHigh,
+  Settings,
+  ViewQuilt,
+  PictureAsPdf,
+} from "@mui/icons-material";
+
+// IMPORT YOUR EDITORS
+import PdfPage1Editor from "./Editor1";
+import PdfPage2Editor from "./Editor2";
+import PdfPageEditor2 from "./Editor3";
+import PdfPricingEditor from "./Editor4";
+import PdfPaymentTermsEditorPage from "./Editor5";
+
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setDBDataP2,
+  setMode,
+  toggleInclusion as togglePage2Inclusion,
+} from "./utils/page2Slice";
+
+import { pdf } from "@react-pdf/renderer";
+import CombinedPdfDocument from "./CombinedPdf";
+
+// PDF Viewer
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import axiosInstance from "./utils/axiosInstance";
+import {
+  setDBDataP3,
+  setMode2,
+  toggleAboutPageInclusion,
+} from "./utils/page3Slice";
+import {
+  setDBDataPricing,
+  setMode3,
+  togglePricingPageInclusion,
+} from "./utils/pricingReducer";
+import {
+  setDBTerms,
+  setMode4,
+  togglePaymentPageInclusion,
+} from "./utils/paymentTermsPageSlice";
+import { setDBData, setMode1 } from "./utils/page1Slice";
+import { Provider } from "react-redux";
+import { store } from "./utils/store";
+
+const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, date: propDate }) => {
+  const dispatch = useDispatch();
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
+  const pageNavigationPluginInstance = pageNavigationPlugin();
+  const { jumpToPage } = pageNavigationPluginInstance;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isVerySmall = useMediaQuery("(max-width:350px)");
+
+
+
+  // Mobile: default to 'edit', Desktop: default to 'split'
+  const [viewMode, setViewMode] = useState(isMobile ? "edit" : "split");
+
+  // Sync viewMode when switching devices
+  useEffect(() => {
+    if (isMobile && viewMode === "split") {
+      setViewMode("edit");
+    }
+  }, [isMobile]);
+  const [activeTab, setActiveTab] = useState(0);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  console.log("mode", mode);
+  const formDataRT = useSelector((state) => state.proposal);
+  const isEditMode = mode === "edit-doc";
+
+  // Styles from ProposalFormwithStepper
+  const colorScheme = {
+    primary: "#667eea",
+    secondary: "#764ba2",
+    success: "#4CAF50",
+    warning: "#FF9800",
+    error: "#f44336",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    hoverGradient: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+  };
+
+  const cardStyle = {
+    mb: 3,
+    p: { xs: 1, sm: 3, md: 4 },
+    background: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+    border: "2px solid #e0e7ff",
+    borderRadius: 3,
+    boxShadow: "0 4px 20px rgba(102, 126, 234, 0.1)",
+  };
+
+  // Edit mode mein DB data load karo
+  useEffect(() => {
+    if (isEditMode && pdfPages?.page1) {
+      dispatch(setDBData(pdfPages.page1));
+    }
+    if (isEditMode && pdfPages?.page3) {
+      dispatch(setDBDataP2(pdfPages.page3));
+    }
+
+    if (isEditMode && pdfPages?.page2) {
+      dispatch(setDBDataP3(pdfPages.page2));
+    }
+
+    if (isEditMode && pdfPages?.pricingPage) {
+      dispatch(setDBDataPricing(pdfPages.pricingPage));
+    }
+    if (isEditMode && pdfPages?.paymentTerms) {
+      dispatch(setDBTerms(pdfPages.paymentTerms));
+    }
+  }, [isEditMode, pdfPages, dispatch]);
+
+  useEffect(() => {
+    if (mode === "edit-doc") {
+      dispatch(setMode("edit"));
+      dispatch(setMode1("edit"));
+      dispatch(setMode2("edit"));
+      dispatch(setMode3("edit"));
+      dispatch(setMode4("edit"));
+    } else {
+      console.log("else");
+      dispatch(setMode("create"));
+      dispatch(setMode1("create"));
+      dispatch(setMode2("create"));
+      dispatch(setMode3("create"));
+      dispatch(setMode4("create"));
+    }
+  }, [dispatch, mode]);
+
+  // Redux Data
+  const page1 = useSelector((s) =>
+    isEditMode ? s.page1Slice.edit : s.page1Slice.create
+  );
+  const page2 = isEditMode
+    ? useSelector((s) => s.page3.edit)
+    : useSelector((s) => s.page3.create);
+  const page3 = useSelector((s) =>
+    isEditMode ? s.page2.edit : s.page2.create
+  );
+  const pricingPage = isEditMode
+    ? useSelector((s) => s.pricing.edit)
+    : useSelector((s) => s.pricing.create);
+  const paymentTerms = isEditMode
+    ? useSelector((s) => s.paymentTerms.edit)
+    : useSelector((s) => s.paymentTerms.create);
+  const contactPage = useSelector((s) => s.contact);
+
+  // Safe page counts
+  const page3Pages = useMemo(
+    () => Math.max(1, page3?.currentPages || 1),
+    [page3?.currentPages]
+  );
+  const pricingPages = useMemo(
+    () => Math.max(1, pricingPage?.currentPages || 1),
+    [pricingPage?.currentPages]
+  );
+  console.log('page3 sss', page3?.currentPages)
+  const paymentPages = useMemo(
+    () => Math.max(1, paymentTerms?.currentPages || 1),
+    [paymentTerms?.currentPages]
+  );
+
+  // Page offsets from Redux (Absolute Tracking)
+  const pdfOffsets = useSelector((state) => state.pdfNavigation.offsets);
+
+  const pages = useMemo(
+    () => [
+      { name: "Cover Page", editor: () => <PdfPage1Editor mode={mode} /> },
+      { name: "About HT", editor: () => <PdfPage2Editor mode={mode} /> },
+      { name: "Additional Info", editor: () => <PdfPageEditor2 mode={mode} /> },
+      { name: "Pricing", editor: () => <PdfPricingEditor mode={mode} /> },
+      {
+        name: "Payment Terms",
+        editor: () => <PdfPaymentTermsEditorPage mode={mode} />,
+      },
+      { name: "Contact", editor: null },
+    ],
+    [mode]
+  );
+
+  const mapTabToPdfPage = useCallback(() => {
+    const currentPage = pages[activeTab];
+    if (!currentPage) return 0;
+    return pdfOffsets[currentPage.name] ?? 0;
+  }, [activeTab, pdfOffsets, pages]);
+  const visiblePages = useMemo(() => {
+    return pages.filter((page, index) => {
+      if (index === 1 && page2?.includeInPdf === false) return false; // About HT
+      if (page.name === "Additional Info" && page3?.includeInPdf === false)
+        return false;
+      if (page.name === "Pricing" && pricingPage?.includeInPdf === false)
+        return false;
+      if (page.name === "Payment Terms" && paymentTerms?.includeInPdf === false)
+        return false;
+      return true;
+    });
+  }, [
+    pages,
+    page2?.includeInPdf,
+    page3?.includeInPdf,
+    pricingPage?.includeInPdf,
+    paymentTerms?.includeInPdf,
+  ]);
+  useEffect(() => {
+    if (visiblePages.length === 0) return;
+
+    const currentPage = pages[activeTab];
+    const isCurrentVisible = visiblePages.includes(currentPage);
+
+    if (!isCurrentVisible) {
+      // Agar current tab hide ho gaya → first visible tab pe jao
+      const newIndex = pages.indexOf(visiblePages[0]);
+      setActiveTab(newIndex);
+    }
+  }, [visiblePages, activeTab, pages]);
+
+  // Auto-scroll logic when tab changes
+  useEffect(() => {
+    if (jumpToPage) {
+      const targetPage = mapTabToPdfPage();
+      const timer = setTimeout(() => {
+        jumpToPage(targetPage);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, mapTabToPdfPage, jumpToPage, pdfUrl]);
+
+  const generatePdf = useCallback(async () => {
+    console.log("UnifiedPdfEditor: generatePdf called with showLabels=true");
+    try {
+      setLoading(true);
+      const blob = await pdf(
+        <Provider store={store}>
+          <CombinedPdfDocument
+            paymentTerms={paymentTerms || {}}
+            pricingPage={pricingPage || {}}
+            page1Data={page1 || {}}
+            page2Data={page2 || {}}
+            page3Data={page3 || {}}
+            contactData={contactPage || {}}
+            showLabels={true}
+            clientName={propClientName || formDataRT?.clientName}
+            date={propDate || formDataRT?.date}
+          />
+        </Provider>
+      ).toBlob();
+
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(URL.createObjectURL(blob));
+    } catch (e) {
+      console.error("PDF Generation Error:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    page1,
+    page2,
+    page3,
+    pricingPage,
+    paymentTerms,
+    contactPage,
+    formDataRT,
+    pdfUrl,
+  ]);
+
+  // Create stable dependencies for PDF generation to avoid loops when page counts update
+  const page3Content = useMemo(() => {
+    if (!page3) return "";
+    const { currentPages, pages, startPage, endPage, ...rest } = page3;
+    return JSON.stringify(rest);
+  }, [page3]);
+
+  const pricingPageContent = useMemo(() => {
+    if (!pricingPage) return "";
+    const { currentPages, pages, ...rest } = pricingPage;
+    return JSON.stringify(rest);
+  }, [pricingPage]);
+
+  const paymentTermsContent = useMemo(() => {
+    if (!paymentTerms) return "";
+    const { currentPages, pages, ...rest } = paymentTerms;
+    return JSON.stringify(rest);
+  }, [paymentTerms]);
+
+  const page1Content = JSON.stringify(page1);
+  const page2Content = JSON.stringify(page2);
+  const contactContent = JSON.stringify(contactPage);
+
+
+  useEffect(() => {
+    const timer = setTimeout(generatePdf, 800);
+    return () => clearTimeout(timer);
+  }, [page1Content, page2Content, page3Content, pricingPageContent, paymentTermsContent, contactContent]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axiosInstance.get("/api/get-creds");
+        if (res.data?.success && res.data.data) {
+          const { name, email } = res.data.data;
+          const updatedData = {};
+          if (name) updatedData.yourName = name;
+          if (email) updatedData.yourEmail = email;
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#fff",
+        borderRadius: 0,
+      }}
+    >
+      {/* Super Clean Top Toolbar */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 3 },
+          background: colorScheme.gradient,
+          color: "white",
+          borderRadius: 0,
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          {/* Title & Mobile Toggles */}
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            width={isMobile ? "100%" : "auto"}
+            justifyContent="space-between"
+            gap={2}
+          >
+            <Box display="flex" alignItems="center" justifyContent={{ xs: "center", sm: "flex-start" }}>
+              <AutoFixHigh sx={{ mr: 1.5, fontSize: { xs: 24, sm: 30 } }} />
+              <Box textAlign={{ xs: "center", sm: "left" }}>
+                <Typography variant={isMobile ? "subtitle1" : "h5"} fontWeight={800} sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" } }}>
+                  Unified Editor
+                </Typography>
+                {!isVerySmall && (
+                  <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: "none", sm: "block" } }}>
+                    Customize proposal
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            {isMobile && (
+              <ToggleButtonGroup
+                size="small"
+                value={viewMode}
+                exclusive
+                onChange={(_, v) => v && setViewMode(v)}
+                fullWidth
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  maxHeight: "36px",
+                  "& .MuiToggleButton-root": {
+                    color: "white",
+                    px: { xs: 1, sm: 2 },
+                    py: 0.5,
+                    fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                    fontWeight: 600,
+                    textTransform: "none",
+                    flex: 1,
+                    "&.Mui-selected": {
+                      bgcolor: "white",
+                      color: colorScheme.primary,
+                      "&:hover": { bgcolor: "white" },
+                    },
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+                  },
+                }}
+              >
+                <ToggleButton value="edit">
+                  <Edit sx={{ fontSize: 16, mr: 1 }} />
+                  Editor
+                </ToggleButton>
+                <ToggleButton value="preview">
+                  <Visibility sx={{ fontSize: 16, mr: 1 }} />
+                  Preview
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+          </Box>
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ width: isMobile ? "100%" : "auto", justifyContent: isMobile ? "center" : "flex-end" }}>
+
+
+            {/* Desktop View Mode Toggle */}
+            {!isMobile && (
+              <ToggleButtonGroup
+                size="small"
+                value={viewMode}
+                exclusive
+                onChange={(_, v) => v && setViewMode(v)}
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  borderRadius: 3,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  "& .MuiToggleButton-root": {
+                    color: "white",
+                    px: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    border: "none",
+                    "&.Mui-selected": {
+                      bgcolor: "white",
+                      color: colorScheme.primary,
+                      fontWeight: 700,
+                      "&:hover": {
+                        bgcolor: "rgba(255,255,255,0.9)",
+                      },
+                    },
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="edit">
+                  <Edit sx={{ mr: 1, fontSize: 18 }} /> Edit
+                </ToggleButton>
+                <ToggleButton value="split">
+                  <ViewQuilt sx={{ mr: 1, fontSize: 18 }} /> Split
+                </ToggleButton>
+                <ToggleButton value="preview">
+                  <PictureAsPdf sx={{ mr: 1, fontSize: 18 }} /> Preview
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+          </Stack>
+        </Stack>
+      </Paper>
+
+      {/* Tabs */}
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 0,
+          borderBottom: "1px solid #e0e7ff",
+          bgcolor: "#fff",
+        }}
+      >
+        {/* Global Page Visibility Bar */}
+        {(viewMode === "edit" || viewMode === "split") && (
+          <Box
+            sx={{
+              py: 1,
+              px: { xs: 1, sm: 3 },
+              borderBottom: "1px solid #f0f2ff",
+              bgcolor: "rgba(102, 126, 234, 0.03)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: { xs: 0.5, sm: 3, md: 4 },
+            }}
+          >
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              sx={{ display: { xs: "none", md: "flex" }, opacity: 0.7 }}
+            >
+              <Settings sx={{ color: colorScheme.primary, fontSize: 18 }} />
+              <Typography
+                variant="caption"
+                fontWeight={800}
+                sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
+              >
+                Page Visibility
+              </Typography>
+            </Stack>
+
+            <Stack
+              direction="row"
+              spacing={{ xs: 1, sm: 2 }}
+              alignItems="center"
+              flexWrap="wrap"
+              justifyContent="center"
+            >
+              {[
+                {
+                  name: "About HT",
+                  state: page2?.includeInPdf,
+                  action: toggleAboutPageInclusion,
+                },
+                {
+                  name: "Additional Info",
+                  state: page3?.includeInPdf,
+                  action: togglePage2Inclusion,
+                },
+                {
+                  name: "Pricing",
+                  state: pricingPage?.includeInPdf,
+                  action: togglePricingPageInclusion,
+                },
+                {
+                  name: "Payment Terms",
+                  state: paymentTerms?.includeInPdf,
+                  action: togglePaymentPageInclusion,
+                },
+              ].map((item) => (
+                <FormControlLabel
+                  key={item.name}
+                  control={
+                    <Switch
+                      size="small"
+                      checked={item.state ?? true}
+                      onChange={() => dispatch(item.action())}
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: colorScheme.primary,
+                          "& + .MuiSwitch-track": {
+                            backgroundColor: colorScheme.primary,
+                          },
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography
+                      variant="caption"
+                      fontWeight={item.state === false ? 500 : 700}
+                      sx={{
+                        color:
+                          item.state === false ? "text.disabled" : "text.primary",
+                        fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                      }}
+                    >
+                      {item.name}
+                    </Typography>
+                  }
+                  sx={{
+                    m: 0,
+                    mx: 0.5,
+                    p: 0.5,
+                    borderRadius: 2,
+                    "&:hover": { bgcolor: "rgba(102, 126, 234, 0.05)" },
+                    width: { xs: "45%", sm: "auto" }, // Take up half on narrow screens
+                    justifyContent: "flex-start"
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
+        )}
+        {(viewMode === "edit" || viewMode === "split") && (
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => setActiveTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: { xs: 44, sm: 56 },
+              "& .MuiTab-root": {
+                fontWeight: 600,
+                fontSize: { xs: "0.8rem", sm: "0.95rem" },
+                textTransform: "none",
+                color: "text.secondary",
+                minHeight: { xs: 44, sm: 56 },
+                px: { xs: 1.5, sm: 3 },
+                "&.Mui-selected": {
+                  color: colorScheme.primary,
+                },
+              },
+              "& .MuiTabs-indicator": {
+                bgcolor: colorScheme.primary,
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+              },
+            }}
+          >
+            {visiblePages.map((page) => {
+              const index = pages.indexOf(page);
+              return <Tab key={index} label={page.name} value={index} />;
+            })}
+          </Tabs>
+        )}
+      </Paper>
+
+      {/* Main Content */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          overflow: "hidden",
+          bgcolor: "#f5f7ff", // Light background for content area
+        }}
+      >
+        {/* Editor Panel with Page Switches Inside */}
+        {(viewMode === "edit" || viewMode === "split") && (
+          <Box
+            sx={{
+              width: { xs: "100%", md: viewMode === "edit" ? "100%" : "50%" },
+              display: { xs: viewMode === "edit" ? "flex" : "none", md: "flex" },
+              height: "100%",
+              overflowY: "auto",
+              bgcolor: "#fff",
+              borderRight:
+                viewMode === "split" ? "1px solid #e0e7ff" : "none",
+              borderBottom: { xs: viewMode === "split" ? "1px solid #e0e7ff" : "none", md: "none" },
+              flexDirection: "column",
+            }}
+          >
+
+            {/* Actual Page Editor */}
+            <Box sx={{ flex: 1, p: 0 }}>
+              {pages[activeTab].editor ? (
+                React.createElement(pages[activeTab].editor)
+              ) : (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    mt: 10,
+                    color: "text.secondary",
+                    p: 4,
+                  }}
+                >
+                  <Description sx={{ fontSize: 80, mb: 2, opacity: 0.2 }} />
+                  <Typography variant="h6" fontWeight={600}>
+                    Preview only
+                  </Typography>
+                  <Typography variant="body2">
+                    Editing is not available for <b>{pages[activeTab]?.name}</b>
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* PDF Preview */}
+        {(viewMode === "split" || viewMode === "preview") && (
+          <Box
+            sx={{
+              flex: 1,
+              display: { xs: viewMode === "preview" ? "flex" : "none", md: "flex" },
+              height: "100%",
+              bgcolor: "#2d3436", // Darker background for PDF preview
+              overflow: "hidden",
+              position: "relative",
+              flexDirection: "column",
+            }}
+          >
+            {loading ? (
+              <Box
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                }}
+              >
+                <CircularProgress
+                  sx={{ color: colorScheme.primary }}
+                  size={60}
+                  thickness={4}
+                />
+                <Typography mt={3} variant="h6" fontWeight={500}>
+                  Generating PDF Preview...
+                </Typography>
+              </Box>
+            ) : pdfUrl ? (
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                <Viewer
+                  fileUrl={pdfUrl}
+                  plugins={[defaultLayoutPluginInstance, pageNavigationPluginInstance]}
+                  initialPage={mapTabToPdfPage()}
+                  defaultScale={isMobile ? 0.5 : (viewMode === "preview" ? 1.1 : 0.9)}
+                  theme="dark"
+                />
+              </Worker>
+            ) : (
+              <Box
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ff6b6b",
+                }}
+              >
+                <Typography variant="h5">Failed to generate PDF</Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
+
+      {/* Footer / Status Bar */}
+      <Box
+        sx={{
+          p: 1,
+          bgcolor: "#fff",
+          borderTop: "1px solid #e0e7ff",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Typography variant="caption" color="text.secondary" fontWeight={500}>
+          Page Counts: Info: {page3Pages} | Pricing: {pricingPages} | Payment:{" "}
+          {paymentPages}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+export default UnifiedPdfEditor;
