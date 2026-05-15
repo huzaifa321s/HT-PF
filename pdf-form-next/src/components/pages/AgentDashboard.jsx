@@ -1,0 +1,473 @@
+"use client";
+// src/pages/AgentDashboard.jsx
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
+  Tooltip,
+  Container,
+  CircularProgress,
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DescriptionIcon from "@mui/icons-material/Description";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import axiosInstance from "../../utils/axiosInstance";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+
+const AgentDashboard = ({ onNavigate }) => {
+  const [isHovered, setIsHovered] = useState({});
+  const [usage, setUsage] = useState(null);
+  const [loadingUsage, setLoadingUsage] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const res = await axiosInstance.get("/api/tokens/usage", { skipLoader: true });
+        if (res.data.success) {
+          setUsage(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch usage:", err);
+      } finally {
+        setLoadingUsage(false);
+      }
+    };
+    fetchUsage();
+  }, []);
+  const handleNav = (path) => {
+    if (onNavigate && typeof onNavigate === "function") onNavigate(path);
+    // else window.location.href = path;
+    else router.push(path);
+  };
+
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+
+  // Styles from ProposalFormwithStepper
+  const colorScheme = {
+    primary: "#f3a833",
+    secondary: "#f59e0b",
+    gradient: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+    hoverGradient: "linear-gradient(135deg, #eab308 0%, #d97706 100%)",
+    lightBg: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
+  };
+
+  const cardStyle = {
+    background: "rgba(20, 20, 20, 0.8)",
+    backdropFilter: "blur(20px)",
+    border: "1px solid rgba(243, 168, 51, 0.2)",
+    borderRadius: 5,
+    boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&:hover": {
+      transform: "translateY(-6px)",
+      boxShadow: "0 20px 40px rgba(243, 168, 51, 0.15)",
+      borderColor: "rgba(243, 168, 51, 0.3)",
+    },
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+  };
+
+  return (
+    <Box
+      component={motion.div}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      sx={{
+        minHeight: "100%",
+        py: { xs: 2, md: 4 },
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Welcome Section */}
+        <Paper
+          component={motion.div}
+          variants={itemVariants}
+          elevation={0}
+          sx={{
+            ...cardStyle,
+            p: { xs: 4, md: 6 },
+            mb: 5,
+            position: "relative",
+            overflow: "hidden",
+            background: "#0a0a0a",
+          }}
+        >
+          {/* Subtle decorative background blob */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "-50%",
+              right: "-10%",
+              width: "400px",
+              height: "400px",
+              background: "radial-gradient(circle, rgba(243, 168, 51,0.1) 0%, rgba(255,255,255,0) 70%)",
+              borderRadius: "50%",
+              zIndex: 0,
+            }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
+              gap: 4,
+              textAlign: { xs: "center", sm: "left" },
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: colorScheme.gradient,
+                borderRadius: "24px",
+                width: { xs: 72, md: 96 },
+                height: { xs: 72, md: 96 },
+                boxShadow: "0 16px 32px rgba(243, 168, 51, 0.4)",
+                transform: "rotate(-5deg)",
+              }}
+            >
+              <AccountCircleIcon sx={{ fontSize: { xs: 40, md: 52 }, color: "#fff", transform: "rotate(5deg)" }} />
+            </Box>
+            <Box>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 900,
+                  background: colorScheme.gradient,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-1px",
+                  mb: 1,
+                  fontSize: { xs: "2rem", md: "2.75rem" },
+                }}
+              >
+                Welcome back, {user.name?.split(" ")[0] || "Agent"}!
+              </Typography>
+              <Typography variant="h6" sx={{ color: "#94a3b8", fontWeight: 500 }}>
+                Ready to create some amazing proposals today?
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+
+        {/* Usage Section (Disabled) */}
+        {false && (
+          <>
+            <Typography
+              component={motion.h5}
+              variants={itemVariants}
+              variant="h5"
+              sx={{
+                fontWeight: 800,
+                color: "#f8fafc",
+                mb: 3,
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+              }}
+            >
+              <AssessmentIcon sx={{ color: colorScheme.primary }} /> System Usage
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mb: 6 }} component={motion.div} variants={containerVariants}>
+              {/* AssemblyAI Usage */}
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ ...cardStyle, p: 4 }} component={motion.div} variants={itemVariants}>
+                  <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AssessmentIcon color="primary" /> Transcription Usage
+                  </Typography>
+                  {loadingUsage ? (
+                    <CircularProgress size={20} />
+                  ) : usage ? (
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Box>
+                          <Typography variant="body2" color="#94a3b8">Remaining: {usage.percentage}%</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                            {Math.floor((usage.remaining || 0) / 3600)} Hours Remaining
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={700} color={usage.status === 'red' ? 'error' : 'primary'}>
+                          {usage.level}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ height: 8, bgcolor: '#eee', borderRadius: 4, overflow: 'hidden', mb: 1 }}>
+                        <Box sx={{ height: '100%', width: `${usage.percentage}%`, background: colorScheme.gradient }} />
+                      </Box>
+                      <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+                        Total Used: {usage.formattedUsage}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="error">Failed to load usage</Typography>
+                  )}
+                </Paper>
+              </Grid>
+
+              {/* Groq Usage */}
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ ...cardStyle, p: 4 }} component={motion.div} variants={itemVariants}>
+                  <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AddCircleOutlineIcon sx={{ color: '#a855f7' }} /> AI Smart Paste Usage
+                  </Typography>
+                  {loadingUsage ? (
+                    <CircularProgress size={20} />
+                  ) : usage?.groq ? (
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Box>
+                          <Typography variant="body2" color="#94a3b8">Remaining: {usage.groq.percentage}%</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#a855f7' }}>
+                            {Math.floor((usage.groq.remaining || 0) / 3000)} Requests Remaining
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={700} color={usage.groq.status === 'red' ? 'error' : '#a855f7'}>
+                          {usage.groq.level}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ height: 8, bgcolor: '#eee', borderRadius: 4, overflow: 'hidden', mb: 1 }}>
+                        <Box sx={{ height: '100%', width: `${usage.groq.percentage}%`, background: 'linear-gradient(135deg, #a855f7 0%, #f59e0b 100%)' }} />
+                      </Box>
+                      <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+                        Total Tokens Used: {usage.groq.used.toLocaleString()}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="error">Failed to load usage</Typography>
+                  )}
+                </Paper>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 5, borderColor: "rgba(243, 168, 51, 0.15)" }} />
+          </>
+        )}
+
+        {/* Quick Actions */}
+        <Typography
+          component={motion.h5}
+          variants={itemVariants}
+          variant="h5"
+          sx={{
+            fontWeight: 800,
+            color: "#f8fafc",
+            mb: 3,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+          <AddCircleOutlineIcon sx={{ color: colorScheme.primary }} /> Quick Actions
+        </Typography>
+
+        <Grid container spacing={3} component={motion.div} variants={containerVariants}>
+          {/* Create Proposal */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: 5 }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(243, 168, 51, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                    mb: 3,
+                  }}
+                >
+                  <AddCircleOutlineIcon
+                    sx={{ fontSize: 32, color: colorScheme.primary }}
+                  />
+                </Box>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ color: "#f8fafc", mb: 1 }}
+                >
+                  Create New Proposal
+                </Typography>
+                <Typography variant="body2" color="#94a3b8">
+                  Start drafting a new client proposal.
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
+                <Tooltip title="Create a new proposal" arrow>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => handleNav("/create-proposal")}
+                    sx={{
+                      borderRadius: 10,
+                      px: 4,
+                      py: 1,
+                      background: colorScheme.gradient,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      boxShadow: "0 4px 12px rgba(243, 168, 51, 0.3)",
+                      "&:hover": {
+                        background: colorScheme.hoverGradient,
+                        boxShadow: "0 8px 20px rgba(243, 168, 51, 0.4)",
+                      },
+                    }}
+                    startIcon={<AddCircleOutlineIcon />}
+                  >
+                    Create Proposal
+                  </Button>
+                </Tooltip>
+              </CardActions>
+            </Card>
+          </Grid>
+
+          {/* View Proposals */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: 5 }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(243, 168, 51, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                    mb: 3,
+                  }}
+                >
+                  <DescriptionIcon
+                    sx={{ fontSize: 32, color: colorScheme.primary }}
+                  />
+                </Box>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ color: "#f8fafc", mb: 1 }}
+                >
+                  Your Proposals
+                </Typography>
+                <Typography variant="body2" color="#94a3b8">
+                  View, edit, or download your submissions.
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
+                <Tooltip title="View all your proposals" arrow>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => handleNav("/your-proposals")}
+                    sx={{
+                      borderRadius: 10,
+                      px: 4,
+                      py: 1,
+                      borderColor: colorScheme.primary,
+                      color: colorScheme.primary,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      "&:hover": {
+                        borderColor: colorScheme.secondary,
+                        bgcolor: "rgba(243, 168, 51, 0.05)",
+                      },
+                    }}
+                    startIcon={<DescriptionIcon />}
+                  >
+                    View All
+                  </Button>
+                </Tooltip>
+              </CardActions>
+            </Card>
+          </Grid>
+
+          {/* Profile */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: 5 }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(243, 168, 51, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                    mb: 3,
+                  }}
+                >
+                  <AccountCircleIcon
+                    sx={{ fontSize: 32, color: colorScheme.primary }}
+                  />
+                </Box>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ color: "#f8fafc", mb: 1 }}
+                >
+                  My Profile
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Update your personal information.
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
+                <Tooltip title="Update your profile" arrow>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => handleNav("/profile")}
+                    sx={{
+                      borderRadius: 10,
+                      px: 4,
+                      py: 1,
+                      borderColor: colorScheme.primary,
+                      color: colorScheme.primary,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      "&:hover": {
+                        borderColor: colorScheme.secondary,
+                        bgcolor: "rgba(243, 168, 51, 0.05)",
+                      },
+                    }}
+                    startIcon={<AccountCircleIcon />}
+                  >
+                    Go to Profile
+                  </Button>
+                </Tooltip>
+              </CardActions>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  );
+};
+
+export default AgentDashboard;

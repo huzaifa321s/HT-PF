@@ -1,0 +1,1237 @@
+"use client";
+import React, { useEffect, useState, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import axiosInstance from "../../utils/axiosInstance";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  FormHelperText,
+  ToggleButtonGroup,
+  ToggleButton,
+  InputAdornment,
+} from "@mui/material";
+import { Controller } from "react-hook-form";
+import {
+  Person,
+  Business,
+  Description,
+  AttachMoney,
+  Info,
+  CheckCircle,
+  ArrowBack,
+  ArrowForward,
+  Save,
+  EditDocument,
+  ArrowBackIos,
+} from "@mui/icons-material";
+import UnifiedPdfEditor from "../UnifiedPDFEditor";
+import { pdfDetector } from "../../utils/PdfChangeDetector";
+import { store } from "../../utils/store";
+import { pdf } from "@react-pdf/renderer";
+import CombinedPdfDocument from "../CombinedPdf";
+import { useDispatch, useSelector, Provider } from "react-redux";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import { motion } from "framer-motion";
+
+// ✅ Email Validation Function
+const isValidEmail = (email) => {
+  if (!email || email.trim() === "") return false;
+
+  // Basic email regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) return false;
+
+  // ✅ Block common fake/example domains
+  const blockedDomains = [
+    "example.com",
+    "test.com",
+    "demo.com",
+    "sample.com",
+    "fake.com",
+    "dummy.com",
+    "temp.com",
+    "tempmail.com",
+    "throwaway.email",
+    "10minutemail.com",
+    "guerrillamail.com",
+  ];
+
+  const domain = email.split("@")[1]?.toLowerCase();
+
+  if (blockedDomains.includes(domain)) {
+    return false;
+  }
+
+  return true;
+};
+
+const getEmailErrorMessage = (email) => {
+  if (!email || email.trim() === "") {
+    return null;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return "Please enter a valid email address";
+  }
+
+  const domain = email.split("@")[1]?.toLowerCase();
+  const blockedDomains = [
+    "example.com",
+    "test.com",
+    "demo.com",
+    "sample.com",
+    "fake.com",
+    "dummy.com",
+    "temp.com",
+    "tempmail.com",
+    "throwaway.email",
+    "10minutemail.com",
+    "guerrillamail.com",
+  ];
+
+  if (blockedDomains.includes(domain)) {
+    return `Cannot use ${domain}. Please provide a real email address`;
+  }
+
+  return null;
+};
+
+const EditProposal = () => {
+  const { id } = useParams();
+  const router = useRouter();
+  const { reset, control, trigger, formState: { errors: hookErrors } } = useForm({
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+  const pdfRef = useRef(null);
+
+  const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const page1 = useSelector((s) => s.page1Slice.edit);
+  const page2 = useSelector((s) => s.page3.edit);
+  const page3 = useSelector((s) => s.page2.edit);
+  const pricingPage = useSelector((s) => s.pricing.edit);
+  const paymentTerms = useSelector((s) => s.paymentTerms.edit);
+  const contactPage = useSelector((s) => s.contact);
+
+  const [formData, setFormData] = useState({
+    clientName: "",
+    clientEmail: "",
+    brandName: "",
+    projectTitle: "",
+    businessDescription: "",
+    proposedSolution: "",
+    advancePercent: "",
+    additionalCosts: "",
+    callOutcome: "",
+    yourName: "Your Name",
+    yourEmail: "your@email.com",
+    date: new Date().toISOString().split("T")[0],
+    selectedCurrency: "",
+  });
+  const [baseCost, setBaseCost] = useState("");
+  const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
+  const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+
+  const formDataToSave = {
+    clientName: formData.clientName,
+    clientEmail: formData.clientEmail,
+    brandName: formData.brandName,
+    projectTitle: formData.projectTitle,
+    businessDescription: formData.businessDescription,
+    proposedSolution: formData.proposedSolution,
+    advancePercent: formData.advancePercent,
+    additionalCosts: formData.additionalCosts,
+    callOutcome: formData.callOutcome,
+    date: formData.date,
+  };
+
+  // Fetch proposal on mount
+  useEffect(() => {
+    const fetchProposal = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        const res = await axiosInstance.get(
+          `/api/proposals/get-single-proposal/${id}`
+        );
+        const data = res.data.data;
+
+        const updatedData = {
+          clientName: data.clientName || "",
+          clientEmail: data.clientEmail || "",
+          brandName: data.brandName || "",
+          projectTitle: data.projectTitle || "",
+          businessDescription: data.businessDescription || "",
+          proposedSolution: data.proposedSolution || "",
+          advancePercent: data.advancePercent || "",
+          additionalCosts: data.additionalCosts || "",
+          callOutcome: data.callOutcome || "",
+          date: data.date
+            ? data.date.split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          yourName: "Your Name",
+          yourEmail: "your@email.com",
+          pdfPages: data.pdfPages,
+          selectedCurrency: data.selectedCurrency,
+        };
+        setSelectedCurrency(data.selectedCurrency);
+        setFormData(updatedData);
+        setBaseCost(data.additionalCosts || "");
+        reset(updatedData);
+
+        setTimeout(() => {
+          pdfDetector.takeSnapshot(store);
+        }, 100);
+      } catch (err) {
+        console.error("Error fetching proposal:", err);
+        setSnackbar({
+          open: true,
+          message: "Failed to load proposal.",
+          severity: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProposal();
+  }, [id, reset]);
+
+  const colorScheme = {
+    primary: "#f3a833",
+    secondary: "#f59e0b",
+    gradient: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+    hoverGradient: "linear-gradient(135deg, #eab308 0%, #d97706 100%)",
+  };
+
+  const cardStyle = {
+    mb: 3,
+    p: { xs: 1, sm: 3, md: 4 },
+    background: "#0a0a0a",
+    border: "1px solid rgba(243, 168, 51, 0.2)",
+    borderRadius: 3,
+    boxShadow: "0 4px 20px rgba(243, 168, 51, 0.1)",
+  };
+
+  const inputStyle = {
+    mb: 2,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 2,
+      background: "#141414",
+      "&:hover": {
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: colorScheme.primary,
+        },
+      },
+    },
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
+  const headerVariants = {
+    hidden: { opacity: 0, y: -12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  const stepperVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  const stepVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.35, ease: "easeOut" },
+    },
+  };
+
+  const stepCardVariants = {
+    hidden: { opacity: 0, y: 12, scale: 0.98 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.35, ease: "easeOut" },
+    },
+  };
+
+  const primaryButtonVariants = {
+    hover: { scale: 1.03, y: -1 },
+    tap: { scale: 0.97, y: 0 },
+  };
+
+  const secondaryButtonVariants = {
+    hover: { scale: 1.02 },
+    tap: { scale: 0.97 },
+  };
+
+  const sectionHeaderVariants = {
+    hidden: { opacity: 0, y: 6 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+  };
+
+  const fieldRefs = {
+    clientName: useRef(null),
+    clientEmail: useRef(null),
+    projectTitle: useRef(null),
+    businessDescription: useRef(null),
+    proposedSolution: useRef(null),
+    callOutcome: useRef(null),
+  };
+
+  const stepFields = {
+    0: ["clientName", "clientEmail"], // Added clientEmail as required
+    1: ["projectTitle", "businessDescription", "proposedSolution"],
+    2: [],
+    3: ["callOutcome"],
+  };
+
+  const sectionHeader = (icon, title) => (
+    <Box
+      component={motion.div}
+      variants={sectionHeaderVariants}
+      initial="hidden"
+      animate="visible"
+      sx={{ display: "flex", alignItems: "center", mb: 3, mt: 2 }}
+    >
+      <Box
+        component={motion.div}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        sx={{
+          p: 1.5,
+          mr: 2,
+          background: colorScheme.gradient,
+          borderRadius: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {React.cloneElement(icon, { sx: { fontSize: 24, color: "#fff" } })}
+      </Box>
+      <Typography
+        component={motion.div}
+        variant="h5"
+        sx={{
+          fontWeight: 700,
+          background: colorScheme.gradient,
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        {title}
+      </Typography>
+    </Box>
+  );
+
+  const [selectedCurrency, setSelectedCurrency] = useState();
+  console.log("formData.selectedCurrency", selectedCurrency);
+  const handleCurrencyChange = (event, newCurrency) => {
+    if (newCurrency !== null) {
+      setSelectedCurrency(newCurrency);
+      // Agar form data ko update karna hai:
+      formData.selectedCurrency = newCurrency;
+    }
+  };
+
+  // Format number in words function for currency display
+  const formatNumberInWords = (value, currency) => {
+    if (!value) return "";
+
+    const number = parseInt(value.toString().replace(/[^0-9]/g, ""), 10);
+    if (isNaN(number) || number === 0) return "";
+
+    // Common formatting for USD, GBP, EUR, AED
+    if (["USD", "GBP", "EUR", "AED"].includes(currency)) {
+      if (number >= 1000000000) {
+        return `${(number / 1000000000).toFixed(2)}B`;
+      } else if (number >= 1000000) {
+        return `${(number / 1000000).toFixed(2)}M`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    // PKR - Lakh & Crore
+    if (currency === "PKR") {
+      if (number >= 10000000) {
+        return `${(number / 10000000).toFixed(2)} Crore`;
+      } else if (number >= 100000) {
+        return `${(number / 100000).toFixed(2)} Lakh`;
+      } else if (number >= 1000) {
+        return `${(number / 1000).toFixed(2)}K`;
+      }
+      return number.toLocaleString();
+    }
+
+    return number.toLocaleString();
+  };
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // ✅ UPDATED: Validate Step with Email Check
+  const validateStep = async () => {
+    const fields = stepFields[activeStep];
+
+    // Use react-hook-form trigger for fields in this step
+    const isValid = await trigger(fields);
+
+    if (!isValid) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleNext = async () => {
+    const isValid = await validateStep();
+    if (isValid) setActiveStep((prev) => prev + 1);
+  };
+
+  const handleBack = () => setActiveStep((prev) => prev - 1);
+  const handleStepClick = (stepIndex) => setActiveStep(stepIndex);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const dataToSend = {
+        data: { ...formDataToSave, selectedCurrency },
+      };
+      
+      await axiosInstance.put(
+        `${process.env.NEXT_PUBLIC_APP_BASE_URL}api/proposals/update-proposal/${id}`,
+        dataToSend
+      );
+
+      setSnackbar({
+        open: true,
+        message: "Proposal saved! Redirecting to Studio...",
+        severity: "success",
+      });
+      
+      router.push(`/proposal-studio/${id}`);
+
+    } catch (error) {
+      console.error("Save Error:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to save proposal.",
+        severity: "error",
+      });
+      setLoading(false);
+    }
+  };
+
+  const isStepAccessible = (stepIndex) => {
+    for (let i = 0; i < stepIndex; i++) {
+      const fields = stepFields[i];
+      const hasError = fields.some(
+        (field) => !formData[field] || formData[field].trim() === ""
+      );
+      if (hasError) return false;
+    }
+    return true;
+  };
+
+  const steps = [
+    {
+      label: "Your & Client Information",
+      icon: <Person />,
+      content: (
+        <>
+          {sectionHeader(<Person />, "Your Information")}
+          <TextField
+            label="Your Name *"
+            fullWidth
+            value={formData.yourName}
+            disabled
+            sx={inputStyle}
+          />
+          <TextField
+            label="Your Email *"
+            fullWidth
+            value={formData.yourEmail}
+            disabled
+            sx={inputStyle}
+          />
+
+          {sectionHeader(<Business />, "Client Information")}
+          <Controller
+            name="clientName"
+            control={control}
+            rules={{ required: "Client Name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Client Name *"
+                fullWidth
+                inputRef={fieldRefs.clientName}
+                error={!!hookErrors.clientName}
+                helperText={hookErrors.clientName?.message}
+                sx={inputStyle}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleChange("clientName", e.target.value);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="clientEmail"
+            control={control}
+            rules={{
+              required: "Client email is required",
+              validate: {
+                isValid: (value) => getEmailErrorMessage(value) === null || getEmailErrorMessage(value),
+                checkUniqueness: async (value) => {
+                  if (!value) return true;
+                  try {
+                    const res = await axiosInstance.get("/api/proposals/check-email", {
+                      params: { email: value, excludeId: id },
+                    });
+                    if (res.data?.success && res.data.exists) {
+                      setExistingProposalId(res.data.proposalId);
+                      setExistingProposalOwner(res.data.createdBy);
+                      return "Proposal with this client email is already exists";
+                    }
+                    setExistingProposalId(null);
+                    setExistingProposalOwner(null);
+                    return true;
+                  } catch (err) {
+                    return true;
+                  }
+                }
+              }
+            }}
+            render={({ field }) => (
+              <Box>
+                <TextField
+                  {...field}
+                  label="Client Email *"
+                  type="email"
+                  fullWidth
+                  inputRef={fieldRefs.clientEmail}
+                  error={!!hookErrors.clientEmail}
+                  helperText={hookErrors.clientEmail?.message}
+                  sx={inputStyle}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleChange("clientEmail", e.target.value);
+                    if (existingProposalId) setExistingProposalId(null);
+                  }}
+                />
+                {hookErrors.clientEmail?.message === "Proposal with this client email is already exists" &&
+                  existingProposalId &&
+                  (user.role === "admin" ||
+                    user._id === existingProposalOwner) && (
+                    <Button
+                      component={motion.button}
+                      variants={secondaryButtonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                      size="small"
+                      variant="contained"
+                      startIcon={<EditDocument />}
+                      onClick={() =>
+                        router.push(`/admin/proposals/${existingProposalId}`)
+                      }
+                      sx={{
+                        mt: -1,
+                        mb: 2,
+                        background: colorScheme.gradient,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        "&:hover": {
+                          background: colorScheme.hoverGradient,
+                        },
+                      }}
+                    >
+                      View Proposal
+                    </Button>
+                  )}
+              </Box>
+            )}
+          />
+        </>
+      ),
+    },
+    {
+      label: "Project Details",
+      icon: <Description />,
+      content: (
+        <>
+          {sectionHeader(<Description />, "Project Details")}
+          <Controller
+            name="brandName"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Brand Name"
+                fullWidth
+                sx={inputStyle}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleChange("brandName", e.target.value);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="projectTitle"
+            control={control}
+            rules={{ required: "Project title is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Project Title *"
+                fullWidth
+                inputRef={fieldRefs.projectTitle}
+                error={!!hookErrors.projectTitle}
+                helperText={hookErrors.projectTitle?.message}
+                sx={inputStyle}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleChange("projectTitle", e.target.value);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="businessDescription"
+            control={control}
+            rules={{ required: "Business description is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Business Description *"
+                multiline
+                rows={3}
+                fullWidth
+                inputRef={fieldRefs.businessDescription}
+                error={!!hookErrors.businessDescription}
+                helperText={hookErrors.businessDescription?.message}
+                sx={inputStyle}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleChange("businessDescription", e.target.value);
+                }}
+              />
+            )}
+          />
+          <Controller
+            name="proposedSolution"
+            control={control}
+            rules={{ required: "Proposed solution is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Proposed Solution *"
+                multiline
+                rows={3}
+                fullWidth
+                inputRef={fieldRefs.proposedSolution}
+                error={!!hookErrors.proposedSolution}
+                helperText={hookErrors.proposedSolution?.message}
+                sx={inputStyle}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleChange("proposedSolution", e.target.value);
+                }}
+              />
+            )}
+          />
+        </>
+      ),
+    },
+    {
+      label: "Costs",
+      icon: <AttachMoney />,
+      content: (
+        <>
+          {sectionHeader(<AttachMoney />, "Costs")}
+          {/* Currency Toggle - 5 Currencies */}
+          <Box sx={{ mb: 4, display: "flex", justifyContent: "start" }}>
+            <ToggleButtonGroup
+              value={selectedCurrency}
+              exclusive
+              onChange={handleCurrencyChange}
+              aria-label="currency selection"
+              size="small"
+              sx={{
+                gap: { xs: 0.5, sm: 1 },
+                flexWrap: "wrap",
+                "& .MuiToggleButton-root": {
+                  px: { xs: 1, sm: 2 },
+                  py: { xs: 0.3, sm: 0.5 },
+                  fontSize: { xs: "0.7rem", sm: "0.9rem" },
+                  fontWeight: 700,
+                  border: "2px solid",
+                  borderColor: colorScheme.primary,
+                  borderRadius: 3,
+                  minWidth: { xs: 60, sm: 90 },
+                  "&.Mui-selected": {
+                    background: colorScheme.gradient,
+                    color: "#fff",
+                    "&:hover": {
+                      background: colorScheme.hoverGradient,
+                    },
+                  },
+                  "&:hover": {
+                    background: `${colorScheme.primary}15`,
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="USD">
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>$</Typography>
+                  <Typography>USD</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="PKR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>₨</Typography>
+                  <Typography>PKR</Typography>
+                </Box>
+              </ToggleButton>
+              <ToggleButton value="GBP">
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>£</Typography>
+                  <Typography>GBP</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="EUR">
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>€</Typography>
+                  <Typography>EUR</Typography>
+                </Box>
+              </ToggleButton>
+
+              <ToggleButton value="AED">
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
+                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.3rem" }, fontWeight: 800 }}>
+                    د.إ
+                  </Typography>
+                  <Typography>AED</Typography>
+                </Box>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+          <TextField
+            label="Advance Percentage"
+            type="number"
+            fullWidth
+            value={formData.advancePercent}
+            onChange={(e) => {
+              // Only allow numbers
+              const numericValue = e.target.value.replace(/[^0-9]/g, "");
+              // Limit to 100
+              const limitedValue = numericValue
+                ? Math.min(parseInt(numericValue), 100).toString()
+                : "";
+
+              handleChange("advancePercent", limitedValue);
+
+              // Auto-calculate cost based on advance percentage
+              const advance = parseFloat(limitedValue) || 0;
+              if (baseCost) {
+                const base = parseFloat(baseCost) || 0;
+                const discounted = base * (1 - advance / 100);
+                handleChange("additionalCosts", Math.round(discounted).toString());
+              }
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Typography
+                    sx={{ fontWeight: 600, color: colorScheme.primary }}
+                  >
+                    %
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            placeholder="Enter percentage (e.g., 50)"
+            sx={inputStyle}
+          />
+          <TextField
+            label={`Cost (${selectedCurrency})`}
+            type="text"
+            fullWidth
+            value={formData.additionalCosts}
+            onChange={(e) => {
+              const numericValue = e.target.value.replace(/[^0-9]/g, "");
+              setBaseCost(numericValue); // Store original cost
+
+              const advance = parseFloat(formData.advancePercent) || 0;
+              const discounted = parseFloat(numericValue) * (1 - advance / 100);
+              handleChange("additionalCosts", Math.round(discounted || 0).toString());
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: "1.4rem",
+                      color: colorScheme.primary,
+                    }}
+                  >
+                    {selectedCurrency === "USD" && "$"}
+                    {selectedCurrency === "GBP" && "£"}
+                    {selectedCurrency === "EUR" && "€"}
+                    {selectedCurrency === "AED" && "د.إ"}
+                    {selectedCurrency === "PKR" && "₨"}
+                  </Typography>
+                </InputAdornment>
+              ),
+              endAdornment: formData.additionalCosts && (
+                <InputAdornment position="end">
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: colorScheme.primary,
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {formatNumberInWords(formData.additionalCosts, selectedCurrency)}
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            placeholder={`Enter amount in ${selectedCurrency}`}
+            sx={inputStyle}
+          />
+        </>
+      ),
+    },
+    {
+      label: "Additional Details",
+      icon: <Info />,
+      content: (
+        <>
+          {sectionHeader(<Info />, "Additional Details")}
+          <FormControl fullWidth error={!!hookErrors.callOutcome} sx={inputStyle}>
+            <InputLabel>Call Outcome *</InputLabel>
+            <Controller
+              name="callOutcome"
+              control={control}
+              rules={{ required: "Call outcome is required" }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  label="Call Outcome *"
+                  inputRef={fieldRefs.callOutcome}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleChange("callOutcome", e.target.value);
+                  }}
+                >
+                  <MenuItem value="Interested">Interested</MenuItem>
+                  <MenuItem value="No Fit">No Fit</MenuItem>
+                  <MenuItem value="Flaked">Flaked</MenuItem>
+                  <MenuItem value="Follow-up">Follow-up</MenuItem>
+                </Select>
+              )}
+            />
+            {hookErrors.callOutcome && (
+              <FormHelperText>{hookErrors.callOutcome?.message}</FormHelperText>
+            )}
+          </FormControl>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Date"
+              value={formData.date ? dayjs(formData.date) : dayjs()} // ✅ Convert string back to dayjs for display
+              onChange={(newValue) => {
+                // ✅ Convert dayjs to string before saving to form
+                const formattedDate = newValue
+                  ? newValue.format("YYYY-MM-DD")
+                  : "";
+                // onChange(formattedDate);
+                handleChange("date", formattedDate);
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  InputLabelProps: {
+                    shrink: true,
+                  },
+                  sx: {
+                    height: 56,
+                    width: "100%",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    background: "#141414",
+                    borderRadius: 2,
+                    mb: 2,
+                    "& .MuiInputBase-root": {
+                      height: 56,
+                    },
+                  },
+                },
+              }}
+            />
+          </LocalizationProvider>
+        </>
+      ),
+    },
+    {
+      label: "Review & Continue",
+      icon: <EditDocument />,
+      content: (
+        <Box sx={{ mx: { xs: -1, sm: 0 }, px: { xs: 0, sm: 0 } }}>
+          {sectionHeader(<EditDocument />, "Review & Continue")}
+          <Typography variant="h6" sx={{ color: "#f8fafc", mt: 2, mb: 1 }}>
+            You have reached the final step! Click below to save your changes and open the Proposal Studio to visually edit and generate your PDF.
+          </Typography>
+        </Box>
+      ),
+    },
+  ];
+
+  return (
+    <Box
+      component={motion.div}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      sx={{
+        bgcolor: "#0a0a0a",
+        minHeight: "100vh",
+        py: 6,
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      <Box sx={{ maxWidth: 1800, margin: "0 auto", px: { xs: 2, md: 4 } }}>
+        <Box
+          component={motion.div}
+          variants={headerVariants}
+          initial="hidden"
+          animate="visible"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 5,
+            px: { xs: 2, sm: 3 },
+            width: "100%",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          <Button
+            component={motion.button}
+            variants={secondaryButtonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            onClick={() => router.back()}
+            startIcon={<ArrowBackIos />}
+            sx={{
+              color: "#fff",
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.85rem",
+              mb: { xs: 2, sm: 0 },
+              background: "rgba(20, 20, 20, 0.8)",
+              border: "1px solid rgba(243, 168, 51, 0.2)",
+              px: 2,
+              py: 0.5,
+              borderRadius: 2,
+              "&:hover": {
+                  background: "rgba(243, 168, 51, 0.1)",
+                  border: "1px solid rgba(243, 168, 51, 0.4)",
+                  transform: "translateX(-4px)",
+              },
+              transition: "all 0.3s ease",
+            }}
+          >
+            Back
+          </Button>
+
+          <Typography
+            component={motion.div}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            variant="h4"
+            sx={{
+              textAlign: 'center',
+              fontWeight: 800,
+              fontSize: { xs: "1.8rem", sm: "2.2rem" },
+              background: colorScheme.gradient,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              letterSpacing: "-0.5px",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Edit Proposal
+          </Typography>
+
+          <Box sx={{ width: { xs: 100, sm: 120 }, height: 40 }} />
+        </Box>
+
+        {loading ? (
+          <Box
+            component={motion.div}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            sx={{ display: "flex", justifyContent: "center", my: 10 }}
+          >
+            <CircularProgress size={60} thickness={5} />
+          </Box>
+        ) : (
+          <>
+            <Stepper
+              component={motion.div}
+              variants={stepperVariants}
+              initial="hidden"
+              animate="visible"
+              activeStep={activeStep}
+              orientation="vertical"
+              sx={{
+                mb: 4,
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center"
+              }}
+            >
+              {steps.map((step, index) => (
+                <Step
+                  component={motion.div}
+                  variants={stepVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.08 }}
+                  key={step.label}
+                  sx={{
+                    mb: 3,
+                    width: "100%",
+                    minWidth: "300px",
+                  }}
+                >
+                  <StepLabel
+                    onClick={() =>
+                      isStepAccessible(index) && handleStepClick(index)
+                    }
+                    sx={{
+                      cursor: "pointer",
+                      "& .MuiStepLabel-label": {
+                        fontSize: "1.1rem",
+                        fontWeight: 600,
+                        color:
+                          activeStep === index
+                            ? colorScheme.primary
+                            : "text.secondary",
+                      },
+                    }}
+                    icon={
+                      <Box
+                        component={motion.div}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        animate={{
+                          scale:
+                            activeStep === index
+                              ? 1.05
+                              : activeStep > index
+                              ? 1
+                              : 0.95,
+                        }}
+                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background:
+                            activeStep >= index
+                              ? colorScheme.gradient
+                              : "#e0e0e0",
+                          color: activeStep >= index ? "#fff" : "#999",
+                        }}
+                      >
+                        {activeStep > index ? <CheckCircle /> : step.icon}
+                      </Box>
+                    }
+                  >
+                    {step.label}
+                  </StepLabel>
+                  <StepContent>
+                    <Card
+                      component={motion.div}
+                      layout
+                      variants={stepCardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      sx={cardStyle}
+                    >
+                      <CardContent>{step.content}</CardContent>
+                      <Box
+                        sx={{
+                          mt: 3,
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Button
+                          component={motion.button}
+                          variants={secondaryButtonVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                          disabled={activeStep === 0}
+                          onClick={handleBack}
+                          startIcon={<ArrowBack />}
+                          variant="outlined"
+                          sx={{ borderRadius: 10 }}
+                        >
+                          Back
+                        </Button>
+                        {index < steps.length - 1 && (
+                          <Button
+                            component={motion.button}
+                            variants={primaryButtonVariants}
+                            whileHover="hover"
+                            whileTap="tap"
+                            onClick={handleNext}
+                            endIcon={<ArrowForward />}
+                            variant="contained"
+                            sx={{
+                              background: colorScheme.gradient,
+                              borderRadius: 10,
+                            }}
+                          >
+                            Next
+                          </Button>
+                        )}
+                      </Box>
+                    </Card>
+                  </StepContent>
+                </Step>
+              ))}
+            </Stepper>
+            
+
+
+
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+              sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 4, px: { xs: 2, sm: 0 } }}
+            >
+              <Button
+                component={motion.button}
+                variants={primaryButtonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                variant="contained"
+                size="large"
+                startIcon={<Save />}
+                onClick={handleSubmit}
+                disabled={loading}
+                sx={{
+                  px: { xs: 3, sm: 6 },
+                  py: { xs: 1.5, sm: 2 },
+                  borderRadius: 4,
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                  fontWeight: 700,
+                  boxShadow: 6,
+                  background: colorScheme.gradient,
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: "300px", sm: "none" },
+                  "&:hover": { background: colorScheme.hoverGradient },
+                }}
+              >
+                {loading ? "Saving & Redirecting..." : "Save & Continue to Studio"}
+              </Button>
+            </Box>
+          </>
+        )}
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+export default EditProposal;
