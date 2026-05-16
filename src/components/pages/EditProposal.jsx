@@ -25,6 +25,8 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   InputAdornment,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 import {
@@ -158,6 +160,7 @@ const EditProposal = () => {
     selectedCurrency: "",
   });
   const [baseCost, setBaseCost] = useState("");
+  const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -782,21 +785,21 @@ const EditProposal = () => {
             fullWidth
             value={formData.advancePercent}
             onChange={(e) => {
-              // Only allow numbers
               const numericValue = e.target.value.replace(/[^0-9]/g, "");
-              // Limit to 100
               const limitedValue = numericValue
                 ? Math.min(parseInt(numericValue), 100).toString()
                 : "";
 
               handleChange("advancePercent", limitedValue);
 
-              // Auto-calculate cost based on advance percentage
-              const advance = parseFloat(limitedValue) || 0;
-              if (baseCost) {
-                const base = parseFloat(baseCost) || 0;
-                const discounted = base * (1 - advance / 100);
-                handleChange("additionalCosts", Math.round(discounted).toString());
+              // Only auto-calculate cost if toggle is ON
+              if (autoApplyAdvance) {
+                const advance = parseFloat(limitedValue) || 0;
+                if (baseCost) {
+                  const base = parseFloat(baseCost) || 0;
+                  const discounted = base * (1 - advance / 100);
+                  handleChange("additionalCosts", Math.round(discounted).toString());
+                }
               }
             }}
             InputProps={{
@@ -813,6 +816,60 @@ const EditProposal = () => {
             placeholder="Enter percentage (e.g., 50)"
             sx={inputStyle}
           />
+
+          {/* Auto-Cut Toggle */}
+          <Box
+            onClick={() => {
+              const newValue = !autoApplyAdvance;
+              setAutoApplyAdvance(newValue);
+              
+              if (newValue && baseCost) {
+                const advance = parseFloat(formData.advancePercent) || 0;
+                const discounted = parseFloat(baseCost) * (1 - advance / 100);
+                handleChange("additionalCosts", Math.round(discounted || 0).toString());
+              } else if (!newValue && baseCost) {
+                handleChange("additionalCosts", baseCost.toString());
+              }
+            }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              bgcolor: autoApplyAdvance ? "rgba(243,168,51,0.08)" : "#141414",
+              border: `2px solid ${autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.15)"}`,
+              borderRadius: 2,
+              px: 2,
+              py: 1.5,
+              mb: 2,
+              mt: 1,
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              "&:hover": { borderColor: colorScheme.primary, bgcolor: "rgba(243,168,51,0.05)" },
+            }}
+          >
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: autoApplyAdvance ? colorScheme.primary : "#f8fafc" }}>
+                Auto-Deduct Advance from Cost
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mt: 0.3 }}>
+                {autoApplyAdvance ? "Cost will be automatically reduced by advance %" : "Advance % is saved separately — cost unchanged"}
+              </Typography>
+            </Box>
+            <Box sx={{
+              width: 44, height: 24, borderRadius: 12, position: "relative",
+              bgcolor: autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.2)",
+              transition: "background-color 0.3s ease", flexShrink: 0, ml: 2,
+            }}>
+              <Box sx={{
+                width: 18, height: 18, borderRadius: "50%", bgcolor: "#fff",
+                position: "absolute", top: 3,
+                left: autoApplyAdvance ? 23 : 3,
+                transition: "left 0.3s ease",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+              }} />
+            </Box>
+          </Box>
+
           <TextField
             label={`Cost (${selectedCurrency})`}
             type="text"
@@ -820,11 +877,15 @@ const EditProposal = () => {
             value={formData.additionalCosts}
             onChange={(e) => {
               const numericValue = e.target.value.replace(/[^0-9]/g, "");
-              setBaseCost(numericValue); // Store original cost
+              setBaseCost(numericValue);
 
-              const advance = parseFloat(formData.advancePercent) || 0;
-              const discounted = parseFloat(numericValue) * (1 - advance / 100);
-              handleChange("additionalCosts", Math.round(discounted || 0).toString());
+              if (autoApplyAdvance) {
+                const advance = parseFloat(formData.advancePercent) || 0;
+                const discounted = parseFloat(numericValue) * (1 - advance / 100);
+                handleChange("additionalCosts", Math.round(discounted || 0).toString());
+              } else {
+                handleChange("additionalCosts", numericValue);
+              }
             }}
             InputProps={{
               startAdornment: (

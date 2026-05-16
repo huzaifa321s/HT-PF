@@ -42,10 +42,15 @@ export default function ProposalStudio() {
         const res = await axiosInstance.get(`/api/proposals/get-single-proposal/${id}`);
         const data = res.data.data;
         setFormData(data);
-        // Seed the Redux proposal slice with fetched clientName & date
-        // so VisualCoverEditor shows correct initial values
+        // Seed the Redux proposal slice with fetched data
+        // so visual editors and the drawer show correct initial values
         if (data?.clientName) dispatch(updateField({ field: "clientName", value: data.clientName }));
         if (data?.date) dispatch(updateField({ field: "date", value: data.date }));
+        if (data?.additionalCosts) dispatch(updateField({ field: "additionalCosts", value: data.additionalCosts }));
+        if (data?.chargeAmount) dispatch(updateField({ field: "chargeAmount", value: data.chargeAmount }));
+        if (data?.advancePercent != null) dispatch(updateField({ field: "advancePercent", value: data.advancePercent }));
+        if (data?.selectedCurrency) dispatch(updateField({ field: "selectedCurrency", value: data.selectedCurrency }));
+        if (data?.brandName) dispatch(updateField({ field: "brandName", value: data.brandName }));
       } catch (err) {
         console.error("Error fetching proposal:", err);
       } finally {
@@ -64,34 +69,96 @@ export default function ProposalStudio() {
       const liveClientName = reduxProposal?.clientName || formData?.clientName || "Client";
       const liveDate = reduxProposal?.date || formData?.date || "";
 
-      // 1. Prepare UI for Capture
+      // 1. Prepare UI for Capture — remove studio decorations & gaps
       setIsStudioMode(false);
       setZoomLevel(100);
 
-      // Wait a moment for React to re-render without studio UI
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for React to re-render without studio UI (gap becomes 0)
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      const element = document.getElementById("pdf-export-container");
-      if (!element) throw new Error("Could not find the PDF container");
+      // Scroll the canvas area to top so html2canvas sees everything
+      const canvasArea = document.getElementById("canvas-area");
+      if (canvasArea) canvasArea.scrollTop = 0;
+      window.scrollTo(0, 0);
 
-      // 2. Generate PDF using html2pdf
-      const html2pdf = (await import("html2pdf.js")).default;
-      
-      const opt = {
-        margin:       0,
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'pt', format: [595, 841.18125], orientation: 'portrait' }
-      };
+      const container = document.getElementById("pdf-export-container");
+      if (!container) throw new Error("Could not find the PDF container");
 
-      const worker = html2pdf().set(opt).from(element);
-      
-      // Get the Blob for uploading to backend
-      const blob = await worker.toPdf().outputPdf('blob');
+      // 2. Capture the entire container as one big canvas (using html2canvas-pro for better rendering)
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const { jsPDF } = await import("jspdf");
 
-      // Trigger user download
-      worker.save();
+      // Each visual page is 800px wide × 1131px tall, gap is 0 in non-studio mode
+      const PAGE_PX_HEIGHT = 1131;
+      const PAGE_PX_WIDTH = 800;
+
+      // Force container to exact page width during capture (prevents flex expansion)
+      const origWidth = container.style.width;
+      const origMaxWidth = container.style.maxWidth;
+      container.style.width = `${PAGE_PX_WIDTH}px`;
+      container.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+
+      // Small wait for reflow
+      await new Promise(r => setTimeout(r, 100));
+
+      const fullCanvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: null,
+        width: PAGE_PX_WIDTH,
+        height: container.scrollHeight,
+        windowWidth: PAGE_PX_WIDTH,
+        windowHeight: container.scrollHeight,
+      });
+
+      // Restore original styles
+      container.style.width = origWidth;
+      container.style.maxWidth = origMaxWidth;
+
+      // 3. Slice canvas into exact A4 pages
+      const SCALE = 2; // matches html2canvas scale
+      const pageCanvasHeight = PAGE_PX_HEIGHT * SCALE;
+      const pageCanvasWidth = PAGE_PX_WIDTH * SCALE;
+      const totalPages = Math.max(1, Math.round(fullCanvas.height / pageCanvasHeight));
+
+      // A4 dimensions in points
+      const PDF_W = 595.28;
+      const PDF_H = 841.89;
+
+      const pdfDoc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+
+      for (let i = 0; i < totalPages; i++) {
+        const sliceY = i * pageCanvasHeight;
+        const sliceHeight = Math.min(pageCanvasHeight, fullCanvas.height - sliceY);
+        if (sliceHeight <= 0) break;
+
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = pageCanvasWidth;
+        pageCanvas.height = sliceHeight;
+
+        const ctx = pageCanvas.getContext("2d");
+        ctx.drawImage(
+          fullCanvas,
+          0, sliceY,                        // source x, y
+          pageCanvasWidth, sliceHeight,      // source width, height (crop to exact page width)
+          0, 0,                              // dest x, y
+          pageCanvasWidth, sliceHeight       // dest width, height
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const imgH = (sliceHeight / pageCanvasWidth) * PDF_W;
+
+        if (i > 0) pdfDoc.addPage();
+        pdfDoc.addImage(imgData, "JPEG", 0, 0, PDF_W, Math.min(imgH, PDF_H));
+      }
+
+      // Get blob for upload and trigger download
+      const blob = pdfDoc.output("blob");
+      pdfDoc.save(fileName);
 
       // 3. Upload to server
       const formDataUpload = new FormData();
@@ -352,7 +419,7 @@ export default function ProposalStudio() {
                     Total Cost
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700, color: "#10b981", mt: 0.5 }}>
-                    {formData?.additionalCosts || reduxProposal?.additionalCosts || formData?.chargeAmount || reduxProposal?.chargeAmount || "—"}
+                    {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) === "USD" ? "$" : "₨ "}{formData?.additionalCosts || formData?.chargeAmount || reduxProposal?.additionalCosts || reduxProposal?.chargeAmount || "—"}
                   </Typography>
                 </Box>
                 {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) && (
@@ -363,8 +430,8 @@ export default function ProposalStudio() {
 
             {/* Advance Payment */}
             {(() => {
-              const advPct = parseFloat(reduxProposal?.advancePercent || formData?.advancePercent || 0);
-              const rawTotal = reduxProposal?.additionalCosts || formData?.additionalCosts || reduxProposal?.chargeAmount || formData?.chargeAmount || "";
+              const advPct = parseFloat(formData?.advancePercent || reduxProposal?.advancePercent || 0);
+              const rawTotal = formData?.additionalCosts || formData?.chargeAmount || reduxProposal?.additionalCosts || reduxProposal?.chargeAmount || "";
               const numericTotal = parseFloat(String(rawTotal).replace(/[^0-9.]/g, "")) || 0;
               const advanceCost = numericTotal > 0 && advPct > 0 ? Math.round(numericTotal * advPct / 100) : null;
               const currency = formData?.selectedCurrency === "USD" ? "$" : "PKR ";

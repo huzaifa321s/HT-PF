@@ -100,6 +100,7 @@ const ProposalFormWithStepper = ({
   const [activeStep, setActiveStep] = useState(0);
   const [creds, setCreds] = useState({ yourName: "", yourEmail: "" });
   const [baseCost, setBaseCost] = useState(watch("additionalCosts") || "");
+  const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const existingProposalRef = useRef({ id: null, owner: null }); // Backup ref to survive React 18 strict mode state-loss
@@ -819,6 +820,7 @@ const ProposalFormWithStepper = ({
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
+
           {/* Advance Percentage */}
           <Box component={motion.div} variants={fieldVariants}>
             <Controller
@@ -840,12 +842,14 @@ const ProposalFormWithStepper = ({
                       : "";
                     onChange(limitedValue);
 
-                    // Auto-calculate cost based on advance percentage
-                    const advance = parseFloat(limitedValue) || 0;
-                    if (baseCost) {
-                      const base = parseFloat(baseCost) || 0;
-                      const discounted = base * (1 - advance / 100);
-                      setValue("additionalCosts", Math.round(discounted).toString());
+                    // Auto-calculate cost based on advance percentage if toggle is ON
+                    if (autoApplyAdvance) {
+                      const advance = parseFloat(limitedValue) || 0;
+                      if (baseCost) {
+                        const base = parseFloat(baseCost) || 0;
+                        const discounted = base * (1 - advance / 100);
+                        setValue("additionalCosts", Math.round(discounted).toString());
+                      }
                     }
                   }}
                   InputProps={{
@@ -866,6 +870,62 @@ const ProposalFormWithStepper = ({
             />
           </Box>
 
+          {/* Auto-Cut Toggle */}
+          <Box>
+            <Box
+              onClick={() => {
+                const newValue = !autoApplyAdvance;
+                setAutoApplyAdvance(newValue);
+                
+                // Recalculate instantly on toggle
+                if (newValue && baseCost) {
+                  const advance = parseFloat(watch("advancePercent")) || 0;
+                  const discounted = parseFloat(baseCost) * (1 - advance / 100);
+                  setValue("additionalCosts", Math.round(discounted || 0).toString());
+                } else if (!newValue && baseCost) {
+                  setValue("additionalCosts", baseCost.toString());
+                }
+              }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                bgcolor: autoApplyAdvance ? "rgba(243,168,51,0.08)" : "#141414",
+                border: `2px solid ${autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.15)"}`,
+                borderRadius: 2,
+                px: 2,
+                py: 1.5,
+                mb: 2,
+                mt: 1,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                "&:hover": { borderColor: colorScheme.primary, bgcolor: "rgba(243,168,51,0.05)" },
+              }}
+            >
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: autoApplyAdvance ? colorScheme.primary : "#f8fafc" }}>
+                  Auto-Deduct Advance from Cost
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mt: 0.3 }}>
+                  {autoApplyAdvance ? "Cost will be automatically reduced by advance %" : "Advance % is saved separately — cost unchanged"}
+                </Typography>
+              </Box>
+              <Box sx={{
+                width: 44, height: 24, borderRadius: 12, position: "relative",
+                bgcolor: autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.2)",
+                transition: "background-color 0.3s ease", flexShrink: 0, ml: 2,
+              }}>
+                <Box sx={{
+                  width: 18, height: 18, borderRadius: "50%", bgcolor: "#fff",
+                  position: "absolute", top: 3,
+                  left: autoApplyAdvance ? 23 : 3,
+                  transition: "left 0.3s ease",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                }} />
+              </Box>
+            </Box>
+          </Box>
+
           {/* Additional Costs with Currency Symbol and Formatting */}
           <Box component={motion.div} variants={fieldVariants}>
             <Controller
@@ -882,9 +942,13 @@ const ProposalFormWithStepper = ({
                     const numericValue = e.target.value.replace(/[^0-9]/g, "");
                     setBaseCost(numericValue); // Store original cost
 
-                    const advance = parseFloat(watch("advancePercent")) || 0;
-                    const discounted = parseFloat(numericValue) * (1 - advance / 100);
-                    onChange(Math.round(discounted || 0).toString());
+                    if (autoApplyAdvance) {
+                      const advance = parseFloat(watch("advancePercent")) || 0;
+                      const discounted = parseFloat(numericValue) * (1 - advance / 100);
+                      onChange(Math.round(discounted || 0).toString());
+                    } else {
+                      onChange(numericValue);
+                    }
                   }}
                   InputProps={{
                     startAdornment: (

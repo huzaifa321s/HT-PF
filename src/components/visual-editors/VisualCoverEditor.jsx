@@ -118,14 +118,26 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         height: "1131px",
         margin: "0 auto",
         backgroundColor: "#1a1a1a",
-        backgroundImage: "url('/newBg.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
         overflow: "hidden",
         fontFamily: "'Oswald', 'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}
     >
+      {/* Background Image — use <img> instead of CSS backgroundImage for reliable html2canvas rendering */}
+      <img
+        src="/newBg.png"
+        alt=""
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+          zIndex: 0,
+        }}
+      />
       {/* Visual Indicator of Edit Mode */}
       {isStudioMode && (
         <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
@@ -137,7 +149,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       )}
 
       {/* Top Left Logo Area (HT Logo) */}
-      <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px" }}>
+      <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 1 }}>
         <img src="/download.jpg" alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
         <Box>
           <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
@@ -146,7 +158,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       </Box>
 
       {/* Main Content Area */}
-      <Box sx={{ position: "absolute", top: "470px", left: "67px", right: "27px" }}>
+      <Box sx={{ position: "absolute", top: "470px", left: "67px", right: "27px", zIndex: 1 }}>
 
         {/* Brand Name + Decorative Line */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 0 }}>

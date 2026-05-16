@@ -311,7 +311,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.4 }}
-                      className="w-full flex justify-center relative group"
+                      className="w-full flex justify-center relative group pdf-page-container"
+                      style={{ pageBreakInside: "avoid", pageBreakAfter: "auto" }}
                     >
                     {/* Page Number / Label */}
                     <div className="absolute -left-12 top-0 bottom-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

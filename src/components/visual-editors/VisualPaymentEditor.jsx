@@ -65,7 +65,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, onPageCountChange, pageIdPre
   }, [pages.length, onPageCountChange]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "20px", alignItems: "center" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: isStudioMode ? "20px" : "0px", alignItems: "center" }}>
       {pages.map((pageTerms, pageIdx) => {
         const isFirstPage = pageIdx === 0;
 
