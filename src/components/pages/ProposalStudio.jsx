@@ -370,11 +370,11 @@ export default function ProposalStudio() {
                 Brand / Project
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                {page1?.brandName || formData?.projectTitle || "Untitled Project"}
+                {page1?.brandName !== "Brand Name" && page1?.brandName ? page1.brandName : (formData?.brandName || formData?.projectTitle || "Untitled Project")}
               </Typography>
-              {page1?.brandTagline && (
+              {(page1?.brandTagline !== "Crafting Legacies That Last" && page1?.brandTagline ? page1.brandTagline : formData?.brandTagline) && (
                 <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5, fontStyle: "italic" }}>
-                  "{page1.brandTagline}"
+                  "{page1?.brandTagline !== "Crafting Legacies That Last" && page1?.brandTagline ? page1.brandTagline : formData?.brandTagline}"
                 </Typography>
               )}
             </Box>
@@ -412,69 +412,70 @@ export default function ProposalStudio() {
             ) : null}
 
             {/* Total Cost */}
-            {(formData?.additionalCosts || reduxProposal?.additionalCosts || formData?.chargeAmount || reduxProposal?.chargeAmount) ? (
-              <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Box>
-                  <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                    Total Cost
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#10b981", mt: 0.5 }}>
-                    {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) === "USD" ? "$" : "₨ "}{formData?.additionalCosts || formData?.chargeAmount || reduxProposal?.additionalCosts || reduxProposal?.chargeAmount || "—"}
-                  </Typography>
-                </Box>
-                {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) && (
-                  <Chip size="small" label={formData?.selectedCurrency || reduxProposal?.selectedCurrency} sx={{ bgcolor: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontWeight: "bold" }} />
-                )}
-              </Box>
-            ) : null}
-
-            {/* Advance Payment */}
             {(() => {
-              const advPct = parseFloat(formData?.advancePercent || reduxProposal?.advancePercent || 0);
-              const rawTotal = formData?.additionalCosts || formData?.chargeAmount || reduxProposal?.additionalCosts || reduxProposal?.chargeAmount || "";
-              const numericTotal = parseFloat(String(rawTotal).replace(/[^0-9.]/g, "")) || 0;
-              const advanceCost = numericTotal > 0 && advPct > 0 ? Math.round(numericTotal * advPct / 100) : null;
-              const currency = formData?.selectedCurrency === "USD" ? "$" : "PKR ";
-              if (!advPct) return null;
+              // Calculate dynamic total from gridPackages if they exist
+              let dynamicTotal = 0;
+              if (pricingPage?.gridPackages?.length > 0) {
+                pricingPage.gridPackages.forEach(pkg => {
+                   const cost = parseFloat(String(pkg.price).replace(/[^0-9.]/g, ""));
+                   if (!isNaN(cost)) dynamicTotal += cost;
+                });
+              }
+              
+              // Respect true value from the database ONLY
+              let rawTotal = "";
+              if (dynamicTotal > 0) {
+                rawTotal = dynamicTotal;
+              } else if (formData?.additionalCosts !== undefined && formData?.additionalCosts !== null && formData?.additionalCosts !== "") {
+                rawTotal = formData.additionalCosts;
+              } else if (formData?.chargeAmount !== undefined && formData?.chargeAmount !== null && formData?.chargeAmount !== "") {
+                rawTotal = formData.chargeAmount;
+              }
+              
+              if (rawTotal === "" || rawTotal === null) return null;
+              
               return (
-                <>
-                  <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(243,168,51,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                        Advance Payment
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: "#f3a833", mt: 0.5 }}>
-                        {advPct}%
-                      </Typography>
-                    </Box>
-                    <Chip
-                      size="small"
-                      label="Upfront"
-                      sx={{ bgcolor: "rgba(243,168,51,0.12)", color: "#f3a833", border: "1px solid rgba(243,168,51,0.3)", fontWeight: 700 }}
-                    />
+                <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
+                      Total Cost
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#10b981", mt: 0.5 }}>
+                      {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) === "USD" ? "$" : "₨ "}{rawTotal.toLocaleString ? rawTotal.toLocaleString() : rawTotal}
+                    </Typography>
                   </Box>
-
-                  {advanceCost !== null && (
-                    <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(243,168,51,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                          Advance Cost ({advPct}%)
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: "#f3a833", mt: 0.5 }}>
-                          {currency}{advanceCost.toLocaleString()}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#64748b" }}>
-                          Remaining: {currency}{(numericTotal - advanceCost).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        size="small"
-                        label={`${100 - advPct}% on delivery`}
-                        sx={{ bgcolor: "rgba(100,116,139,0.15)", color: "#94a3b8", border: "1px solid rgba(100,116,139,0.2)", fontSize: 10, fontWeight: 600 }}
-                      />
-                    </Box>
+                  {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) && (
+                    <Chip size="small" label={formData?.selectedCurrency || reduxProposal?.selectedCurrency} sx={{ bgcolor: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontWeight: "bold" }} />
                   )}
-                </>
+                </Box>
+              );
+            })()}
+
+            {/* Advance Percentage */}
+            {(() => {
+              let advPct = 0;
+              if (formData?.advancePercent !== undefined && formData?.advancePercent !== null && formData?.advancePercent !== "") {
+                advPct = parseFloat(formData.advancePercent);
+              }
+              
+              if (isNaN(advPct)) advPct = 0;
+              
+              return (
+                <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(243,168,51,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
+                      Advance Payment
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#f3a833", mt: 0.5 }}>
+                      {advPct}%
+                    </Typography>
+                  </Box>
+                  <Chip
+                    size="small"
+                    label="Upfront"
+                    sx={{ bgcolor: "rgba(243,168,51,0.12)", color: "#f3a833", border: "1px solid rgba(243,168,51,0.3)", fontWeight: 700 }}
+                  />
+                </Box>
               );
             })()}
 

@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#000",
+    color: "#1a1a1a",
     marginTop: 12,
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: "left",
   },
 
@@ -133,14 +133,15 @@ const styles = StyleSheet.create({
     textAlign: "start",
   },
   sectionHeading: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#000",
-    marginTop: 25,
-    marginBottom: 15,
-    textAlign: "center",
-    textTransform: "uppercase",
-    paddingBottom: 5,
+    marginTop: 28,
+    marginBottom: 12,
+    textAlign: "left",
+    paddingBottom: 6,
+    borderBottomWidth: 1.5,
+    borderBottomColor: "#000",
   },
   labelContainer: {
     position: "absolute",
@@ -197,18 +198,17 @@ const PdfPageDocument2 = ({
 
     if (sec.type === "heading") {
       return (
-        <View key={key} style={{ marginBottom: 20, marginTop: 10 }}>
+        <View key={key} style={{ marginBottom: 18, marginTop: 8 }}>
           <Text style={styles.sectionHeading}>{sec.title}</Text>
-          {sec.content && <RichTextRenderer html={sec.content} />}
         </View>
       );
     }
 
     return (
-      <View key={key} style={{ marginBottom: 10 }}>
+      <View key={key} style={{ marginBottom: 14 }}>
         {sec.title && <Text style={styles.sectionTitle}>{sec.title}</Text>}
-        <RichTextRenderer html={sec.content} />
-        {(!isLast || tableLength > 0) && <View style={styles.divider} />}
+        {sec.content?.trim() && <RichTextRenderer html={sec.content} />}
+        {!isLast && <View style={[styles.divider, { marginTop: 16, marginBottom: 0 }]} />}
       </View>
     );
   };

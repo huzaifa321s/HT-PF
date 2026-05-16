@@ -26,8 +26,6 @@ export default function ProposalFormPage() {
     clientName: "",
     clientEmail: "",
     projectTitle: "React-Based E-Commerce Website",
-    businessDescription: "",
-    proposedSolution: "",
     developmentPlatforms: [],
     projectDuration: "6 weeks",
     chargeAmount: "800",
@@ -116,8 +114,6 @@ export default function ProposalFormPage() {
       if (event === "complete") {
         setFormData((prev) => ({
           ...prev,
-          businessDescription: data.data.extracted.business_details,
-          proposedSolution: data.data.extracted.proposed_solution,
           recommended_services: data.data.extracted.recommended_services,
           projectBrief: data.data.extracted.project_brief,
           brandName: data.data.extracted.brand_name,

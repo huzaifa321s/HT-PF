@@ -62,29 +62,9 @@ const ProposalPDFDocument = ({ formData, pages = [], selectedFont = "Poppins", s
               <Text>Status: {formData.callOutcome || "Pending"}</Text>
             </View>
 
-            {/* BUSINESS OVERVIEW */}
-            <View style={styles.section}>
-              <Text style={styles.heading}>1. Business Overview</Text>
-              <Text style={styles.bodyText}>
-                {formData.businessDescription ||
-                  "This proposal outlines the project objectives, goals, and how our team aims to deliver measurable success for your business."}
-              </Text>
-              <View style={styles.divider} />
-            </View>
-
-            {/* PROPOSED SOLUTION */}
-            <View style={styles.section}>
-              <Text style={styles.heading}>2. Proposed Solution</Text>
-              <Text style={styles.bodyText}>
-                {formData.proposedSolution ||
-                  "We will design, develop, and deploy a complete solution that aligns with your business goals using the selected platforms."}
-              </Text>
-              <View style={styles.divider} />
-            </View>
-
             {/* DEVELOPMENT PLATFORMS */}
             <View style={styles.section}>
-              <Text style={styles.heading}>3. Development Platforms</Text>
+              <Text style={styles.heading}>1. Development Platforms</Text>
               <View style={styles.chipContainer}>
                 {formData.developmentPlatforms?.length > 0 ? (
                   formData.developmentPlatforms.map((p, i) => (
@@ -101,7 +81,7 @@ const ProposalPDFDocument = ({ formData, pages = [], selectedFont = "Poppins", s
 
             {/* TIMELINE / MILESTONES */}
             <View style={styles.section}>
-              <Text style={styles.heading}>4. Project Timeline / Milestones</Text>
+              <Text style={styles.heading}>2. Project Timeline / Milestones</Text>
               <Text style={styles.bodyText}>
                 {formData.timelineMilestones ||
                   "The project is expected to be completed within 4–6 weeks with multiple review checkpoints."}
@@ -111,7 +91,7 @@ const ProposalPDFDocument = ({ formData, pages = [], selectedFont = "Poppins", s
 
             {/* FINANCIALS */}
             <View style={styles.section}>
-              <Text style={styles.heading}>5. Financial Summary</Text>
+              <Text style={styles.heading}>3. Financial Summary</Text>
               <View style={styles.tableRow}>
                 <Text>Total Project Cost:</Text>
                 <Text>${formData.chargeAmount || "0"}</Text>
@@ -129,7 +109,7 @@ const ProposalPDFDocument = ({ formData, pages = [], selectedFont = "Poppins", s
 
             {/* TERMS */}
             <View style={styles.section}>
-              <Text style={styles.heading}>6. Terms & Conditions</Text>
+              <Text style={styles.heading}>4. Terms & Conditions</Text>
               <Text style={styles.bodyText}>
                 {formData.terms ||
                   "50% advance payment is required to initiate the project. The remaining amount will be paid upon completion and client approval. Any extra features will be quoted separately."}
@@ -139,7 +119,7 @@ const ProposalPDFDocument = ({ formData, pages = [], selectedFont = "Poppins", s
 
             {/* CONTACT */}
             <View style={styles.section}>
-              <Text style={styles.heading}>7. Contact Information</Text>
+              <Text style={styles.heading}>5. Contact Information</Text>
               <Text>
                 Prepared By: {formData.yourName || "-"} | {formData.yourEmail || "—"} | {formData.yourPhone || "—"}
               </Text>

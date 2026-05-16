@@ -53,6 +53,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
+import { replacePage2Content } from "../../utils/page2Slice";
+import { showToast } from "../../utils/toastSlice";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
@@ -122,6 +124,7 @@ const getEmailErrorMessage = (email) => {
 const EditProposal = () => {
   const { id } = useParams();
   const router = useRouter();
+  const dispatch = useDispatch();
   const { reset, control, trigger, formState: { errors: hookErrors } } = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -130,6 +133,7 @@ const EditProposal = () => {
 
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -149,8 +153,6 @@ const EditProposal = () => {
     clientEmail: "",
     brandName: "",
     projectTitle: "",
-    businessDescription: "",
-    proposedSolution: "",
     advancePercent: "",
     additionalCosts: "",
     callOutcome: "",
@@ -158,11 +160,16 @@ const EditProposal = () => {
     yourEmail: "your@email.com",
     date: new Date().toISOString().split("T")[0],
     selectedCurrency: "",
+    projectCategory: "",
+    customProjectCategory: "",
+    projectBrief: "",
   });
   const [baseCost, setBaseCost] = useState("");
   const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
+  const [existingProposalsCount, setExistingProposalsCount] = useState(0); // Added for multiple proposals limit
+  const [limitExceeded, setLimitExceeded] = useState(false); // Added for multiple proposals limit
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
   const formDataToSave = {
@@ -170,13 +177,24 @@ const EditProposal = () => {
     clientEmail: formData.clientEmail,
     brandName: formData.brandName,
     projectTitle: formData.projectTitle,
-    businessDescription: formData.businessDescription,
-    proposedSolution: formData.proposedSolution,
+    projectCategory: formData.projectCategory === "Other" && formData.customProjectCategory ? formData.customProjectCategory : formData.projectCategory,
     advancePercent: formData.advancePercent,
     additionalCosts: formData.additionalCosts,
     callOutcome: formData.callOutcome,
     date: formData.date,
   };
+
+  const PREDEFINED_CATEGORIES = [
+    "Fashion & Apparel",
+    "E-commerce & Retail",
+    "Technology & SaaS",
+    "Real Estate",
+    "Health & Wellness",
+    "Food & Beverage",
+    "Agency & Portfolio",
+    "Education",
+    "Other"
+  ];
 
   // Fetch proposal on mount
   useEffect(() => {
@@ -195,8 +213,6 @@ const EditProposal = () => {
           clientEmail: data.clientEmail || "",
           brandName: data.brandName || "",
           projectTitle: data.projectTitle || "",
-          businessDescription: data.businessDescription || "",
-          proposedSolution: data.proposedSolution || "",
           advancePercent: data.advancePercent || "",
           additionalCosts: data.additionalCosts || "",
           callOutcome: data.callOutcome || "",
@@ -207,6 +223,8 @@ const EditProposal = () => {
           yourEmail: "your@email.com",
           pdfPages: data.pdfPages,
           selectedCurrency: data.selectedCurrency,
+          projectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? (data.projectCategory || "") : "Other",
+          customProjectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? "" : data.projectCategory,
         };
         setSelectedCurrency(data.selectedCurrency);
         setFormData(updatedData);
@@ -329,16 +347,13 @@ const EditProposal = () => {
     clientName: useRef(null),
     clientEmail: useRef(null),
     projectTitle: useRef(null),
-    businessDescription: useRef(null),
-    proposedSolution: useRef(null),
-    callOutcome: useRef(null),
   };
 
   const stepFields = {
     0: ["clientName", "clientEmail"], // Added clientEmail as required
-    1: ["projectTitle", "businessDescription", "proposedSolution"],
+    1: ["projectTitle"],
     2: [],
-    3: ["callOutcome"],
+    3: [],
   };
 
   const sectionHeader = (icon, title) => (
@@ -441,9 +456,45 @@ const EditProposal = () => {
     return true;
   };
 
-  const handleNext = async () => {
+  const handleNext = async (targetStep = null) => {
     const isValid = await validateStep();
-    if (isValid) setActiveStep((prev) => prev + 1);
+    if (isValid) {
+      if (targetStep !== null && typeof targetStep === "number") {
+        setActiveStep(targetStep);
+      } else {
+        setActiveStep((prev) => prev + 1);
+      }
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    const brief = formData.projectBrief;
+    if (!brief || brief.trim() === "") {
+      dispatch(showToast({ message: "Please enter a Project Brief first.", type: "error" }));
+      return;
+    }
+    
+    setIsGeneratingAI(true);
+    try {
+      const response = await axiosInstance.post('api/ai/generate-proposal', {
+        projectBrief: brief,
+        companyName: "Humantek"
+      });
+
+      const data = response.data;
+      if (data && data.sections && data.tables) {
+        dispatch(replacePage2Content(data));
+        dispatch(showToast({ message: "Proposal content generated successfully!", type: "success" }));
+        setActiveStep(2); // Automatically jump to the Additional Details step to review
+      } else {
+        throw new Error("Invalid format received from AI.");
+      }
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      dispatch(showToast({ message: "Failed to generate proposal using AI.", type: "error" }));
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   const handleBack = () => setActiveStep((prev) => prev - 1);
@@ -455,7 +506,7 @@ const EditProposal = () => {
       const dataToSend = {
         data: { ...formDataToSave, selectedCurrency },
       };
-      
+
       await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_APP_BASE_URL}api/proposals/update-proposal/${id}`,
         dataToSend
@@ -466,7 +517,7 @@ const EditProposal = () => {
         message: "Proposal saved! Redirecting to Studio...",
         severity: "success",
       });
-      
+
       router.push(`/proposal-studio/${id}`);
 
     } catch (error) {
@@ -548,12 +599,20 @@ const EditProposal = () => {
                       params: { email: value, excludeId: id },
                     });
                     if (res.data?.success && res.data.exists) {
+                      setExistingProposalsCount(res.data.count);
+                      setLimitExceeded(res.data.limitExceeded);
                       setExistingProposalId(res.data.proposalId);
                       setExistingProposalOwner(res.data.createdBy);
-                      return "Proposal with this client email is already exists";
+
+                      if (res.data.limitExceeded) {
+                        return "Limit exceeded: Max 5 proposals allowed for this client email";
+                      }
+                    } else {
+                      setExistingProposalsCount(0);
+                      setLimitExceeded(false);
+                      setExistingProposalId(null);
+                      setExistingProposalOwner(null);
                     }
-                    setExistingProposalId(null);
-                    setExistingProposalOwner(null);
                     return true;
                   } catch (err) {
                     return true;
@@ -569,19 +628,18 @@ const EditProposal = () => {
                   type="email"
                   fullWidth
                   inputRef={fieldRefs.clientEmail}
-                  error={!!hookErrors.clientEmail}
-                  helperText={hookErrors.clientEmail?.message}
+                  error={!!hookErrors.clientEmail || limitExceeded}
+                  helperText={hookErrors.clientEmail?.message || ""}
                   sx={inputStyle}
                   onChange={(e) => {
                     field.onChange(e);
                     handleChange("clientEmail", e.target.value);
+                    if (existingProposalsCount > 0) setExistingProposalsCount(0);
+                    if (limitExceeded) setLimitExceeded(false);
                     if (existingProposalId) setExistingProposalId(null);
                   }}
                 />
-                {hookErrors.clientEmail?.message === "Proposal with this client email is already exists" &&
-                  existingProposalId &&
-                  (user.role === "admin" ||
-                    user._id === existingProposalOwner) && (
+                {existingProposalsCount > 0 && (
                     <Button
                       component={motion.button}
                       variants={secondaryButtonVariants}
@@ -591,7 +649,7 @@ const EditProposal = () => {
                       variant="contained"
                       startIcon={<EditDocument />}
                       onClick={() =>
-                        router.push(`/admin/proposals/${existingProposalId}`)
+                        router.push(`/admin/proposals?search=${encodeURIComponent(field.value)}`)
                       }
                       sx={{
                         mt: -1,
@@ -605,7 +663,7 @@ const EditProposal = () => {
                         },
                       }}
                     >
-                      View Proposal
+                      View All Proposals ({existingProposalsCount})
                     </Button>
                   )}
               </Box>
@@ -657,49 +715,147 @@ const EditProposal = () => {
             )}
           />
           <Controller
-            name="businessDescription"
+            name="projectCategory"
             control={control}
-            rules={{ required: "Business description is required" }}
+            defaultValue=""
             render={({ field }) => (
-              <TextField
-                {...field}
-                label="Business Description *"
-                multiline
-                rows={3}
-                fullWidth
-                inputRef={fieldRefs.businessDescription}
-                error={!!hookErrors.businessDescription}
-                helperText={hookErrors.businessDescription?.message}
-                sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e);
-                  handleChange("businessDescription", e.target.value);
-                }}
-              />
+              <FormControl fullWidth sx={inputStyle} error={!!hookErrors.projectCategory}>
+                <InputLabel>Project Category</InputLabel>
+                <Select
+                  {...field}
+                  label="Project Category"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleChange("projectCategory", e.target.value);
+                  }}
+                  MenuProps={{
+                    disablePortal: true,
+                    sx: {
+                      position: "absolute !important",
+                      top: "0 !important",
+                      left: "0 !important",
+                      width: "100%",
+                      height: "100%",
+                      "& .MuiPaper-root": {
+                        top: "100% !important",
+                        left: "0 !important",
+                        position: "absolute !important",
+                        width: "100%",
+                        boxSizing: "border-box",
+                        transform: "none !important",
+                        mt: 0.5,
+                      },
+                    },
+                    PaperProps: {
+                      sx: {
+                        bgcolor: "#1a1a1a",
+                        border: "1px solid rgba(243, 168, 51, 0.2)",
+                        borderRadius: 2,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
+                        maxHeight: 250,
+                        "& .MuiMenuItem-root": {
+                          fontSize: "0.85rem",
+                          py: 1.2,
+                          px: 2,
+                          color: "#e2e8f0",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            bgcolor: "rgba(243, 168, 51, 0.1)",
+                            color: "#f3a833",
+                          },
+                          "&.Mui-selected": {
+                            bgcolor: "rgba(243, 168, 51, 0.15)",
+                            color: "#f3a833",
+                            fontWeight: 600,
+                            "&:hover": {
+                              bgcolor: "rgba(243, 168, 51, 0.2)",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem value="Fashion & Apparel">Fashion & Apparel</MenuItem>
+                  <MenuItem value="E-commerce & Retail">E-commerce & Retail</MenuItem>
+                  <MenuItem value="Technology & SaaS">Technology & SaaS</MenuItem>
+                  <MenuItem value="Real Estate">Real Estate</MenuItem>
+                  <MenuItem value="Health & Wellness">Health & Wellness</MenuItem>
+                  <MenuItem value="Food & Beverage">Food & Beverage</MenuItem>
+                  <MenuItem value="Agency & Portfolio">Agency & Portfolio</MenuItem>
+                  <MenuItem value="Education">Education</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+                {hookErrors.projectCategory && <FormHelperText>{hookErrors.projectCategory.message}</FormHelperText>}
+              </FormControl>
             )}
           />
-          <Controller
-            name="proposedSolution"
-            control={control}
-            rules={{ required: "Proposed solution is required" }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Proposed Solution *"
-                multiline
-                rows={3}
-                fullWidth
-                inputRef={fieldRefs.proposedSolution}
-                error={!!hookErrors.proposedSolution}
-                helperText={hookErrors.proposedSolution?.message}
-                sx={inputStyle}
-                onChange={(e) => {
-                  field.onChange(e);
-                  handleChange("proposedSolution", e.target.value);
-                }}
+          {formData.projectCategory === "Other" && (
+            <Box component={motion.div} variants={containerVariants} sx={{ mt: -1, mb: 2 }}>
+              <Controller
+                name="customProjectCategory"
+                control={control}
+                defaultValue={formData.customProjectCategory}
+                rules={{ required: "Custom category is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Please Specify Category *"
+                    fullWidth
+                    error={!!hookErrors.customProjectCategory}
+                    helperText={hookErrors.customProjectCategory?.message}
+                    sx={inputStyle}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setFormData({ ...formData, customProjectCategory: e.target.value });
+                    }}
+                  />
+                )}
               />
-            )}
-          />
+            </Box>
+          )}
+
+          {/* Project Brief for AI Generation */}
+          <Box component={motion.div} variants={containerVariants} sx={{ mb: 2 }}>
+            <Controller
+              name="projectBrief"
+              control={control}
+              defaultValue={formData.projectBrief}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Project Brief (for AI Generation)"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  placeholder="E.g., I need to make a proposal for SQ Logistics' digital presence..."
+                  sx={inputStyle}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setFormData({ ...formData, projectBrief: e.target.value });
+                  }}
+                />
+              )}
+            />
+            
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleGenerateAI}
+              disabled={isGeneratingAI || !formData.projectBrief}
+              sx={{
+                mt: 1,
+                borderColor: colorScheme.primary,
+                color: colorScheme.primary,
+                "&:hover": {
+                  bgcolor: "rgba(243, 168, 51, 0.1)",
+                  borderColor: colorScheme.secondary,
+                }
+              }}
+            >
+              {isGeneratingAI ? "Generating Content..." : "Generate with AI & Continue"}
+            </Button>
+          </Box>
         </>
       ),
     },
@@ -822,7 +978,7 @@ const EditProposal = () => {
             onClick={() => {
               const newValue = !autoApplyAdvance;
               setAutoApplyAdvance(newValue);
-              
+
               if (newValue && baseCost) {
                 const advance = parseFloat(formData.advancePercent) || 0;
                 const discounted = parseFloat(baseCost) * (1 - advance / 100);
@@ -933,17 +1089,15 @@ const EditProposal = () => {
       content: (
         <>
           {sectionHeader(<Info />, "Additional Details")}
-          <FormControl fullWidth error={!!hookErrors.callOutcome} sx={inputStyle}>
-            <InputLabel>Call Outcome *</InputLabel>
+          <FormControl fullWidth sx={inputStyle}>
+            <InputLabel>Call Outcome</InputLabel>
             <Controller
               name="callOutcome"
               control={control}
-              rules={{ required: "Call outcome is required" }}
               render={({ field }) => (
                 <Select
                   {...field}
-                  label="Call Outcome *"
-                  inputRef={fieldRefs.callOutcome}
+                  label="Call Outcome"
                   onChange={(e) => {
                     field.onChange(e);
                     handleChange("callOutcome", e.target.value);
@@ -956,9 +1110,6 @@ const EditProposal = () => {
                 </Select>
               )}
             />
-            {hookErrors.callOutcome && (
-              <FormHelperText>{hookErrors.callOutcome?.message}</FormHelperText>
-            )}
           </FormControl>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -1061,9 +1212,9 @@ const EditProposal = () => {
               py: 0.5,
               borderRadius: 2,
               "&:hover": {
-                  background: "rgba(243, 168, 51, 0.1)",
-                  border: "1px solid rgba(243, 168, 51, 0.4)",
-                  transform: "translateX(-4px)",
+                background: "rgba(243, 168, 51, 0.1)",
+                border: "1px solid rgba(243, 168, 51, 0.4)",
+                transform: "translateX(-4px)",
               },
               transition: "all 0.3s ease",
             }}
@@ -1160,8 +1311,8 @@ const EditProposal = () => {
                             activeStep === index
                               ? 1.05
                               : activeStep > index
-                              ? 1
-                              : 0.95,
+                                ? 1
+                                : 0.95,
                         }}
                         transition={{ type: "spring", stiffness: 260, damping: 20 }}
                         sx={{
@@ -1198,46 +1349,71 @@ const EditProposal = () => {
                         sx={{
                           mt: 3,
                           display: "flex",
-                          justifyContent: "space-between",
+                          justifyContent: activeStep === 0 ? "flex-end" : "space-between",
                         }}
                       >
-                        <Button
-                          component={motion.button}
-                          variants={secondaryButtonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                          disabled={activeStep === 0}
-                          onClick={handleBack}
-                          startIcon={<ArrowBack />}
-                          variant="outlined"
-                          sx={{ borderRadius: 10 }}
-                        >
-                          Back
-                        </Button>
-                        {index < steps.length - 1 && (
+                        {activeStep > 0 && (
                           <Button
                             component={motion.button}
-                            variants={primaryButtonVariants}
+                            variants={secondaryButtonVariants}
                             whileHover="hover"
                             whileTap="tap"
-                            onClick={handleNext}
-                            endIcon={<ArrowForward />}
-                            variant="contained"
-                            sx={{
-                              background: colorScheme.gradient,
-                              borderRadius: 10,
-                            }}
+                            onClick={handleBack}
+                            startIcon={<ArrowBack />}
+                            variant="outlined"
+                            sx={{ borderRadius: 10 }}
                           >
-                            Next
+                            Back
                           </Button>
                         )}
+                        <Box>
+                          {index === 1 && (
+                            <Button
+                              component={motion.button}
+                              variants={secondaryButtonVariants}
+                              whileHover="hover"
+                              whileTap="tap"
+                              onClick={() => handleNext(2)}
+                              variant="outlined"
+                              sx={{
+                                borderRadius: 10,
+                                mr: 2,
+                                borderColor: colorScheme.primary,
+                                color: colorScheme.primary,
+                                "&:hover": {
+                                  borderColor: colorScheme.secondary,
+                                  background: "rgba(243, 168, 51, 0.1)",
+                                },
+                              }}
+                            >
+                              Additional Details
+                            </Button>
+                          )}
+                          {index < steps.length - 1 && (
+                            <Button
+                              component={motion.button}
+                              variants={primaryButtonVariants}
+                              whileHover="hover"
+                              whileTap="tap"
+                              onClick={() => handleNext(index === 1 ? 3 : index + 1)}
+                              endIcon={<ArrowForward />}
+                              variant="contained"
+                              sx={{
+                                background: colorScheme.gradient,
+                                borderRadius: 10,
+                              }}
+                            >
+                              {index === 1 ? "Review & Continue" : "Next"}
+                            </Button>
+                          )}
+                        </Box>
                       </Box>
                     </Card>
                   </StepContent>
                 </Step>
               ))}
             </Stepper>
-            
+
 
 
 

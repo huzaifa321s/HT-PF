@@ -18,40 +18,40 @@ const styles = StyleSheet.create({
         fontSize: 10.5,
         lineHeight: 1.6,
         marginBottom: 8,
-        color: '#f8fafc',
+        color: '#4a4a4a',
         fontFamily: 'Roboto',
         textAlign: 'left',
     },
     heading1: {
         fontSize: 22,
         fontWeight: 700,
-        marginTop: 12,
-        marginBottom: 8,
-        color: '#000000',
+        marginTop: 16,
+        marginBottom: 10,
+        color: '#1a1a1a',
         fontFamily: 'Roboto',
     },
     heading2: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 700,
-        marginTop: 10,
+        marginTop: 12,
         marginBottom: 6,
-        color: '#000000',
+        color: '#1a1a1a',
         fontFamily: 'Roboto',
     },
     heading3: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: 700,
-        marginTop: 8,
+        marginTop: 10,
         marginBottom: 4,
-        color: '#000000',
+        color: '#1a1a1a',
         fontFamily: 'Roboto',
     },
     heading4: {
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 700,
-        marginTop: 6,
+        marginTop: 8,
         marginBottom: 3,
-        color: '#000000',
+        color: '#1a1a1a',
         fontFamily: 'Roboto',
     },
     heading5: {
@@ -211,7 +211,7 @@ export const RichTextRenderer = ({ content, html, baseStyle = {} }) => {
 
         const parts = cleanedHtml.split(/(<[^>]+>)/);
         const result = [];
-        const stack = [{ color: '#202124', fontSize: 11, fontFamily: 'Roboto' }];
+        const stack = [{ color: '#4a4a4a', fontSize: 10.5, fontFamily: 'Roboto' }];
 
         parts.forEach((part, i) => {
             if (!part) return;

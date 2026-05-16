@@ -311,7 +311,7 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
 };
 
 
-const VisualPricingEditor = ({ isStudioMode = true, onPageCountChange, pageIdPrefix = "Pricing" }) => {
+const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Pricing" }) => {
   const dispatch = useDispatch();
   const currentMode = useSelector((state) => state.pricing.currentMode || "create");
   const pricingData = useSelector((state) => state.pricing[currentMode] || state.pricing);
@@ -344,7 +344,7 @@ const VisualPricingEditor = ({ isStudioMode = true, onPageCountChange, pageIdPre
   }, [pages.length, onPageCountChange]);
 
   const gap = isStudioMode ? 40 : 0;
-  const exactContainerHeight = (pages.length * 1131) + ((pages.length - 1) * gap);
+  const exactContainerHeight = (pages.length * 1131) + ((pages.length - 1) * gap) + (isStudioMode ? 120 : 0);
 
   return (
     <Box sx={{ position: "relative", width: "100%", maxWidth: "800px", height: exactContainerHeight, margin: "0 auto", fontFamily: "'Liberation Serif', Times, serif" }}>
@@ -374,7 +374,7 @@ const VisualPricingEditor = ({ isStudioMode = true, onPageCountChange, pageIdPre
           }
 
           return (
-            <Box key={pageIdx} id={isStudioMode ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: "auto" } }}>
+            <Box key={pageIdx} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: "auto" } }}>
               {isStudioMode && pageIdx === 0 && (
                 <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
                   <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>

@@ -53,7 +53,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import BusinessIcon from "@mui/icons-material/Business";
 import axiosInstance from "../../utils/axiosInstance";
 import DeleteConfirmModal from "../modals/DeleteConfirmModal";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -70,11 +70,12 @@ const AdminProposalsPage = () => {
   const [proposalID, setProposalID] = useState(null);
   const [length, setLength] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   const [totalCount, setTotalCount] = useState(0)
 
   // Filters
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");

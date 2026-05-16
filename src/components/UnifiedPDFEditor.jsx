@@ -117,26 +117,32 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
   const pages = useMemo(() => [
     { 
       name: "Cover Page", 
+      cycle: 1171,
       editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualCoverEditor isStudioMode={currentStudioMode} />
     },
     { 
       name: "About HT", 
+      cycle: 1171,
       editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualAboutEditor isStudioMode={currentStudioMode} />
     },
     { 
       name: "Additional Info", 
-      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualAdditionalInfoEditor isStudioMode={currentStudioMode} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Additional Info", c) : undefined} pageIdPrefix="Additional Info" />
+      cycle: 1171,
+      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualAdditionalInfoEditor isStudioMode={currentStudioMode} isThumbnail={isThumbnail} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Additional Info", c) : undefined} pageIdPrefix="Additional Info" />
     },
     { 
       name: "Pricing", 
-      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualPricingEditor isStudioMode={currentStudioMode} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Pricing", c) : undefined} pageIdPrefix="Pricing" />
+      cycle: 1171,
+      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualPricingEditor isStudioMode={currentStudioMode} isThumbnail={isThumbnail} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Pricing", c) : undefined} pageIdPrefix="Pricing" />
     },
     { 
       name: "Payment Terms", 
-      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualPaymentEditor isStudioMode={currentStudioMode} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Payment Terms", c) : undefined} pageIdPrefix="Payment Terms" />
+      cycle: 1151,
+      editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualPaymentEditor isStudioMode={currentStudioMode} isThumbnail={isThumbnail} onPageCountChange={!isThumbnail ? (c) => handlePageCountChange("Payment Terms", c) : undefined} pageIdPrefix="Payment Terms" />
     },
     { 
       name: "Contact", 
+      cycle: 1171,
       editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualContactEditor isStudioMode={currentStudioMode} />
     },
   ], [isStudioMode, handlePageCountChange]);

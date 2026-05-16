@@ -448,6 +448,36 @@ const page2Slice = createSlice({
       state[mode] = { ...modeDefaults };
     },
 
+    // ✅ AI Replacement Action
+    replacePage2Content: (state, action) => {
+      const mode = state.currentMode;
+      const { sections, tables } = action.payload;
+
+      if (sections && Array.isArray(sections)) {
+        state[mode].orderedSections = sections.map((sec, idx) => ({
+          id: generateId() + idx,
+          type: sec.type || "title",
+          title: sec.title || "",
+          content: sec.content || ""
+        }));
+      }
+
+      if (tables && Array.isArray(tables)) {
+        state[mode].tables = tables.map((tbl, idx) => ({
+          id: generateId() + 100 + idx,
+          title: tbl.title || "Table",
+          columnCount: tbl.columnCount || 2,
+          headers: tbl.headers || { col1: "Item", col2: "Value" },
+          rows: tbl.rows ? tbl.rows.map((r, rIdx) => ({
+            id: generateId() + 200 + rIdx,
+            col1: r.col1 || "",
+            col2: r.col2 || "",
+            ...(tbl.columnCount === 3 && { col3: r.col3 || "" })
+          })) : []
+        }));
+      }
+    },
+
   },
 });
 
@@ -481,6 +511,7 @@ export const {
   addMultipleSections,
   setPageCount,
   resetPage2,
+  replacePage2Content,
 } = page2Slice.actions;
 
 export default page2Slice.reducer;

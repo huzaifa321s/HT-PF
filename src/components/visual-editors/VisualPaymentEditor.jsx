@@ -41,7 +41,7 @@ const splitTermsByHeight = (terms) => {
   return pages;
 };
 
-const VisualPaymentEditor = ({ isStudioMode = true, onPageCountChange, pageIdPrefix = "Payment Terms" }) => {
+const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Payment Terms" }) => {
   const dispatch = useDispatch();
   const currentMode = useSelector((state) => state.paymentTerms.currentMode || "create");
   const paymentData = useSelector((state) => state.paymentTerms[currentMode] || state.paymentTerms);
@@ -71,7 +71,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, onPageCountChange, pageIdPre
 
         return (
           <Box
-            id={isStudioMode ? `page-${pageIdPrefix}-${pageIdx}` : undefined}
+            id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined}
             key={pageIdx}
             sx={{
               position: "relative", width: "100%", maxWidth: "800px", height: "1131px",

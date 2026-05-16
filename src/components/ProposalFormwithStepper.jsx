@@ -75,7 +75,7 @@ import {
   updateServices,
 } from "../utils/proposalSlice";
 import axiosInstance from "../utils/axiosInstance";
-import { addSection, updateSection } from "../utils/page2Slice";
+import { addSection, updateSection, replacePage2Content } from "../utils/page2Slice";
 import { setBrandName } from "../utils/page1Slice";
 import { updateTitle } from "../utils/page3Slice";
 import { useDebounce } from "use-debounce";
@@ -86,6 +86,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { store } from "../utils/store";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
+
 const ProposalFormWithStepper = ({
   control,
   errors,
@@ -103,6 +104,9 @@ const ProposalFormWithStepper = ({
   const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [existingProposalsCount, setExistingProposalsCount] = useState(0); // Added for multiple proposals limit
+  const [limitExceeded, setLimitExceeded] = useState(false); // Added for multiple proposals limit
   const existingProposalRef = useRef({ id: null, owner: null }); // Backup ref to survive React 18 strict mode state-loss
   const dispatch = useDispatch();
   const router = useRouter(); // Initialize navigate
@@ -118,16 +122,13 @@ const ProposalFormWithStepper = ({
     clientEmail: useRef(null),
     brandName: useRef(null),
     projectTitle: useRef(null),
-    businessDescription: useRef(null),
-    proposedSolution: useRef(null),
-    callOutcome: useRef(null),
   };
   // ✅ Step-wise required fields
   const stepFields = {
     0: ["clientName", "clientEmail"],
-    1: ["brandName", "projectTitle", "businessDescription", "proposedSolution"],
+    1: ["brandName", "projectTitle"],
     2: [],
-    3: ["callOutcome"],
+    3: [],
     4: [],
   };
 
@@ -282,85 +283,54 @@ const ProposalFormWithStepper = ({
     </Box>
   );
 
-  const currentMode2 = useSelector((s) => s.page2.currentMode);
-  const orderedSections = useSelector(
-    (s) => s.page2[currentMode2]?.orderedSections
-  ) || [];
-  const businessSectionExists = orderedSections.some((item) => item.id === "business");
-  const proposedSectionExists = orderedSections.some((item) => item.id === "proposed");
-  const AddSectionToPDf = (data) => {
-    handleNext();
-    if (businessSectionExists) {
-      dispatch(
-        updateSection({
-          id: "business",
-          type: "title",
-          title: "Business Description",
-          content: data.businessDescription.trim(),
-        })
-      );
-    } else {
-      dispatch(
-        addSection({
-          type: "title",
-          title: "Business Description",
-          content: data.businessDescription.trim(),
-          id: "business",
-        })
-      );
-    }
-    if (proposedSectionExists) {
-      dispatch(
-        updateSection({
-          id: "proposed",
-          type: "title",
-          title: "Proposed Solution",
-          content: data.proposedSolution.trim(),
-        })
-      );
-    } else {
-      dispatch(
-        addSection({
-          type: "title",
-          title: "Proposed Solution",
-          content: data.proposedSolution.trim(),
-          id: "proposed",
-        })
-      );
-    }
-    dispatch(
-      showToast({
-        message: businessSectionExists && proposedSectionExists ? "Updated" : "Successfully added",
-        severity: "success",
-        duration: 2500,
-      })
-    );
-  };
-
   const handleSubmitData = async (data) => {
-    console.log("Form data submitted:", data);
+    const submitData = { ...data };
+    if (submitData.projectCategory === "Other" && submitData.customProjectCategory) {
+      submitData.projectCategory = submitData.customProjectCategory;
+    }
+    console.log("Form data submitted:", submitData);
     console.log("selected", selectedCurrency);
     dispatch(updateField({ field: "clientName", value: data.clientName }));
     dispatch(updateField({ field: "clientEmail", value: data.clientEmail }));
     dispatch(updateField({ field: "brandName", value: data.brandName }));
-    dispatch(
-      updateField({
-        field: "businessDescription",
-        value: data.businessDescription,
-      })
-    );
 
-    dispatch(
-      updateField({ field: "proposedSolution", value: data.proposedSolution })
-    );
+    await handleSubmitForm(submitData, selectedCurrency);
+  };
 
-    await handleSubmitForm(data, selectedCurrency);
+  const handleGenerateAI = async () => {
+    const brief = watch("projectBrief");
+    if (!brief || brief.trim() === "") {
+      dispatch(showToast({ message: "Please enter a Project Brief first.", type: "error" }));
+      return;
+    }
+    
+    setIsGeneratingAI(true);
+    try {
+      const response = await axiosInstance.post('api/ai/generate-proposal', {
+        projectBrief: brief,
+        companyName: "Humantek"
+      });
+
+      const data = response.data;
+      if (data && data.sections && data.tables) {
+        dispatch(replacePage2Content(data));
+        dispatch(showToast({ message: "Proposal content generated successfully!", type: "success" }));
+        handleNext(); // Move to the next step
+      } else {
+        throw new Error("Invalid format received from AI.");
+      }
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      dispatch(showToast({ message: "Failed to generate proposal using AI.", type: "error" }));
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   // ✅ Check if a step is accessible
   const isStepAccessible = (stepIndex) => {
     if (stepIndex > 0 && errors?.clientEmail) return false;
-    if (stepIndex > 0 && existingProposalId) return false;
+    if (stepIndex > 0 && limitExceeded) return false;
 
     // Current step ya pehle ke steps accessible hain
     for (let i = 0; i < stepIndex; i++) {
@@ -526,7 +496,6 @@ const ProposalFormWithStepper = ({
                   message: "Please enter a valid email address",
                 },
                 validate: {
-                  // ✅ Async check for existing client email
                   checkUniqueness: async (value) => {
                     if (!value) return true;
                     try {
@@ -534,15 +503,22 @@ const ProposalFormWithStepper = ({
                         params: { email: value },
                       });
                       if (res.data?.success && res.data.exists) {
-                        setExistingProposalId(res.data.proposalId);
-                        setExistingProposalOwner(res.data.createdBy);
+                        setExistingProposalsCount(res.data.count);
+                        setLimitExceeded(res.data.limitExceeded);
+                        setExistingProposalId(res.data.proposalId); // legacy
+                        setExistingProposalOwner(res.data.createdBy); // legacy
                         existingProposalRef.current = { id: res.data.proposalId, owner: res.data.createdBy };
-                        console.log('datatata', res.data)
-                        return "Proposal with this client email is already exists";
+
+                        if (res.data.limitExceeded) {
+                          return "Limit exceeded: Max 5 proposals allowed for this client email";
+                        }
+                      } else {
+                        setExistingProposalsCount(0);
+                        setLimitExceeded(false);
+                        setExistingProposalId(null);
+                        setExistingProposalOwner(null);
+                        existingProposalRef.current = { id: null, owner: null };
                       }
-                      setExistingProposalId(null);
-                      setExistingProposalOwner(null);
-                      existingProposalRef.current = { id: null, owner: null };
                       return true;
                     } catch (err) {
                       console.error("Error checking uniqueness:", err);
@@ -595,48 +571,45 @@ const ProposalFormWithStepper = ({
                     label="Client Email *"
                     fullWidth
                     type="email"
-                    error={!!errors.clientEmail || !!existingProposalId}
+                    error={!!errors.clientEmail || limitExceeded}
                     helperText={
-                      errors.clientEmail?.message ||
-                      (existingProposalId
-                        ? "Proposal with this client email is already exists"
-                        : "")
+                      errors.clientEmail?.message || (limitExceeded ? "Limit exceeded: Max 5 proposals allowed for this client email" : "")
                     }
                     inputRef={fieldRefs.clientEmail}
                     sx={inputStyle}
                     onChange={(e) => {
                       handleFieldChange("clientEmail", field, e);
+                      if (existingProposalsCount > 0) setExistingProposalsCount(0);
+                      if (limitExceeded) setLimitExceeded(false);
                       if (existingProposalId) setExistingProposalId(null);
                       existingProposalRef.current = { id: null, owner: null };
                     }}
                   />
 
-                  {(existingProposalId || existingProposalRef.current.id) &&
-                    (user?.role === "admin" ||
-                      user?.id === (existingProposalOwner || existingProposalRef.current.owner) ||
-                      user?._id === (existingProposalOwner || existingProposalRef.current.owner)) && (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        startIcon={<Preview />}
-                        onClick={() =>
-                          router.push(`/admin/proposals/${existingProposalId || existingProposalRef.current.id}`)
-                        }
-                        sx={{
-                          mt: -1,
-                          mb: 2,
-                          background: colorScheme.gradient,
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: 600,
-                          "&:hover": {
-                            background: colorScheme.hoverGradient,
-                          },
-                        }}
-                      >
-                        View Proposal
-                      </Button>
-                    )}
+                  {existingProposalsCount > 0 && (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      startIcon={<Preview />}
+                      onClick={() =>
+                        router.push(`/admin/proposals?search=${encodeURIComponent(field.value)}`)
+                      }
+                      sx={{
+                        mt: -1,
+                        mb: 2,
+                        background: colorScheme.gradient,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        "&:hover": {
+                          background: colorScheme.hoverGradient,
+                        },
+                      }}
+                    >
+                      View All Proposals ({existingProposalsCount})
+
+                    </Button>
+                  )}
                 </Box>
               )}
             />
@@ -696,51 +669,139 @@ const ProposalFormWithStepper = ({
           </Box>
           <Box component={motion.div} variants={fieldVariants}>
             <Controller
-              name="businessDescription"
+              name="projectCategory"
               control={control}
-              rules={{ required: "Business Description is required" }}
+              defaultValue=""
+              render={({ field }) => (
+                <FormControl fullWidth sx={inputStyle} error={!!errors.projectCategory}>
+                  <InputLabel>Project Category</InputLabel>
+                  <Select
+                    {...field}
+                    label="Project Category"
+                    onChange={(e) => handleFieldChange("projectCategory", field, e)}
+                    MenuProps={{
+                      disablePortal: true,
+                      sx: {
+                        position: "absolute !important",
+                        top: "0 !important",
+                        left: "0 !important",
+                        width: "100%",
+                        height: "100%",
+                        "& .MuiPaper-root": {
+                          top: "100% !important",
+                          left: "0 !important",
+                          position: "absolute !important",
+                          width: "100%",
+                          boxSizing: "border-box",
+                          transform: "none !important",
+                          mt: 0.5,
+                        },
+                      },
+                      PaperProps: {
+                        sx: {
+                          bgcolor: "#1a1a1a",
+                          border: "1px solid rgba(243, 168, 51, 0.2)",
+                          borderRadius: 2,
+                          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
+                          maxHeight: 250,
+                          "& .MuiMenuItem-root": {
+                            fontSize: "0.85rem",
+                            py: 1.2,
+                            px: 2,
+                            color: "#e2e8f0",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              bgcolor: "rgba(243, 168, 51, 0.1)",
+                              color: "#f3a833",
+                            },
+                            "&.Mui-selected": {
+                              bgcolor: "rgba(243, 168, 51, 0.15)",
+                              color: "#f3a833",
+                              fontWeight: 600,
+                              "&:hover": {
+                                bgcolor: "rgba(243, 168, 51, 0.2)",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="Fashion & Apparel">Fashion & Apparel</MenuItem>
+                    <MenuItem value="E-commerce & Retail">E-commerce & Retail</MenuItem>
+                    <MenuItem value="Technology & SaaS">Technology & SaaS</MenuItem>
+                    <MenuItem value="Real Estate">Real Estate</MenuItem>
+                    <MenuItem value="Health & Wellness">Health & Wellness</MenuItem>
+                    <MenuItem value="Food & Beverage">Food & Beverage</MenuItem>
+                    <MenuItem value="Agency & Portfolio">Agency & Portfolio</MenuItem>
+                    <MenuItem value="Education">Education</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                  {errors.projectCategory && <FormHelperText>{errors.projectCategory.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
+          </Box>
+          {watch("projectCategory") === "Other" && (
+            <Box component={motion.div} variants={fieldVariants} sx={{ mt: -1, mb: 2 }}>
+              <Controller
+                name="customProjectCategory"
+                control={control}
+                defaultValue=""
+                rules={{ required: "Custom category is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Please Specify Category *"
+                    fullWidth
+                    error={!!errors.customProjectCategory}
+                    helperText={errors.customProjectCategory?.message}
+                    sx={inputStyle}
+                  />
+                )}
+              />
+            </Box>
+          )}
+
+          {/* Project Brief for AI Generation */}
+          <Box component={motion.div} variants={fieldVariants} sx={{ mb: 2 }}>
+            <Controller
+              name="projectBrief"
+              control={control}
+              defaultValue=""
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Business Description *"
-                  multiline
-                  rows={3}
+                  label="Project Brief (for AI Generation)"
                   fullWidth
-                  inputRef={fieldRefs.businessDescription}
-                  error={!!errors.businessDescription}
-                  helperText={errors.businessDescription?.message}
+                  multiline
+                  rows={4}
+                  placeholder="E.g., I need to make a proposal for SQ Logistics' digital presence..."
                   sx={inputStyle}
-                  onChange={(e) =>
-                    handleFieldChange("businessDescription", field, e)
-                  }
                 />
               )}
             />
+            
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleGenerateAI}
+              disabled={isGeneratingAI || !watch("projectBrief")}
+              sx={{
+                mt: 1,
+                borderColor: colorScheme.primary,
+                color: colorScheme.primary,
+                "&:hover": {
+                  bgcolor: "rgba(243, 168, 51, 0.1)",
+                  borderColor: colorScheme.secondary,
+                }
+              }}
+            >
+              {isGeneratingAI ? "Generating Content..." : "Generate with AI & Continue"}
+            </Button>
           </Box>
 
-          <Box component={motion.div} variants={fieldVariants}>
-            <Controller
-              name="proposedSolution"
-              control={control}
-              rules={{ required: "Proposed Solution is required" }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Proposed Solution *"
-                  multiline
-                  rows={3}
-                  error={!!errors.proposedSolution}
-                  helperText={errors.proposedSolution?.message}
-                  inputRef={fieldRefs.proposedSolution}
-                  fullWidth
-                  sx={inputStyle}
-                  onChange={(e) =>
-                    handleFieldChange("proposedSolution", field, e)
-                  }
-                />
-              )}
-            />
-          </Box>
+
         </>
       ),
     },
@@ -876,7 +937,7 @@ const ProposalFormWithStepper = ({
               onClick={() => {
                 const newValue = !autoApplyAdvance;
                 setAutoApplyAdvance(newValue);
-                
+
                 // Recalculate instantly on toggle
                 if (newValue && baseCost) {
                   const advance = parseFloat(watch("advancePercent")) || 0;
@@ -1003,11 +1064,10 @@ const ProposalFormWithStepper = ({
             <Controller
               name="callOutcome"
               control={control}
-              rules={{ required: "Call outcome is required" }}
               render={({ field, fieldState: { error } }) => (
                 <FormControl fullWidth error={!!error} sx={inputStyle}>
-                  <InputLabel>Call Outcome *</InputLabel>
-                  <Select {...field} label="Call Outcome *">
+                  <InputLabel>Call Outcome</InputLabel>
+                  <Select {...field} label="Call Outcome">
                     <MenuItem value="Interested">Interested</MenuItem>
                     <MenuItem value="No Fit">No Fit</MenuItem>
                     <MenuItem value="Flaked">Flaked</MenuItem>
@@ -1119,7 +1179,7 @@ const ProposalFormWithStepper = ({
       ),
     },
   ];
-  const handleNext = async () => {
+  const handleNext = async (targetStep) => {
     const currentStepFields = stepFields[activeStep];
 
     if (currentStepFields.length > 0) {
@@ -1143,7 +1203,11 @@ const ProposalFormWithStepper = ({
       }
     }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    if (targetStep !== undefined) {
+      setActiveStep(targetStep);
+    } else {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
   };
 
   const handleBack = () => {
@@ -1274,34 +1338,35 @@ const ProposalFormWithStepper = ({
                           pb: 2,
                           px: 2,
                           display: "flex",
-                          justifyContent: "space-between",
+                          justifyContent: activeStep === 0 ? "flex-end" : "space-between",
                           flexDirection: activeStep === 1 && isSmall ? "column" : "row",
                           gap: activeStep === 1 && isSmall ? 2 : 0,
                           alignItems: activeStep === 1 && isSmall ? "flex-start" : "center",
                         }}
                       >
-                        <Button
-                          component={motion.button}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          disabled={activeStep === 0}
-                          onClick={handleBack}
-                          startIcon={<ArrowBack />}
-                          variant="outlined"
-                          sx={{
-                            borderColor: colorScheme.primary,
-                            borderRadius: 10,
-                            color: colorScheme.primary,
-                            width: activeStep === 1 && isSmall ? "auto" : "auto",
-                            alignSelf: "flex-start",
-                            "&:hover": {
-                              borderColor: colorScheme.secondary,
-                              background: `${colorScheme.primary}10`,
-                            },
-                          }}
-                        >
-                          Back
-                        </Button>
+                        {activeStep > 0 && (
+                          <Button
+                            component={motion.button}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleBack}
+                            startIcon={<ArrowBack />}
+                            variant="outlined"
+                            sx={{
+                              borderColor: colorScheme.primary,
+                              borderRadius: 10,
+                              color: colorScheme.primary,
+                              width: activeStep === 1 && isSmall ? "auto" : "auto",
+                              alignSelf: "flex-start",
+                              "&:hover": {
+                                borderColor: colorScheme.secondary,
+                                background: `${colorScheme.primary}10`,
+                              },
+                            }}
+                          >
+                            Back
+                          </Button>
+                        )}
                         <Box
                           sx={{
                             display: "flex",
@@ -1311,55 +1376,67 @@ const ProposalFormWithStepper = ({
                             width: activeStep === 1 && isSmall ? "100%" : "auto",
                           }}
                         >
-                          {activeStep === 1 && (
-                            <Button
-                              component={motion.button}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => {
-                                const data = {
-                                  businessDescription: watch("businessDescription"),
-                                  proposedSolution: watch("proposedSolution"),
-                                };
-                                AddSectionToPDf(data);
-                              }}
-                              variant="outlined"
-                              endIcon={<ArrowForward />}
-                              sx={{
-                                border: "1px solid black",
-                                borderRadius: 10,
-                                width: isSmall ? "100%" : "auto",
-                                "&:hover": {
-                                  background: colorScheme.hoverGradient,
-                                  color: "#fff",
-                                },
-                              }}
-                            >
-                              {businessSectionExists && proposedSectionExists
-                                ? "Update These Sections to PDF"
-                                : "Add These Sections to PDF"}
-                            </Button>
-                          )}
-                          {index < steps.length - 1 && (
-                            <Button
-                              component={motion.button}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={handleNext}
-                              endIcon={<ArrowForward />}
-                              variant="contained"
-                              disabled={!isStepAccessible(index + 1)}
-                              sx={{
-                                background: colorScheme.gradient,
-                                borderRadius: 10,
-                                width: activeStep === 1 && isSmall ? "100%" : "auto",
-                                "&:hover": {
-                                  background: colorScheme.hoverGradient,
-                                },
-                              }}
-                            >
-                              Next
-                            </Button>
+                          {activeStep === 2 ? (
+                            <>
+                              <Button
+                                component={motion.button}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNext(3)}
+                                variant="outlined"
+                                sx={{
+                                  borderColor: colorScheme.primary,
+                                  borderRadius: 10,
+                                  color: colorScheme.primary,
+                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                  "&:hover": {
+                                    background: `${colorScheme.primary}10`,
+                                  },
+                                }}
+                              >
+                                Additional Details
+                              </Button>
+                              <Button
+                                component={motion.button}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNext(4)}
+                                endIcon={<ArrowForward />}
+                                variant="contained"
+                                sx={{
+                                  background: colorScheme.gradient,
+                                  borderRadius: 10,
+                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                  "&:hover": {
+                                    background: colorScheme.hoverGradient,
+                                  },
+                                }}
+                              >
+                                Review & Continue
+                              </Button>
+                            </>
+                          ) : (
+                            index < steps.length - 1 && (
+                              <Button
+                                component={motion.button}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNext()}
+                                endIcon={<ArrowForward />}
+                                variant="contained"
+                                disabled={!isStepAccessible(index + 1)}
+                                sx={{
+                                  background: colorScheme.gradient,
+                                  borderRadius: 10,
+                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                  "&:hover": {
+                                    background: colorScheme.hoverGradient,
+                                  },
+                                }}
+                              >
+                                Next
+                              </Button>
+                            )
                           )}
                         </Box>
                       </Box>

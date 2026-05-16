@@ -263,7 +263,7 @@ export default function DashboardLayout({ children }) {
             ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, border: 'none' },
+              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: expandedDrawerWidth, border: 'none' },
             }}
           >
             {drawerContent}

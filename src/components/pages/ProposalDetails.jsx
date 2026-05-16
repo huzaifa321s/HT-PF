@@ -335,32 +335,6 @@ const ProposalDetails = () => {
                                     </Grid>
                                 </AccordionSection>
 
-                                {/* Project Details */}
-                                <AccordionSection
-                                    panel="project"
-                                    title="Project Details"
-                                    icon={<Description />}
-                                >
-                                    <Box>
-                                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-                                            Business Description
-                                        </Typography>
-                                        <Paper variant="outlined" sx={{ p: 2.5, mb: 4, background: "rgba(0,0,0,0.3)", borderRadius: 3, borderStyle: "dashed", borderColor: "rgba(243, 168, 51, 0.3)" }}>
-                                            <Typography variant="body1" sx={{ whiteSpace: "pre-line", lineHeight: 1.8, color: "#e2e8f0" }}>
-                                                {proposal?.businessDescription || "No description provided."}
-                                            </Typography>
-                                        </Paper>
-
-                                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-                                            Proposed Solution
-                                        </Typography>
-                                        <Paper variant="outlined" sx={{ p: 2.5, background: "rgba(0,0,0,0.3)", borderRadius: 3, borderStyle: "dashed", borderColor: "rgba(243, 168, 51, 0.3)" }}>
-                                            <Typography variant="body1" sx={{ whiteSpace: "pre-line", lineHeight: 1.8, color: "#e2e8f0" }}>
-                                                {proposal?.proposedSolution || "No solution provided."}
-                                            </Typography>
-                                        </Paper>
-                                    </Box>
-                                </AccordionSection>
 
                                 {/* Financial */}
                                 <AccordionSection

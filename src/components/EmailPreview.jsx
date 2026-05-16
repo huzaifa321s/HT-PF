@@ -20,8 +20,6 @@ export default function EmailPreview({ formData }) {
   const generateInitialEmailBody = () => {
     const {
       clientName,
-      businessDescription,
-      proposedSolution,
       chargeAmount,
       projectDuration,
       yourName,
@@ -30,12 +28,9 @@ export default function EmailPreview({ formData }) {
 
     return `Dear ${clientName || "Client"},
 
-Thank you for taking the time to discuss your needs with us. Based on our conversation about your business problem: "${businessDescription || "—"
-      }", we're pleased to provide you with the following proposal.
+Thank you for taking the time to discuss your needs with us. We're pleased to provide you with the following proposal.
 
 📄 Project: ${projectTitle || "Untitled Project"}
-💡 Solution Summary: ${proposedSolution || "Short description of proposed solution."
-      }
 ⏱️ Estimated Duration: ${projectDuration || "—"}
 💰 Estimated Cost: PKR ${chargeAmount || "—"}
 

@@ -22,7 +22,7 @@ import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 
 const PAGE_HEIGHT = 1131;
-const TOP_PADDING = 60;
+const TOP_PADDING = 90;
 const BOTTOM_PADDING = 90;
 
 // ─── Floating Format Toolbar ──────────────────────────────────────────────────
@@ -532,7 +532,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
 };
 
 
-const TableBlock = ({ table, isStudioMode, dispatch, onHeightChange, calculatedMargin }) => {
+const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onHeightChange, calculatedMargin }) => {
   const blockRef = useRef(null);
   useEffect(() => {
     if (!blockRef.current || !onHeightChange) return;
@@ -680,7 +680,11 @@ const TableBlock = ({ table, isStudioMode, dispatch, onHeightChange, calculatedM
       <BulkAddDialog open={bulkOpen} onClose={() => setBulkOpen(false)} table={table} dispatch={dispatch} />
     </Box>
   );
-};
+}, (prev, next) =>
+  prev.table === next.table &&
+  prev.calculatedMargin === next.calculatedMargin &&
+  prev.isStudioMode === next.isStudioMode
+);
 
 // ─── Per-Section Format Toolbar ───────────────────────────────────────────────
 const SectionToolbar = ({ contentRef }) => {
@@ -791,7 +795,7 @@ const SectionToolbar = ({ contentRef }) => {
 };
 
 // ─── Section Item ─────────────────────────────────────────────────────────────
-const SectionItem = ({ section, index, isLast, isStudioMode, calculatedMargin, onHeightChange, handleInput, dispatch }) => {
+const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbnail, calculatedMargin, onHeightChange, handleInput, dispatch }) => {
   const ref = useRef(null);
   const contentRef = useRef(null);
 
@@ -806,11 +810,14 @@ const SectionItem = ({ section, index, isLast, isStudioMode, calculatedMargin, o
     return () => observer.disconnect();
   }, [section.id, onHeightChange]);
 
+  const isHeading = section.type === "heading";
+  const isTitle = section.type === "title";
+
   return (
     <Box
       ref={ref}
       sx={{
-        position: "relative", marginTop: `${calculatedMargin}px`, marginBottom: "28px", paddingX: "60px",
+        position: "relative", marginTop: `${calculatedMargin}px`, marginBottom: isHeading ? "12px" : "28px", paddingX: "60px",
         "&:hover .delete-btn": { opacity: 1 },
         "&:hover .section-toolbar": { opacity: 1 },
       }}
@@ -830,46 +837,101 @@ const SectionItem = ({ section, index, isLast, isStudioMode, calculatedMargin, o
               <Delete fontSize="small" />
             </IconButton>
           </Tooltip>
-          <SectionToolbar contentRef={contentRef} />
+          {!isHeading && <SectionToolbar contentRef={contentRef} />}
         </>
       )}
 
-      {section.type !== "plain" && (
+      {/* ── Heading type: large title + thick bottom border (like "Deliverables", "Timeline", "Pricing") ── */}
+      {isHeading && (
+        <Box sx={{
+          borderBottom: "2px solid #1a1a1a",
+          mb: "16px",
+          pb: "6px",
+        }}>
+          <EditableText
+            value={section.title}
+            isStudioMode={isStudioMode}
+            onInput={(e) => handleInput(section.id, "title", e)}
+            sx={{
+              fontSize: 26, fontWeight: "bold", color: "#1a1a1a",
+              textAlign: "left", outline: "none", wordBreak: "break-word",
+              border: isStudioMode ? "1px dashed transparent" : "none",
+              "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+            }}
+          />
+        </Box>
+      )}
+
+      {/* ── Title type: medium sub-heading (like "Monthly Deliverables", "Initial Setup Phase") ── */}
+      {isTitle && (
         <EditableText
           value={section.title}
           isStudioMode={isStudioMode}
           onInput={(e) => handleInput(section.id, "title", e)}
           sx={{
-            fontSize: section.type === "heading" ? 22 : 18, fontWeight: "bold", color: "#1a1a1a",
-            textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word", mb: "10px",
+            fontSize: 18, fontWeight: "bold", color: "#1a1a1a",
+            textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word", mb: "8px",
             border: isStudioMode ? "1px dashed transparent" : "none",
             "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
           }}
         />
       )}
 
-      <EditableText
-        ref={contentRef}
-        value={section.content}
-        useHtml
-        isStudioMode={isStudioMode}
-        data-formattable="true"
-        onInput={(e) => handleInput(section.id, "content", e)}
-        sx={{
-          fontSize: 13, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
-          outline: "none", minHeight: "20px", whiteSpace: "pre-wrap", wordBreak: "break-word",
-          border: isStudioMode ? "1px dashed transparent" : "none",
-          "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
-        }}
-      />
+      {/* ── Plain type: no title ── */}
+      {section.type === "plain" && section.title && (
+        <EditableText
+          value={section.title}
+          isStudioMode={isStudioMode}
+          onInput={(e) => handleInput(section.id, "title", e)}
+          sx={{
+            fontSize: 14, fontWeight: 600, color: "#555",
+            textAlign: "left", outline: "none", wordBreak: "break-word", mb: "6px",
+            border: isStudioMode ? "1px dashed transparent" : "none",
+            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+          }}
+        />
+      )}
 
-      {!isLast && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "28px" }} />}
+      {/* ── Content: render HTML properly (bullet lists, bold, sub-headings) ── */}
+      {!isHeading && (
+        <EditableText
+          ref={contentRef}
+          value={section.content}
+          useHtml
+          isStudioMode={isStudioMode}
+          data-formattable="true"
+          onInput={(e) => handleInput(section.id, "content", e)}
+          sx={{
+            fontSize: 13, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
+            outline: "none", minHeight: "20px", wordBreak: "break-word",
+            border: isStudioMode ? "1px dashed transparent" : "none",
+            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+            // Proper HTML rendering for bullet lists, headings inside content
+            "& ul": { paddingLeft: "20px", margin: "4px 0" },
+            "& ol": { paddingLeft: "20px", margin: "4px 0" },
+            "& li": { marginBottom: "4px", lineHeight: 1.7 },
+            "& h2": { fontSize: "16px", fontWeight: "bold", color: "#1a1a1a", margin: "10px 0 6px" },
+            "& h3": { fontSize: "14px", fontWeight: "bold", color: "#1a1a1a", margin: "8px 0 4px" },
+            "& h4": { fontSize: "13px", fontWeight: "bold", color: "#333", margin: "6px 0 3px" },
+            "& p": { margin: "0 0 8px" },
+            "& strong": { fontWeight: "bold" },
+          }}
+        />
+      )}
+
+      {!isLast && !isHeading && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "28px" }} />}
     </Box>
   );
-};
+}, (prev, next) =>
+  prev.section === next.section &&
+  prev.calculatedMargin === next.calculatedMargin &&
+  prev.isStudioMode === next.isStudioMode &&
+  prev.isLast === next.isLast
+);
+
 
 // ─── Main Editor ───────────────────────────────────────────────────────────
-const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pageIdPrefix = "Additional Info" }) => {
+const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Additional Info" }) => {
   const dispatch = useDispatch();
   const currentMode = useSelector((state) => state.page2.currentMode || "create");
   const page2 = useSelector((state) => state.page2[currentMode] || state.page2);
@@ -911,11 +973,11 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
 
   const handleAddSection = (type) => {
     const defaults = {
-      numbered: { title: "Numbered List", content: "1. First item\n2. Second item\n3. Third item" },
-      bullets:  { title: "Bullet List",   content: "• First point\n• Second point" },
-      plain:    { title: "",              content: "Plain text without title..." },
-      heading:  { title: "Main Heading", content: "Detailed description underneath." },
-      title:    { title: "New Section",   content: "Start typing your content here..." },
+      heading:  { title: "Section Heading",    content: "" },
+      title:    { title: "Sub-Section Title",  content: "<p>Start typing your content here...</p>" },
+      bullets:  { title: "Bullet List",        content: "<ul><li>First point</li><li>Second point</li><li>Third point</li></ul>" },
+      numbered: { title: "Numbered List",      content: "<ol><li>First item</li><li>Second item</li><li>Third item</li></ol>" },
+      plain:    { title: "",                   content: "<p>Plain text paragraph without a title...</p>" },
     };
     const d = defaults[type] || defaults.title;
     dispatch(addSection({ type, ...d }));
@@ -927,25 +989,49 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
     setAddAnchor(null);
   };
 
+  // Helper: if currentY is in the gap between pages, snap it to the start of the next page
+  const snapToPageStart = (y) => {
+    const pg = Math.floor(y / CYCLE);
+    const pageBottom = pg * CYCLE + PAGE_HEIGHT; // where the white page ends
+    if (y >= pageBottom) {
+      // We're in the inter-page gap — snap forward
+      return (pg + 1) * CYCLE + TOP_PADDING;
+    }
+    return y;
+  };
+
+  let maxPageIndex = 0;
   // Paginated margin calc
   let currentY = TOP_PADDING;
   const margins = {};
   orderedSections.forEach((sec, idx) => {
     const h = sectionHeights[sec.id] || 60;
+
+    // Snap out of gap zone (between PAGE_HEIGHT and next CYCLE) before calculations
+    currentY = snapToPageStart(currentY);
+
     const pageIndex = Math.floor(currentY / CYCLE);
-    const currentContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
+    // The usable bottom of this page (content area ends here)
+    const pageContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
+    // Space still available on the current page
+    const spaceLeft = pageContentBottom - currentY;
+
     let mt = 0;
     if (idx === 0) {
       mt = TOP_PADDING;
       currentY = TOP_PADDING + h + 28;
+      maxPageIndex = Math.max(maxPageIndex, Math.floor((currentY - 1) / CYCLE));
     } else {
-      if (currentY + h > currentContentBottom) {
+      // Only wrap if the section genuinely won't fit in the remaining space
+      if (spaceLeft < h) {
         const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
         mt = nextY - currentY;
         currentY = nextY + h + 28;
+        maxPageIndex = Math.max(maxPageIndex, pageIndex + 1);
       } else {
         mt = 0;
         currentY = currentY + h + 28;
+        maxPageIndex = Math.max(maxPageIndex, pageIndex);
       }
     }
     margins[sec.id] = mt;
@@ -955,25 +1041,38 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
   const tableMargins = {};
   tables.forEach((table) => {
     const h = tableHeights[table.id] || 250;
+
+    // Snap out of gap zone before calculations
+    currentY = snapToPageStart(currentY);
+
     const pageIndex = Math.floor(currentY / CYCLE);
-    const currentContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
+    const pageContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
+    const spaceLeft = pageContentBottom - currentY;
+
     let mt;
-    if (currentY + h > currentContentBottom) {
+    if (spaceLeft < h) {
       // Doesn't fit — push to next page
       const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
       mt = nextY - currentY;
       currentY = nextY + h + 24;
+      maxPageIndex = Math.max(maxPageIndex, pageIndex + 1);
     } else {
       mt = 24; // normal spacing
       currentY = currentY + h + 24;
+      maxPageIndex = Math.max(maxPageIndex, pageIndex);
     }
     tableMargins[table.id] = mt;
   });
 
-  // Add measured table heights + add-button buffer
-  const totalHeight = currentY + BOTTOM_PADDING + (isStudioMode ? 100 : 0);
-  const totalPages = Math.max(1, Math.ceil(totalHeight / CYCLE));
-  const exactContainerHeight = totalPages * PAGE_HEIGHT + (totalPages - 1) * GAP;
+  // Derive totalPages strictly from where content actually ends — no extra blank pages
+  let lastContentY = Math.max(currentY - 28, TOP_PADDING);
+  const derivedPages = Math.floor(lastContentY / CYCLE) + 1;
+  const totalPages = Math.max(1, Math.min(derivedPages, maxPageIndex + 1));
+  
+  // Extend container height in studio mode so the buttons are visible, without generating phantom pages
+  const exactContainerHeight = totalPages * PAGE_HEIGHT + (totalPages - 1) * GAP + (isStudioMode ? 120 : 0);
+
+
 
   useEffect(() => {
     if (onPageCountChange) onPageCountChange(totalPages);
@@ -994,7 +1093,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
       {/* Background Pages */}
       <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none" }}>
         {Array.from({ length: totalPages }).map((_, i) => (
-          <Box key={i} id={isStudioMode ? `page-${pageIdPrefix}-${i}` : undefined}
+          <Box key={i} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${i}` : undefined}
             sx={{ position: "absolute", top: i * CYCLE, left: 0, right: 0, height: PAGE_HEIGHT, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px" }}>
               <img src="/new-header.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -1018,6 +1117,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
             index={index}
             isLast={index === orderedSections.length - 1}
             isStudioMode={isStudioMode}
+            isThumbnail={isThumbnail}
             calculatedMargin={margins[section.id] || 0}
             onHeightChange={handleHeightChange}
             handleInput={handleInput}
@@ -1027,7 +1127,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
 
         {/* Tables */}
         {tables.map((table) => (
-          <TableBlock key={table.id} table={table} isStudioMode={isStudioMode} dispatch={dispatch} onHeightChange={handleTableHeightChange} calculatedMargin={tableMargins[table.id]} />
+          <TableBlock key={table.id} table={table} isStudioMode={isStudioMode} isThumbnail={isThumbnail} dispatch={dispatch} onHeightChange={handleTableHeightChange} calculatedMargin={tableMargins[table.id]} />
         ))}
 
         {/* Add Button */}
@@ -1045,15 +1145,90 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, onPageCountChange, pa
             </Box>
 
             <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)}
-              PaperProps={{ sx: { borderRadius: 3, mt: 1, boxShadow: "0 12px 32px rgba(243,168,51,0.25)", minWidth: 220 } }}>
-              <MenuItem onClick={() => handleAddSection("title")}><Title sx={{ mr: 2, color: "#f3a833" }} /> Text Section</MenuItem>
-              <MenuItem onClick={() => handleAddSection("bullets")}><FormatListBulleted sx={{ mr: 2, color: "#f3a833" }} /> Bullet List</MenuItem>
-              <MenuItem onClick={() => handleAddSection("numbered")}><FormatListNumbered sx={{ mr: 2, color: "#f3a833" }} /> Numbered List</MenuItem>
-              <MenuItem onClick={() => handleAddSection("heading")}><TextFields sx={{ mr: 2, color: "#f3a833" }} /> Large Heading</MenuItem>
-              <MenuItem onClick={() => handleAddSection("plain")}><TextFields sx={{ mr: 2, color: "#f3a833" }} /> Plain Text</MenuItem>
-              <Divider />
-              <MenuItem onClick={() => handleAddTable(2)}><TableChart sx={{ mr: 2, color: "#f3a833" }} /> 2-Column Table</MenuItem>
-              <MenuItem onClick={() => handleAddTable(3)}><TableChart sx={{ mr: 2, color: "#f3a833" }} /> 3-Column Table</MenuItem>
+              PaperProps={{ sx: { borderRadius: 3, mt: 1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)", minWidth: 420, bgcolor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", p: 1.5 } }}>
+
+              <Typography sx={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, px: 1, mb: 1.5 }}>Section Types</Typography>
+
+              {/* Visual Section Type Cards */}
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, px: 0.5, mb: 1.5 }}>
+
+                {/* Heading */}
+                <Box onClick={() => handleAddSection("heading")}
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <Box sx={{ borderBottom: "2px solid #1a1a1a", pb: 0.3, mb: 0.8, bgcolor: "#fff", px: 0.5 }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#1a1a1a", lineHeight: 1.3 }}>Heading</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Large section divider with bottom border<br/>(e.g. Deliverables, Timeline, Pricing)</Typography>
+                </Box>
+
+                {/* Title */}
+                <Box onClick={() => handleAddSection("title")}
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Sub-Heading</Typography>
+                    <Typography sx={{ fontSize: 9.5, color: "#666", lineHeight: 1.5 }}>Description text here...</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Sub-section with title + content<br/>(e.g. Monthly Deliverables)</Typography>
+                </Box>
+
+                {/* Bullet List */}
+                <Box onClick={() => handleAddSection("bullets")}
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Bullet List</Typography>
+                    {["• First point", "• Second point", "• Third point"].map((t, i) => (
+                      <Typography key={i} sx={{ fontSize: 9, color: "#555", lineHeight: 1.6 }}>{t}</Typography>
+                    ))}
+                  </Box>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Title + bulleted HTML list</Typography>
+                </Box>
+
+                {/* Numbered List */}
+                <Box onClick={() => handleAddSection("numbered")}
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Numbered List</Typography>
+                    {["1. First item", "2. Second item", "3. Third item"].map((t, i) => (
+                      <Typography key={i} sx={{ fontSize: 9, color: "#555", lineHeight: 1.6 }}>{t}</Typography>
+                    ))}
+                  </Box>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Title + numbered HTML list</Typography>
+                </Box>
+
+                {/* Plain text */}
+                <Box onClick={() => handleAddSection("plain")}
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    gridColumn: "1 / -1",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
+                    <Typography sx={{ fontSize: 9.5, color: "#555", lineHeight: 1.7 }}>Plain paragraph text without a heading, good for introductions or notes.</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Plain text — no title</Typography>
+                </Box>
+              </Box>
+
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", mb: 1.5 }} />
+              <Typography sx={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, px: 1, mb: 1 }}>Tables</Typography>
+              <Box sx={{ display: "flex", gap: 1, px: 0.5 }}>
+                <Box onClick={() => handleAddTable(2)}
+                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
+                  <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>2-Column Table</Typography>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Service / Price</Typography>
+                </Box>
+                <Box onClick={() => handleAddTable(3)}
+                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
+                  <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>3-Column Table</Typography>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Phase / Deliverable / Timeline</Typography>
+                </Box>
+              </Box>
             </Menu>
           </Box>
         )}

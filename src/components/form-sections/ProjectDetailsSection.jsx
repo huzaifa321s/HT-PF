@@ -93,45 +93,7 @@ export default function ProjectDetailsSection({
           }}
         />
 
-        <TextField
-          fullWidth
-          label="Business Description"
-          name="businessDescription"
-          multiline
-          rows={5}
-          value={formData.businessDescription}
-          onChange={handleChange}
-          disabled={processing}
-          inputRef={(el) => (inputRefs.current[6] = el)}
-          onKeyDown={(e) => handleKeyDown(e, 6)}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-              bgcolor: "background.paper",
-            },
-          }}
-        />
-        {processing && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
 
-        <TextField
-          fullWidth
-          label="Proposed Solution"
-          name="proposedSolution"
-          multiline
-          rows={5}
-          value={formData.proposedSolution}
-          onChange={handleChange}
-          disabled={processing}
-          inputRef={(el) => (inputRefs.current[7] = el)}
-          onKeyDown={(e) => handleKeyDown(e, 7)}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-              bgcolor: "background.paper",
-            },
-          }}
-        />
-        {processing && <LinearProgress color="success" sx={{ mt: 1, borderRadius: 1 }} />}
 
         <Grid item xs={12}>
           <FormControl fullWidth>

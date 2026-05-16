@@ -1,10 +1,36 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition, useRef } from "react";
 import { Switch, Typography, Box } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRight,
 } from "@mui/icons-material";
+
+/**
+ * DeferredThumbnail — renders the editor thumbnail with lower React priority.
+ * This prevents thumbnail re-renders from blocking the main editing experience.
+ * Updates are batched and applied only after the browser is idle for 300ms.
+ */
+const DeferredThumbnail = ({ editorFn }) => {
+  const [, startTransition] = useTransition();
+  const [content, setContent] = useState(() => editorFn(true, true));
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    // Debounce thumbnail updates by 300ms so rapid edits don’t thrash the sidebar
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      startTransition(() => {
+        setContent(editorFn(true, true));
+      });
+    }, 300);
+    return () => clearTimeout(timerRef.current);
+  // editorFn is stable (from useMemo), so we use a dummy counter via the content length
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorFn]);
+
+  return content;
+};
 
 export default function EditorSidebar({
   pages = [],
@@ -127,17 +153,15 @@ export default function EditorSidebar({
             const scale = thumbnailWidth / 800;
             const thumbnailHeight = 1131 * scale;
 
-            const getGapForPage = (name) => {
-              if (name === "Payment Terms") return 1151;
-              return 1171;
-            };
-
             elements.push(
               <div key={uniqueId} id={`sidebar-item-${uniqueId.replace(/\s+/g, '-')}`} className={`relative group/navitem flex flex-col items-center transition-all duration-300 ${isActive ? "scale-[1.05] z-10" : "scale-100"}`}>
 
                 {/* Thumbnail Container */}
-                <button
+                <div
                   onClick={() => isVisible && scrollToSlide(uniqueId)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && isVisible && scrollToSlide(uniqueId)}
                   style={{ width: `${thumbnailWidth}px`, height: `${thumbnailHeight}px` }}
                   className={`relative rounded-xl overflow-hidden transition-all duration-300 border-[3px] cursor-pointer ${!isVisible
                     ? "opacity-40 border-slate-800 bg-[#141414]/50"
@@ -146,24 +170,26 @@ export default function EditorSidebar({
                       : "border-slate-700 bg-[#141414] hover:border-slate-500 opacity-60 hover:opacity-100"
                     }`}
                 >
-                  {/* Inner scaler box */}
+                  {/* Inner scaler box — rendered with isStudioMode=true so page count matches the main editor.
+                      Uses page.cycle (PAGE_HEIGHT + studio GAP) for the correct per-editor translateY.
+                      DeferredThumbnail debounces updates so editing stays responsive. */}
                   <div
                     className="absolute top-0 left-0 pointer-events-none"
                     style={{
                       width: "800px",
-                      transform: `scale(${scale}) translateY(-${i * getGapForPage(page.name)}px)`,
+                      transform: `scale(${scale}) translateY(-${i * (page.cycle || 1171)}px)`,
                       transformOrigin: "top left",
                       textAlign: "left",
                     }}
                   >
-                    {page.editor && page.editor(true, false)}
+                    {page.editor && <DeferredThumbnail editorFn={page.editor} />}
                   </div>
 
                   {/* Status Indicator when collapsed */}
                   {isCollapsed && isVisible && (
                     <span className="absolute bottom-1 right-1 w-2.5 h-2.5 bg-[#f3a833] rounded-full border-2 border-[#0a0a0a] z-10" />
                   )}
-                </button>
+                </div>
 
                 {/* Text Label Below Thumbnail */}
                 {!isCollapsed && (

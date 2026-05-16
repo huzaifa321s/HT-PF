@@ -232,32 +232,7 @@ const ViewProposalModal = ({ open, handleClose, id }) => {
                 <InfoRow label="Date" value={proposal?.date} icon={<CalendarToday />} />
               </AccordionSection>
 
-              {/* Project Details */}
-              <AccordionSection
-                panel="project"
-                title="Project Details"
-                icon={<Description />}
-              >
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Business Description
-                  </Typography>
-                  <Paper sx={{ p: 2, mb: 2, bgcolor: "#141414", borderRadius: 2 }}>
-                    <Typography variant="body2" sx={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>
-                      {proposal?.businessDescription || "No description provided."}
-                    </Typography>
-                  </Paper>
 
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Proposed Solution
-                  </Typography>
-                  <Paper sx={{ p: 2, bgcolor: "#141414", borderRadius: 2 }}>
-                    <Typography variant="body2" sx={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>
-                      {proposal?.proposedSolution || "No solution provided."}
-                    </Typography>
-                  </Paper>
-                </Box>
-              </AccordionSection>
 
               {/* Financial */}
               <AccordionSection
