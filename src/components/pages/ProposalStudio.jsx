@@ -184,7 +184,7 @@ export default function ProposalStudio() {
       };
 
       await axiosInstance.put(
-        `${process.env.NEXT_PUBLIC_APP_BASE_URL}api/proposals/update-proposal/${id}`,
+        `/api/proposals/update-proposal/${id}`,
         {
           data: { ...formData, clientName: liveClientName, date: liveDate }, // persist live edits
           pdfPages,

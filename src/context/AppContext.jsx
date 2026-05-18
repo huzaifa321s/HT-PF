@@ -156,7 +156,7 @@ export const AppProvider = ({ children }) => {
 
   // SSE setup
   useEffect(() => {
-    const evtSource = new EventSource(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000/"}api/transcribe/sse`);
+    const evtSource = new EventSource(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000"}/api/transcribe/sse`);
     evtSource.onmessage = (e) => {
       const { event, data } = JSON.parse(e.data);
       if (event === "upload_status" || event === "transcription_status" || event === "pipeline_status") {
@@ -246,7 +246,7 @@ export const AppProvider = ({ children }) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      await fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000/"}api/transcribe`, {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000"}/api/transcribe`, {
         method: "POST",
         body: formData,
       });

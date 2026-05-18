@@ -231,99 +231,99 @@ export default function App() {
   const [tabValue, setTabValue] = useState(0);
 
   // === Socket Setup ===
-  useEffect(() => {
-    socketRef.current = io(process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000");
+  // useEffect(() => {
+  //   socketRef.current = io(process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000");
 
-    socketRef.current.on("connect", () => {
-      setConnectionStatus(true);
-      setStatus("connected");
-      dispatch(
-        showToast({
-          message:
-            "🎙️ Live call transcription connected and ready for real-time streaming!",
-          severity: "info",
-          duration: 4000,
-        })
-      );
-    });
+  //   socketRef.current.on("connect", () => {
+  //     setConnectionStatus(true);
+  //     setStatus("connected");
+  //     dispatch(
+  //       showToast({
+  //         message:
+  //           "🎙️ Live call transcription connected and ready for real-time streaming!",
+  //         severity: "info",
+  //         duration: 4000,
+  //       })
+  //     );
+  //   });
 
-    socketRef.current.on("status", (data) => {
-      if (typeof data === "string") {
-        setStatus(data);
-        console.log("data", data);
-      } else if (data?.message) {
-        setLoadingStatus(data.message);
-        dispatch(updateStatus(data.message));
-      }
-    });
+  //   socketRef.current.on("status", (data) => {
+  //     if (typeof data === "string") {
+  //       setStatus(data);
+  //       console.log("data", data);
+  //     } else if (data?.message) {
+  //       setLoadingStatus(data.message);
+  //       dispatch(updateStatus(data.message));
+  //     }
+  //   });
 
-    socketRef.current.on("pause_recording", () => {
-      console.log("🎧 Recording paused by client");
-      // stop temporarily forwarding chunks to Deepgram or Gladia
-    });
+  //   socketRef.current.on("pause_recording", () => {
+  //     console.log("🎧 Recording paused by client");
+  //     // stop temporarily forwarding chunks to Deepgram or Gladia
+  //   });
 
-    socketRef.current.on("resume_recording", () => {
-      console.log("🎧 Recording resumed by client");
-      // resume sending chunks again
-    });
+  //   socketRef.current.on("resume_recording", () => {
+  //     console.log("🎧 Recording resumed by client");
+  //     // resume sending chunks again
+  //   });
 
-    socketRef.current.emit("ready");
+  //   socketRef.current.emit("ready");
 
-    socketRef.current.on("finalized_transcript", (data) => {
-      console.log("FULL FINAL TRANSCRIPT:", data);
-      const text = data?.text?.trim();
-      const extracted = data.extracted;
+  //   socketRef.current.on("finalized_transcript", (data) => {
+  //     console.log("FULL FINAL TRANSCRIPT:", data);
+  //     const text = data?.text?.trim();
+  //     const extracted = data.extracted;
 
-      if (text) {
-        const entry = {
-          type: "finalized",
-          text,
-          is_final: true,
-          timestamp: new Date().toLocaleTimeString(),
-          id: `finalized-${Date.now()}`,
-        };
-        setHistory((prev) => [...prev, entry]);
-      }
+  //     if (text) {
+  //       const entry = {
+  //         type: "finalized",
+  //         text,
+  //         is_final: true,
+  //         timestamp: new Date().toLocaleTimeString(),
+  //         id: `finalized-${Date.now()}`,
+  //       };
+  //       setHistory((prev) => [...prev, entry]);
+  //     }
 
-      if (isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0) {
-        dispatch(setBusinessInfo(extracted));
+  //     if (isValidData(extracted) || extracted?.deliverables?.length > 0 || extracted?.quotation?.length > 0) {
+  //       dispatch(setBusinessInfo(extracted));
 
-        // Restore: Prepare updated form data conditionally
-        const updatedFormData = {
-          ...formData,
-          ...(extracted.brand_name && { brandName: extracted.brand_name }),
-          ...(extracted.brand_tagline && { brandTagline: extracted.brand_tagline }),
-          ...(extracted.business_type && { businessType: extracted.business_type }),
-          ...(extracted.industry_title && { industoryTitle: extracted.industry_title }),
-          ...(extracted.project_brief && { projectBrief: extracted.project_brief }),
-          ...(extracted.recommended_services?.length > 0 && { recommended_services: extracted.recommended_services }),
-          ...(extracted.strategic_proposal?.length > 0 && { strategicProposal: extracted.strategic_proposal }),
-        };
-        // Update local state or dispatch if necessary (currently it was just a constant in previous code, 
-        // but it implies the user intended to use these values)
-      }
+  //       // Restore: Prepare updated form data conditionally
+  //       const updatedFormData = {
+  //         ...formData,
+  //         ...(extracted.brand_name && { brandName: extracted.brand_name }),
+  //         ...(extracted.brand_tagline && { brandTagline: extracted.brand_tagline }),
+  //         ...(extracted.business_type && { businessType: extracted.business_type }),
+  //         ...(extracted.industry_title && { industoryTitle: extracted.industry_title }),
+  //         ...(extracted.project_brief && { projectBrief: extracted.project_brief }),
+  //         ...(extracted.recommended_services?.length > 0 && { recommended_services: extracted.recommended_services }),
+  //         ...(extracted.strategic_proposal?.length > 0 && { strategicProposal: extracted.strategic_proposal }),
+  //       };
+  //       // Update local state or dispatch if necessary (currently it was just a constant in previous code, 
+  //       // but it implies the user intended to use these values)
+  //     }
 
-      // Update full transcript
-      setFullTranscript(data.text);
-      setRomanUrdu(data.romanUrdu || "");
-      setEnglishTranscript(data.english || "");
-      setTranscriptWordLength(data.length);
-      setBadges((prev) => ({ ...prev, ["live"]: false }));
-      dispatch(setPolishedTranscript(data.text));
-    });
+  //     // Update full transcript
+  //     setFullTranscript(data.text);
+  //     setRomanUrdu(data.romanUrdu || "");
+  //     setEnglishTranscript(data.english || "");
+  //     setTranscriptWordLength(data.length);
+  //     setBadges((prev) => ({ ...prev, ["live"]: false }));
+  //     dispatch(setPolishedTranscript(data.text));
+  //   });
 
-    socketRef.current.on("live_polished_text", (data) => {
-      console.log("LIVE AI POLISHED:", data.text);
-      if (data.text) {
-        setRefinedLiveText(data.text);
-      }
-    });
+  //   socketRef.current.on("live_polished_text", (data) => {
+  //     console.log("LIVE AI POLISHED:", data.text);
+  //     if (data.text) {
+  //       setRefinedLiveText(data.text);
+  //     }
+  //   });
 
-    return () => {
-      setBadges((prev) => ({ ...prev, ["live"]: false }));
-      socketRef.current?.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     setBadges((prev) => ({ ...prev, ["live"]: false }));
+  //     socketRef.current?.disconnect();
+  //   };
+  // }, []);
 
   // === Periodic Live AI Polish ===
   useEffect(() => {
@@ -444,7 +444,7 @@ export default function App() {
     try {
       // 1. Save Draft Proposal
       const res = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_APP_BASE_URL}api/proposals/create-proposal`,
+        "/api/proposals/create-proposal",
         { data: data, selectedCurrency: currency, pdfPages },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -453,10 +453,10 @@ export default function App() {
       const proposalId = res.data.data._id;
 
       dispatch(showToast({ message: "Proposal saved! Redirecting to Studio...", severity: "success" }));
-      
+
       // 2. Redirect to Proposal Studio
       router.push(`/proposal-studio/${proposalId}`);
-      
+
     } catch (err) {
       console.error(err);
       dispatch(hideToast());
@@ -635,7 +635,7 @@ export default function App() {
     const formData = new FormData();
     formData.append("file", file);
 
-    await fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL}api/transcribe`, {
+    await fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/api/transcribe`, {
       method: "POST",
       body: formData,
     });
