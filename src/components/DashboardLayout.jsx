@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }) {
                 selected={isActive}
                 onClick={() => handleNav(item.path)}
                 sx={{
-                  borderRadius: 2.5,
+                  borderRadius: 10,
                   mb: 1,
                   py: 1.5,
                   px: isCollapsed ? 1 : 2,
@@ -227,7 +227,7 @@ export default function DashboardLayout({ children }) {
           <ListItemButton
             onClick={handleLogout}
             sx={{
-              borderRadius: 2.5,
+              borderRadius: 10,
               px: isCollapsed ? 1 : 2,
               justifyContent: isCollapsed ? "center" : "flex-start",
               transition: "all 0.3s ease",

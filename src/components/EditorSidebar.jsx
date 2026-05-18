@@ -83,12 +83,12 @@ export default function EditorSidebar({
       {/* Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-9 bg-[#141414] border border-[#f3a833]/50 text-[#f3a833] hover:bg-[#1f1f1f] shadow-sm rounded-full p-1 z-50 transition-transform hidden md:flex items-center justify-center"
+        className="absolute -right-2.5 top-10 bg-[#0a0a0a] border border-[#f3a833]/30 text-[#f3a833] hover:border-[#f3a833]/80 hover:bg-[#f3a833]/10 hover:scale-110 shadow-[0_0_10px_rgba(243,168,51,0.15)] rounded-full p-0.5 z-50 transition-all duration-300 hidden md:flex items-center justify-center"
       >
         {isCollapsed ? (
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         ) : (
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5" />
         )}
       </button>
 
@@ -105,9 +105,11 @@ export default function EditorSidebar({
             <span className="text-xs text-slate-400 mt-1">Click to jump to a page</span>
           </div>
         ) : (
-          <div className="w-8 h-8 p-0.5 bg-[#f3a833]/10 border border-[#f3a833]/20 rounded-xl shadow-sm shrink-0 flex items-center justify-center">
-            <span className="text-[#f3a833] font-bold text-sm">HT</span>
-          </div>
+          <img
+            src="/download.jpg"
+            alt="Humantek Logo"
+            className="w-10 h-10 rounded-full object-cover shrink-0 transition-all duration-300 border-2 border-[#f3a833]/50 shadow-[0_4px_12px_rgba(243,168,51,0.2)]"
+          />
         )}
       </div>
 
@@ -163,7 +165,7 @@ export default function EditorSidebar({
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && isVisible && scrollToSlide(uniqueId)}
                   style={{ width: `${thumbnailWidth}px`, height: `${thumbnailHeight}px` }}
-                  className={`relative rounded-xl overflow-hidden transition-all duration-300 border-[3px] cursor-pointer ${!isVisible
+                  className={`relative rounded-[10px] overflow-hidden transition-all duration-300 border-[3px] cursor-pointer ${!isVisible
                     ? "opacity-40 border-slate-800 bg-[#141414]/50"
                     : isActive
                       ? "border-[#f3a833] shadow-[0_0_25px_rgba(243,168,51,0.4)] ring-4 ring-[#f3a833]/20"

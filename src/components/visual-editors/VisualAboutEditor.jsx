@@ -70,7 +70,7 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
         {isStudioMode && (
           <Box className="img-overlay" sx={{
             position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            bgcolor: "rgba(0,0,0,0.4)", borderRadius: 1,
+            bgcolor: "rgba(0,0,0,0.4)", borderRadius: '10px',
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             opacity: 0, transition: "opacity 0.2s", "&:hover": { opacity: 1 }
           }}>
@@ -170,7 +170,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
       
       {isOverflowing && isStudioMode && (
-        <Alert severity="warning" sx={{ width: "100%", maxWidth: "800px", mb: 2, borderRadius: 2 }}>
+        <Alert severity="warning" sx={{ width: "100%", maxWidth: "800px", mb: 2, borderRadius: '10px' }}>
           <strong>Page Overflow Warning:</strong> Your content exceeds a single A4 page. Please remove text or reduce image size to fit perfectly.
         </Alert>
       )}
@@ -194,7 +194,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
         </Box>
         {isStudioMode && (
           <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-            <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>
+            <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
               <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
             </Typography>
           </Box>
@@ -212,7 +212,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               sx={{
                 fontSize: 36, fontWeight: "800", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                 textAlign: "center",
-                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: 1 } : {}
+                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
             />
           </Box>
@@ -224,7 +224,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               onInput={handleSubtitleInput}
               sx={{
                 fontSize: 18, fontWeight: "600", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: 1 } : {}
+                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
             />
           )}
@@ -258,7 +258,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                     sx={{
                       fontSize: 13, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
                       border: isStudioMode ? "1px dashed transparent" : "none",
-                      "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: 1 } : {}
+                      "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: '10px' } : {}
                     }}
                   />
                 )}

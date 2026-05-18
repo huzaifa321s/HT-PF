@@ -103,7 +103,7 @@ const FloatingToolbar = ({ containerRef }) => {
     color: active ? '#f3a833' : '#ccc',
     bgcolor: active ? 'rgba(243,168,51,0.15)' : 'transparent',
     border: `1px solid ${active ? 'rgba(243,168,51,0.4)' : 'transparent'}`,
-    borderRadius: 0.8,
+    borderRadius: '10px',
     fontSize: 12, fontWeight: 700,
     transition: 'all 0.12s',
     '&:hover': { bgcolor: 'rgba(243,168,51,0.2)', color: '#f3a833' },
@@ -123,7 +123,7 @@ const FloatingToolbar = ({ containerRef }) => {
         gap: 0.3,
         bgcolor: '#1c1c1c',
         border: '1px solid rgba(243,168,51,0.25)',
-        borderRadius: 1.5,
+        borderRadius: '10px',
         px: 0.8, py: 0.5,
         boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5)',
         backdropFilter: 'blur(8px)',
@@ -170,7 +170,7 @@ const EditCell = ({ value, onChange, isHeader, isStudioMode }) => {
         width: "100%",
         wordBreak: "break-word",
         borderBottom: isStudioMode ? "1px dashed transparent" : "none",
-        "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(243,168,51,0.5)", bgcolor: "rgba(243,168,51,0.06)", borderRadius: 0.5 } : {},
+        "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(243,168,51,0.5)", bgcolor: "rgba(243,168,51,0.06)", borderRadius: '10px' } : {},
       }}
     />
   );
@@ -208,7 +208,7 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth
-      PaperProps={{ sx: { bgcolor: "#0f0f0f", border: "1px solid rgba(243,168,51,0.2)", borderRadius: 3 } }}>
+      PaperProps={{ sx: { bgcolor: "#0f0f0f", border: "1px solid rgba(243,168,51,0.2)", borderRadius: '10px' } }}>
       <DialogTitle sx={{ color: "#fff", borderBottom: "1px solid rgba(255,255,255,0.08)", pb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <PlaylistAdd sx={{ color: "#f3a833", fontSize: 28 }} />
@@ -241,7 +241,7 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
             : `Website Design, 85000\nMobile App, 180000\nLogo Design, 35000`}
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
-          InputProps={{ sx: { fontFamily: "monospace", fontSize: 13, color: "#e0e0e0", bgcolor: "#1a1a1a", borderRadius: 1.5 } }}
+          InputProps={{ sx: { fontFamily: "monospace", fontSize: 13, color: "#e0e0e0", bgcolor: "#1a1a1a", borderRadius: '10px' } }}
           sx={{ mb: 3, "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243,168,51,0.3)" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#f3a833" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#f3a833" } }}
         />
 
@@ -252,7 +252,7 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
               <Typography variant="caption" sx={{ color: "#888", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Preview</Typography>
               <Chip label={`${preview.length} rows`} size="small" sx={{ bgcolor: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", fontSize: 10 }} />
             </Box>
-            <Box sx={{ border: "1px solid #2a2a2a", borderRadius: 1.5, overflow: "hidden", maxHeight: 240, overflowY: "auto" }}>
+            <Box sx={{ border: "1px solid #2a2a2a", borderRadius: '10px', overflow: "hidden", maxHeight: 240, overflowY: "auto" }}>
               {/* Preview Header */}
               <Box sx={{ display: "flex", bgcolor: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
                 {cols.map((col) => (
@@ -396,7 +396,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth
-      PaperProps={{ sx: { bgcolor: "#0d0d0d", border: "1px solid rgba(167,139,250,0.25)", borderRadius: 3, minHeight: "80vh" } }}>
+      PaperProps={{ sx: { bgcolor: "#0d0d0d", border: "1px solid rgba(167,139,250,0.25)", borderRadius: '10px', minHeight: "80vh" } }}>
       <DialogTitle sx={{ borderBottom: "1px solid rgba(255,255,255,0.07)", pb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <AutoFixHigh sx={{ color: "#a78bfa", fontSize: 28 }} />
@@ -419,7 +419,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             placeholder={`Paste any content here. Examples:\n\n# Scope of Work\n\nProject Brief\nWe will deliver a complete website...\n\n• Item 1\n• Item 2\n• Item 3\n\n1. Step one\n2. Step two\n3. Step three`}
             value={rawText}
             onChange={(e) => { setRawText(e.target.value); setParsed(false); }}
-            InputProps={{ sx: { fontFamily: "monospace", fontSize: 12.5, color: "#e0e0e0", bgcolor: "#141414", borderRadius: 1.5, alignItems: "flex-start" } }}
+            InputProps={{ sx: { fontFamily: "monospace", fontSize: 12.5, color: "#e0e0e0", bgcolor: "#141414", borderRadius: '10px', alignItems: "flex-start" } }}
             sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(167,139,250,0.3)" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" } }}
           />
           <Button
@@ -465,7 +465,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
                 const meta = TYPE_META[sec.type] || TYPE_META.plain;
                 return (
                   <Box key={sec._id}
-                    sx={{ bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: 1.5, p: 1.5, position: "relative", "&:hover .sp-del": { opacity: 1 } }}>
+                    sx={{ bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: '10px', p: 1.5, position: "relative", "&:hover .sp-del": { opacity: 1 } }}>
                     {/* Type Selector Row */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mb: 1, flexWrap: "wrap" }}>
                       {TYPES.map((t) => {
@@ -475,7 +475,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
                           <Box key={t}
                             onClick={() => handleTypeChange(sec._id, t)}
                             sx={{
-                              px: 1, py: 0.3, borderRadius: 1, fontSize: 10, fontWeight: 700, cursor: "pointer",
+                              px: 1, py: 0.3, borderRadius: '10px', fontSize: 10, fontWeight: 700, cursor: "pointer",
                               border: `1px solid ${active ? tm.border : "rgba(255,255,255,0.08)"}`,
                               bgcolor: active ? tm.bg : "transparent",
                               color: active ? tm.color : "#555",
@@ -586,7 +586,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
           sx={{
             fontSize: 15, fontWeight: 700, color: "#1a1a1a", outline: "none", flex: 1,
             borderBottom: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 0.5 } : {},
+            "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
           }}
         >
           {table.title || "Table Title"}
@@ -614,7 +614,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
       </Box>
 
       {/* Table Grid */}
-      <Box sx={{ border: "1px solid #ddd", borderRadius: 1.5, overflow: "hidden" }}>
+      <Box sx={{ border: "1px solid #ddd", borderRadius: '10px', overflow: "hidden" }}>
         {/* Header Row */}
         <Box sx={{ display: "flex", bgcolor: "#000" }}>
           {["col1", "col2", ...(is3 ? ["col3"] : [])].map((col, ci) => (
@@ -765,7 +765,7 @@ const SectionToolbar = ({ contentRef }) => {
           width: 26, height: 26, p: 0,
           color: isActive ? '#f3a833' : '#555',
           bgcolor: isActive ? 'rgba(243,168,51,0.12)' : 'transparent',
-          borderRadius: 0.8,
+          borderRadius: '10px',
           border: `1px solid ${isActive ? 'rgba(243,168,51,0.3)' : 'transparent'}`,
           '&:hover': { bgcolor: 'rgba(243,168,51,0.15)', color: '#f3a833', border: '1px solid rgba(243,168,51,0.3)' },
         }}
@@ -784,7 +784,7 @@ const SectionToolbar = ({ contentRef }) => {
         display: 'flex', alignItems: 'center', gap: 0.4,
         bgcolor: '#f7f7f7',
         border: '1px solid #e0e0e0',
-        borderRadius: 1.5,
+        borderRadius: '10px',
         px: 0.6, py: 0.3,
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         opacity: 0,
@@ -872,7 +872,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               fontSize: 26, fontWeight: "bold", color: "#1a1a1a",
               textAlign: "left", outline: "none", wordBreak: "break-word",
               border: isStudioMode ? "1px dashed transparent" : "none",
-              "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+              "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
             }}
           />
         </Box>
@@ -888,7 +888,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             fontSize: 18, fontWeight: "bold", color: "#1a1a1a",
             textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word", mb: "8px",
             border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
           }}
         />
       )}
@@ -903,7 +903,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             fontSize: 14, fontWeight: 600, color: "#555",
             textAlign: "left", outline: "none", wordBreak: "break-word", mb: "6px",
             border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
           }}
         />
       )}
@@ -921,7 +921,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             fontSize: 13, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
             outline: "none", minHeight: "20px", wordBreak: "break-word",
             border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: 1 } : {},
+            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
             // Proper HTML rendering for bullet lists, headings inside content
             "& ul": { paddingLeft: "20px", margin: "4px 0" },
             "& ol": { paddingLeft: "20px", margin: "4px 0" },
@@ -1100,7 +1100,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
     <Box sx={{ position: "relative", width: "100%", maxWidth: "800px", height: exactContainerHeight, margin: "0 auto", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {isStudioMode && (
         <Box sx={{ position: "absolute", top: 10, right: -120, zIndex: 50 }}>
-          <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>
+          <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
             <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} />Editing Info
           </Typography>
         </Box>
@@ -1161,7 +1161,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
             </Box>
 
             <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)}
-              PaperProps={{ sx: { borderRadius: 3, mt: 1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)", minWidth: 420, bgcolor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", p: 1.5 } }}>
+              PaperProps={{ sx: { borderRadius: '10px', mt: 1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)", minWidth: 420, bgcolor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", p: 1.5 } }}>
 
               <Typography sx={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, px: 1, mb: 1.5 }}>Section Types</Typography>
 
@@ -1170,7 +1170,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Heading */}
                 <Box onClick={() => handleAddSection("heading")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <Box sx={{ borderBottom: "2px solid #1a1a1a", pb: 0.3, mb: 0.8, bgcolor: "#fff", px: 0.5 }}>
                     <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#1a1a1a", lineHeight: 1.3 }}>Heading</Typography>
@@ -1180,7 +1180,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Title */}
                 <Box onClick={() => handleAddSection("title")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Sub-Heading</Typography>
@@ -1191,7 +1191,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Bullet List */}
                 <Box onClick={() => handleAddSection("bullets")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Bullet List</Typography>
@@ -1204,7 +1204,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Numbered List */}
                 <Box onClick={() => handleAddSection("numbered")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Numbered List</Typography>
@@ -1217,7 +1217,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Plain text */}
                 <Box onClick={() => handleAddSection("plain")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     gridColumn: "1 / -1",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
@@ -1231,14 +1231,14 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
               <Typography sx={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, px: 1, mb: 1 }}>Tables</Typography>
               <Box sx={{ display: "flex", gap: 1, px: 0.5 }}>
                 <Box onClick={() => handleAddTable(2)}
-                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
                   <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>2-Column Table</Typography>
                   <Typography sx={{ fontSize: 9, color: "#666" }}>Service / Price</Typography>
                 </Box>
                 <Box onClick={() => handleAddTable(3)}
-                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: 2, bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
                   <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
                   <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>3-Column Table</Typography>

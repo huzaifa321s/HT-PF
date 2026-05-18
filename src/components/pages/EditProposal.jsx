@@ -655,7 +655,7 @@ const EditProposal = () => {
                         mt: -1,
                         mb: 2,
                         background: colorScheme.gradient,
-                        borderRadius: 2,
+                        borderRadius: 10,
                         textTransform: "none",
                         fontWeight: 600,
                         "&:hover": {
@@ -845,6 +845,7 @@ const EditProposal = () => {
               disabled={isGeneratingAI || !formData.projectBrief}
               sx={{
                 mt: 1,
+                borderRadius: 10,
                 borderColor: colorScheme.primary,
                 color: colorScheme.primary,
                 "&:hover": {
@@ -1437,7 +1438,7 @@ const EditProposal = () => {
                 sx={{
                   px: { xs: 3, sm: 6 },
                   py: { xs: 1.5, sm: 2 },
-                  borderRadius: 4,
+                  borderRadius: 10,
                   fontSize: { xs: "0.9rem", sm: "1.1rem" },
                   fontWeight: 700,
                   boxShadow: 6,

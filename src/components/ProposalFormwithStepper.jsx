@@ -289,9 +289,7 @@ const ProposalFormWithStepper = ({
       submitData.projectCategory = submitData.customProjectCategory;
     }
     
-    // Map frontend fields to backend required schema to avoid 400 Errors
-    submitData.businessDescription = submitData.projectBrief || submitData.projectCategory || "Not provided";
-    submitData.proposedSolution = submitData.strategicProposal || "Custom solution to be outlined in the proposal.";
+    // Fields businessDescription and proposedSolution have been removed from backend schema
 
     console.log("Form data submitted:", submitData);
     console.log("selected", selectedCurrency);
@@ -603,7 +601,7 @@ const ProposalFormWithStepper = ({
                         mt: -1,
                         mb: 2,
                         background: colorScheme.gradient,
-                        borderRadius: 2,
+                        borderRadius: 10,
                         textTransform: "none",
                         fontWeight: 600,
                         "&:hover": {
@@ -794,6 +792,7 @@ const ProposalFormWithStepper = ({
               disabled={isGeneratingAI || !watch("projectBrief")}
               sx={{
                 mt: 1,
+                borderRadius: 10,
                 borderColor: colorScheme.primary,
                 color: colorScheme.primary,
                 "&:hover": {
@@ -1160,7 +1159,7 @@ const ProposalFormWithStepper = ({
                 sx={{
                   px: { xs: 3, sm: 6 },
                   py: { xs: 1.5, sm: 2 },
-                  borderRadius: 4,
+                  borderRadius: 10,
                   fontSize: { xs: "0.85rem", sm: "1.1rem" },
                   fontWeight: 700,
                   boxShadow: 6,

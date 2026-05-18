@@ -247,7 +247,7 @@ export default function ProposalStudio() {
         </Typography>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           {/* Zoom Controls */}
-          <div className="bg-[#0a0a0a]/50 border border-[#f3a833]/20 px-2 py-1 rounded flex items-center gap-2 mr-2 shrink-0">
+          <div className="bg-[#0a0a0a]/50 border border-[#f3a833]/20 px-2 py-1 rounded-[10px] flex items-center gap-2 mr-2 shrink-0">
             <button
               onClick={() => setZoomLevel(prev => Math.max(20, prev - 10))}
               className="text-slate-400 hover:text-white transition-colors"
@@ -275,7 +275,7 @@ export default function ProposalStudio() {
             <div className="h-4 w-px bg-slate-700 mx-0.5"></div>
             <button
               onClick={() => setZoomLevel(100)}
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded transition-colors min-w-[2.5rem] text-center ${zoomLevel === 100 ? 'text-[#f3a833] bg-[#f3a833]/10' : 'text-slate-400 hover:text-white hover:bg-[#1f1f1f]'}`}
+              className={`text-[11px] font-bold px-1.5 py-0.5 rounded-[10px] transition-colors min-w-[2.5rem] text-center ${zoomLevel === 100 ? 'text-[#f3a833] bg-[#f3a833]/10' : 'text-slate-400 hover:text-white hover:bg-[#1f1f1f]'}`}
               title="Fit to Screen"
             >
               100%
@@ -284,7 +284,7 @@ export default function ProposalStudio() {
 
           <button
             onClick={() => setIsStudioMode(!isStudioMode)}
-            className={`px-3 py-1.5 rounded text-[12px] font-medium flex items-center space-x-1 transition-colors ${isStudioMode ? 'bg-[#f3a833]/20 text-[#f3a833]' : 'bg-[#141414] text-slate-400 hover:bg-[#1f1f1f]'}`}
+            className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium flex items-center space-x-1 transition-colors ${isStudioMode ? 'bg-[#f3a833]/20 text-[#f3a833]' : 'bg-[#141414] text-slate-400 hover:bg-[#1f1f1f]'}`}
           >
             <Settings className="w-4 h-4" />
             <span>Studio Mode: {isStudioMode ? 'ON' : 'OFF'}</span>
@@ -300,7 +300,7 @@ export default function ProposalStudio() {
               fontWeight: 700,
               textTransform: "none",
               ml: 2,
-              borderRadius: 2
+              borderRadius: 10
             }}
           >
             Review & Generate
@@ -506,7 +506,7 @@ export default function ProposalStudio() {
               fontWeight: 800,
               textTransform: "none",
               py: 1.5,
-              borderRadius: 2
+              borderRadius: 10
             }}
           >
             {saving ? "Generating & Saving..." : "Generate Final PDF"}

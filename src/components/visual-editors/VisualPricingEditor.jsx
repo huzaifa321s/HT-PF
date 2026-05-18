@@ -214,7 +214,7 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
       }}
     >
       {isStudioMode && (
-        <Box className="pkg-actions" sx={{ position: "absolute", top: 10, right: 10, opacity: 0, transition: "opacity 0.2s", display: "flex", gap: 1, zIndex: 10, bgcolor: "rgba(20, 20, 20, 0.8)", borderRadius: 1 }}>
+        <Box className="pkg-actions" sx={{ position: "absolute", top: 10, right: 10, opacity: 0, transition: "opacity 0.2s", display: "flex", gap: 1, zIndex: 10, bgcolor: "rgba(20, 20, 20, 0.8)", borderRadius: '10px' }}>
           <IconButton size="small" onClick={(e) => setColorAnchor(e.currentTarget)}><ColorLens fontSize="small" /></IconButton>
           <IconButton size="small" color="error" onClick={onDelete}><Delete fontSize="small" /></IconButton>
         </Box>
@@ -280,7 +280,7 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
               sx={{ flexGrow: 1, fontSize: 11, textAlign: align, outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
             />
             {isStudioMode && (
-              <Box className="item-actions" sx={{ position: "absolute", top: -30, ...toolbarPositionStyles, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: 1, display: "flex", gap: 0.5, p: 0.5 }}>
+              <Box className="item-actions" sx={{ position: "absolute", top: -30, ...toolbarPositionStyles, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: '10px', display: "flex", gap: 0.5, p: 0.5 }}>
                 <IconButton size="small" onClick={() => onAlignChange(i, "left")} sx={{ p: 0.5, bgcolor: align === "left" ? "#FF8C00" : "transparent" }}><FormatAlignLeft sx={{ fontSize: 12, color: align === "left" ? "#fff" : "inherit" }} /></IconButton>
                 <IconButton size="small" onClick={() => onAlignChange(i, "center")} sx={{ p: 0.5, bgcolor: align === "center" ? "#FF8C00" : "transparent" }}><FormatAlignCenter sx={{ fontSize: 12, color: align === "center" ? "#fff" : "inherit" }} /></IconButton>
                 <IconButton size="small" onClick={() => onAlignChange(i, "right")} sx={{ p: 0.5, bgcolor: align === "right" ? "#FF8C00" : "transparent" }}><FormatAlignRight sx={{ fontSize: 12, color: align === "right" ? "#fff" : "inherit" }} /></IconButton>
@@ -377,7 +377,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
             <Box key={pageIdx} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: "auto" } }}>
               {isStudioMode && pageIdx === 0 && (
                 <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-                  <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>
+                  <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
                     <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
                   </Typography>
                 </Box>

@@ -141,7 +141,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       {/* Visual Indicator of Edit Mode */}
       {isStudioMode && (
         <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-          <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>
+          <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
             <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} />
             Click text to edit
           </Typography>

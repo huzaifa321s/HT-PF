@@ -82,7 +82,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
           >
             {isStudioMode && isFirstPage && (
               <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-                <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: 1 }}>
+                <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
                   <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
                 </Typography>
               </Box>
@@ -111,7 +111,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                 onInput={handleTitleInput}
                 sx={{
                   fontSize: 28, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: 1 } : {}
+                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
                 }}
               />
             ) : (
@@ -134,7 +134,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                       onInput={(e) => debouncedUpdateTerm(item.globalIndex, e.currentTarget.textContent)}
                       sx={{
                         flex: 1, fontSize: 12, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
-                        "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: 1 } : {}
+                        "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
                       }}
                     />
                   </Box>
