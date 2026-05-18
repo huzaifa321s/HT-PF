@@ -25,25 +25,9 @@ import { motion } from "framer-motion";
 
 const AgentDashboard = ({ onNavigate }) => {
   const [isHovered, setIsHovered] = useState({});
-  const [usage, setUsage] = useState(null);
-  const [loadingUsage, setLoadingUsage] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchUsage = async () => {
-      try {
-        const res = await axiosInstance.get("/api/tokens/usage", { skipLoader: true });
-        if (res.data.success) {
-          setUsage(res.data.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch usage:", err);
-      } finally {
-        setLoadingUsage(false);
-      }
-    };
-    fetchUsage();
-  }, []);
+
   const handleNav = (path) => {
     if (onNavigate && typeof onNavigate === "function") onNavigate(path);
     // else window.location.href = path;
@@ -174,98 +158,7 @@ const AgentDashboard = ({ onNavigate }) => {
           </Box>
         </Paper>
 
-        {/* Usage Section (Disabled) */}
-        {false && (
-          <>
-            <Typography
-              component={motion.h5}
-              variants={itemVariants}
-              variant="h5"
-              sx={{
-                fontWeight: 800,
-                color: "#f8fafc",
-                mb: 3,
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <AssessmentIcon sx={{ color: colorScheme.primary }} /> System Usage
-            </Typography>
 
-            <Grid container spacing={3} sx={{ mb: 6 }} component={motion.div} variants={containerVariants}>
-              {/* AssemblyAI Usage */}
-              <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ ...cardStyle, p: 4 }} component={motion.div} variants={itemVariants}>
-                  <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AssessmentIcon color="primary" /> Transcription Usage
-                  </Typography>
-                  {loadingUsage ? (
-                    <CircularProgress size={20} />
-                  ) : usage ? (
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Box>
-                          <Typography variant="body2" color="#94a3b8">Remaining: {usage.percentage}%</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                            {Math.floor((usage.remaining || 0) / 3600)} Hours Remaining
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" fontWeight={700} color={usage.status === 'red' ? 'error' : 'primary'}>
-                          {usage.level}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ height: 8, bgcolor: '#eee', borderRadius: 4, overflow: 'hidden', mb: 1 }}>
-                        <Box sx={{ height: '100%', width: `${usage.percentage}%`, background: colorScheme.gradient }} />
-                      </Box>
-                      <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
-                        Total Used: {usage.formattedUsage}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="error">Failed to load usage</Typography>
-                  )}
-                </Paper>
-              </Grid>
-
-              {/* Groq Usage */}
-              <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ ...cardStyle, p: 4 }} component={motion.div} variants={itemVariants}>
-                  <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AddCircleOutlineIcon sx={{ color: '#a855f7' }} /> AI Smart Paste Usage
-                  </Typography>
-                  {loadingUsage ? (
-                    <CircularProgress size={20} />
-                  ) : usage?.groq ? (
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Box>
-                          <Typography variant="body2" color="#94a3b8">Remaining: {usage.groq.percentage}%</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#a855f7' }}>
-                            {Math.floor((usage.groq.remaining || 0) / 3000)} Requests Remaining
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" fontWeight={700} color={usage.groq.status === 'red' ? 'error' : '#a855f7'}>
-                          {usage.groq.level}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ height: 8, bgcolor: '#eee', borderRadius: 4, overflow: 'hidden', mb: 1 }}>
-                        <Box sx={{ height: '100%', width: `${usage.groq.percentage}%`, background: 'linear-gradient(135deg, #a855f7 0%, #f59e0b 100%)' }} />
-                      </Box>
-                      <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
-                        Total Tokens Used: {usage.groq.used.toLocaleString()}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="error">Failed to load usage</Typography>
-                  )}
-                </Paper>
-              </Grid>
-            </Grid>
-
-            <Divider sx={{ my: 5, borderColor: "rgba(243, 168, 51, 0.15)" }} />
-          </>
-        )}
 
         {/* Quick Actions */}
         <Typography
