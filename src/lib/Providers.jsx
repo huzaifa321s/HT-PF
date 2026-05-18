@@ -24,6 +24,15 @@ const darkTheme = createTheme({
   typography: {
     fontFamily: "'Inter', sans-serif",
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 40,
+        },
+      },
+    },
+  },
 });
 
 export default function Providers({ children }) {

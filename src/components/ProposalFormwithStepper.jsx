@@ -300,7 +300,7 @@ const ProposalFormWithStepper = ({
   const handleGenerateAI = async () => {
     const brief = watch("projectBrief");
     if (!brief || brief.trim() === "") {
-      dispatch(showToast({ message: "Please enter a Project Brief first.", type: "error" }));
+      dispatch(showToast({ message: "Please enter a Project Brief first.", severity: "error" }));
       return;
     }
     
@@ -314,14 +314,14 @@ const ProposalFormWithStepper = ({
       const data = response.data;
       if (data && data.sections && data.tables) {
         dispatch(replacePage2Content(data));
-        dispatch(showToast({ message: "Proposal content generated successfully!", type: "success" }));
+        dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
         handleNext(); // Move to the next step
       } else {
         throw new Error("Invalid format received from AI.");
       }
     } catch (error) {
       console.error("AI Generation Error:", error);
-      dispatch(showToast({ message: "Failed to generate proposal using AI.", type: "error" }));
+      dispatch(showToast({ message: "Failed to generate proposal using AI.", severity: "error" }));
     } finally {
       setIsGeneratingAI(false);
     }
