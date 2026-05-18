@@ -458,7 +458,8 @@ const page2Slice = createSlice({
           id: generateId() + idx,
           type: sec.type || "title",
           title: sec.title || "",
-          content: sec.content || ""
+          content: sec.content || "",
+          isAiGenerated: true
         }));
       }
 
@@ -467,6 +468,7 @@ const page2Slice = createSlice({
           id: generateId() + 100 + idx,
           title: tbl.title || "Table",
           columnCount: tbl.columnCount || 2,
+          isAiGenerated: true,
           headers: tbl.headers || { col1: "Item", col2: "Value" },
           rows: tbl.rows ? tbl.rows.map((r, rIdx) => ({
             id: generateId() + 200 + rIdx,

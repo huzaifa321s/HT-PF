@@ -591,6 +591,14 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
         >
           {table.title || "Table Title"}
         </Box>
+        {isStudioMode && table.isAiGenerated && (
+          <Chip
+            icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
+            label="AI Generated"
+            size="small"
+            sx={{ bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", height: 24 }}
+          />
+        )}
         {isStudioMode && (
           <Tooltip title="Delete Table">
             <IconButton
@@ -824,6 +832,14 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
     >
       {isStudioMode && (
         <>
+          {section.isAiGenerated && (
+            <Chip
+              icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
+              label="AI Generated"
+              size="small"
+              sx={{ position: "absolute", right: 20, top: isHeading ? -10 : -15, bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", zIndex: 2 }}
+            />
+          )}
           <Tooltip title="Delete Section">
             <IconButton
               className="delete-btn"
