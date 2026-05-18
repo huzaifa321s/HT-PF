@@ -288,6 +288,11 @@ const ProposalFormWithStepper = ({
     if (submitData.projectCategory === "Other" && submitData.customProjectCategory) {
       submitData.projectCategory = submitData.customProjectCategory;
     }
+    
+    // Map frontend fields to backend required schema to avoid 400 Errors
+    submitData.businessDescription = submitData.projectBrief || submitData.projectCategory || "Not provided";
+    submitData.proposedSolution = submitData.strategicProposal || "Custom solution to be outlined in the proposal.";
+
     console.log("Form data submitted:", submitData);
     console.log("selected", selectedCurrency);
     dispatch(updateField({ field: "clientName", value: data.clientName }));
