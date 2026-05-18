@@ -194,6 +194,7 @@ const organizeIntoPages = (standalonePkgs, gridPkgs) => {
 };
 
 const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAlignChange, onDeleteItem, onDelete, onColorChange, isStudioMode, itemOffset = 0 }) => {
+  const dispatch = useDispatch();
   const [colorAnchor, setColorAnchor] = useState(null);
 
   const handleFieldInput = (field, e) => onUpdate(field, e.currentTarget.textContent);
@@ -374,7 +375,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
           }
 
           return (
-            <Box key={pageIdx} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: "auto" } }}>
+            <Box key={pageIdx} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: isThumbnail ? "none" : "auto" } }}>
               {isStudioMode && pageIdx === 0 && (
                 <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
                   <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
@@ -494,7 +495,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               })}
 
               {/* Only show add button on last page at the bottom */}
-              {isStudioMode && pageIdx === pages.length - 1 && (
+              {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
                 <Box sx={{ textAlign: "center", mt: 4, pt: 4, borderTop: "1px dashed #ddd" }}>
                   <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", pointerEvents: "auto" }}>
                     Add Content Block

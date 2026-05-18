@@ -39,6 +39,7 @@ const CombinedPdfDocument = ({
         brandName={page1Data?.brandName}
         brandTagline={page1Data?.brandTagline}
         clientLogo={page1Data?.clientLogo}
+        clientLogoFit={page1Data?.clientLogoFit || "contain"}
         showLabels={showLabels}
         clientName={clientName}
         date={date}

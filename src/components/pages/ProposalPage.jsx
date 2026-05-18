@@ -56,12 +56,15 @@ import { useDebounce } from "use-debounce";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useDispatch } from "react-redux";
+import { showToast } from "@/utils/toastSlice";
 import dayjs from "dayjs";
 
 const ProposalPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [proposals, setProposals] = useState([]);
   const [page, setPage] = useState(1);
@@ -75,9 +78,8 @@ const ProposalPage = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-  const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const hasActiveFilters = Boolean(searchTerm.trim() || statusFilter || dateFilter);
+  const hasActiveFilters = Boolean(searchTerm.trim() || dateFilter);
   const handleView = (id) => {
     router.push(`/admin/proposals/${id}`);
   };
@@ -91,14 +93,22 @@ const ProposalPage = () => {
       );
       const pdfPath = res.data.data.pdfPath;
       if (!pdfPath) {
-        alert("PDF not found for this proposal.");
+        dispatch(showToast({ message: "PDF not found for this proposal.", severity: "error" }));
         return;
       }
-      const pdfUrl = pdfPath;
-      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      
+      // Force Vercel Blob to serve as an attachment to bypass popup blockers
+      const downloadUrl = pdfPath.includes("?") ? `${pdfPath}&download=1` : `${pdfPath}?download=1`;
+      
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", ""); // Suggest download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error("Error opening PDF:", error);
-      alert("Failed to open PDF. Please try again.");
+      dispatch(showToast({ message: "Failed to open PDF. Please try again.", severity: "error" }));
     }
   };
 
@@ -108,32 +118,7 @@ const ProposalPage = () => {
     setProposalID(id);
   };
 
-  const statusConfig = {
-    'Interested': {
-      color: 'success',
-      icon: <CheckCircleIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#4caf50', 0.1),
-      textColor: '#2e7d32',
-    },
-    'No Fit': {
-      color: 'error',
-      icon: <DeleteIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#f44336', 0.1),
-      textColor: '#d32f2f',
-    },
-    'Flaked': {
-      color: 'warning',
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#ff9800', 0.1),
-      textColor: '#e65100',
-    },
-    'Follow-up': {
-      color: 'info',
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#2196f3', 0.1),
-      textColor: '#0d47a1',
-    },
-  };
+
 
   const fetchProposals = useCallback(async (pageNumber = 1, filtersOverride) => {
     try {
@@ -142,7 +127,6 @@ const ProposalPage = () => {
         page: pageNumber,
         limit: 5,
         search: filtersOverride?.search ?? debouncedSearchTerm,
-        status: filtersOverride?.status ?? statusFilter,
         date: filtersOverride?.date ?? dateFilter,
       };
       const res = await axiosInstance.get(
@@ -161,7 +145,7 @@ const ProposalPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, statusFilter, dateFilter]);
+  }, [debouncedSearchTerm, dateFilter]);
 
   useEffect(() => {
     fetchProposals(page);
@@ -170,9 +154,8 @@ const ProposalPage = () => {
   const handleClearFilters = () => {
     setPage(1);
     setSearchTerm("");
-    setStatusFilter("");
     setDateFilter("");
-    fetchProposals(1, { search: "", status: "", date: "" });
+    fetchProposals(1, { search: "", date: "" });
   };
 
   const handlePageChange = (event, value) => {
@@ -436,33 +419,7 @@ const ProposalPage = () => {
                   }}
                 />
 
-                <FormControl
-                  size="small"
-                  sx={{
-                    flex: { xs: "1 1 100%", sm: 1 },
-                    minWidth: 180,
-                    "& .MuiInputBase-root": {
-                      background: "#141414",
-                      borderRadius: 2,
-                    },
-                  }}
-                >
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    label="Status"
-                    onChange={(e) => {
-                      setPage(1);
-                      setStatusFilter(e.target.value);
-                    }}
-                  >
-                    <MenuItem value="">All Statuses</MenuItem>
-                    <MenuItem value="Interested">Interested</MenuItem>
-                    <MenuItem value="No Fit">No Fit</MenuItem>
-                    <MenuItem value="Flaked">Flaked</MenuItem>
-                    <MenuItem value="Follow-up">Follow-up</MenuItem>
-                  </Select>
-                </FormControl>
+
 
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -566,10 +523,10 @@ const ProposalPage = () => {
                     },
                   }}
                 >
-                  <Table>
+                  <Table sx={{ minWidth: 800 }}>
                     <TableHead>
                       <TableRow sx={{ background: "linear-gradient(135deg, rgba(243, 168, 51, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)" }}>
-                        {["Title", "Client", "Date", "Status", "Actions"].map(
+                        {["Title", "Client", "Client Email", "Date", "Actions"].map(
                           (header) => (
                             <TableCell
                               key={header}
@@ -631,25 +588,15 @@ const ProposalPage = () => {
                           </TableCell>
 
                           <TableCell>
-                            <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
-                              {proposal.date}
+                            <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                              {proposal.clientEmail}
                             </Typography>
                           </TableCell>
+
                           <TableCell>
-                            <Chip
-                              icon={statusConfig[proposal.callOutcome]?.icon}
-                              label={proposal.callOutcome}
-                              size="small"
-                              sx={{
-                                fontWeight: 600,
-                                fontSize: '0.8rem',
-                                borderRadius: 2,
-                                px: 1,
-                                background: statusConfig[proposal.callOutcome]?.bgColor,
-                                color: statusConfig[proposal.callOutcome]?.textColor,
-                                border: 'none',
-                              }}
-                            />
+                            <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
+                              {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
+                            </Typography>
                           </TableCell>
                           <TableCell align="center">
                             <Stack

@@ -58,6 +58,8 @@ import { useDebounce } from "use-debounce";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../utils/toastSlice";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -72,15 +74,15 @@ const AdminProposalsPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  const [totalCount, setTotalCount] = useState(0)
+  const [totalCount, setTotalCount] = useState(0);
+  const dispatch = useDispatch();
 
   // Filters
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-  const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [ownershipFilter, setOwnershipFilter] = useState("");
-  const hasActiveFilters = Boolean(searchTerm.trim() || statusFilter || dateFilter || ownershipFilter);
+  const hasActiveFilters = Boolean(searchTerm.trim() || dateFilter || ownershipFilter);
 
   // Animation Variants
   const containerVariants = {
@@ -133,13 +135,22 @@ const AdminProposalsPage = () => {
       );
       const pdfPath = res.data.data.pdfPath;
       if (!pdfPath) {
-        alert("PDF not found.");
+        dispatch(showToast({ message: "PDF not found.", severity: "error" }));
         return;
       }
-      const pdfUrl = pdfPath;
-      window.open(pdfUrl, "_blank", "noopener,noreferrer");
-    } catch {
-      alert("Failed to open PDF.");
+      
+      // Force Vercel Blob to serve as an attachment to bypass popup blockers
+      const downloadUrl = pdfPath.includes("?") ? `${pdfPath}&download=1` : `${pdfPath}?download=1`;
+      
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", ""); // Suggest download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error opening PDF:", error);
+      dispatch(showToast({ message: "Failed to open PDF.", severity: "error" }));
     }
   };
 
@@ -156,7 +167,6 @@ const AdminProposalsPage = () => {
         page: pageNumber,
         limit: 5,
         search: filtersOverride?.search ?? debouncedSearchTerm,
-        status: filtersOverride?.status ?? statusFilter,
         date: filtersOverride?.date ?? dateFilter,
         createdBy: (filtersOverride?.ownership ?? ownershipFilter) === "mine" ? user.id : "",
       };
@@ -175,7 +185,7 @@ const AdminProposalsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, statusFilter, dateFilter, ownershipFilter]);
+  }, [debouncedSearchTerm, dateFilter, ownershipFilter]);
 
   useEffect(() => {
     fetchProposals(page);
@@ -184,42 +194,16 @@ const AdminProposalsPage = () => {
   const handleClearFilters = () => {
     setPage(1);
     setSearchTerm("");
-    setStatusFilter("");
     setDateFilter("");
     setOwnershipFilter("");
-    fetchProposals(1, { search: "", status: "", date: "", ownership: "" });
+    fetchProposals(1, { search: "", date: "", ownership: "" });
   };
 
   const handlePageChange = (event, value) => {
     setPage(value);
   };
 
-  const statusConfig = {
-    'Interested': {
-      color: 'success',
-      icon: <CheckCircleIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#4caf50', 0.1),
-      textColor: '#2e7d32',
-    },
-    'No Fit': {
-      color: 'error',
-      icon: <DeleteIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#f44336', 0.1),
-      textColor: '#d32f2f',
-    },
-    'Flaked': {
-      color: 'warning',
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#ff9800', 0.1),
-      textColor: '#e65100',
-    },
-    'Follow-up': {
-      color: 'info',
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha('#2196f3', 0.1),
-      textColor: '#0d47a1',
-    },
-  };
+
 
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
@@ -499,37 +483,7 @@ const AdminProposalsPage = () => {
                   </Select>
                 </FormControl>
 
-                <FormControl
-                  size="small"
-                  sx={{
-                    flex: { xs: "1 1 100%", sm: 1 },
-                    minWidth: 180,
-                    "& .MuiInputBase-root": {
-                      background: "#141414",
-                      borderRadius: 2,
-                      color: "#fff",
-                    },
-                    "& .MuiInputLabel-root": { color: "#94a3b8" },
-                    "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
-                    "& .MuiSvgIcon-root": { color: "#94a3b8" },
-                  }}
-                >
-                  <InputLabel sx={{ color: "#94a3b8" }}>Status</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    label="Status"
-                    onChange={(e) => {
-                      setPage(1);
-                      setStatusFilter(e.target.value);
-                    }}
-                  >
-                    <MenuItem value="">All Statuses</MenuItem>
-                    <MenuItem value="Interested">Interested</MenuItem>
-                    <MenuItem value="No Fit">No Fit</MenuItem>
-                    <MenuItem value="Flaked">Flaked</MenuItem>
-                    <MenuItem value="Follow-up">Follow-up</MenuItem>
-                  </Select>
-                </FormControl>
+
 
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -634,10 +588,10 @@ const AdminProposalsPage = () => {
                     },
                   }}
                 >
-                  <Table>
+                  <Table sx={{ minWidth: 900 }}>
                     <TableHead>
                       <TableRow sx={{ background: "linear-gradient(135deg, rgba(243, 168, 51, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)" }}>
-                        {["Title", "Client", "Created By", "Date", "Status", "Actions"].map(
+                        {["Title", "Client", "Client Email", "Created By", "Date", "Actions"].map(
                           (header) => (
                             <TableCell
                               key={header}
@@ -706,6 +660,12 @@ const AdminProposalsPage = () => {
                           </TableCell>
 
                           <TableCell>
+                            <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                              {proposal.clientEmail}
+                            </Typography>
+                          </TableCell>
+
+                          <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Chip
                                 avatar={
@@ -750,24 +710,8 @@ const AdminProposalsPage = () => {
 
                           <TableCell>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
-                              {proposal.date}
+                              {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
                             </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={statusConfig[proposal.callOutcome]?.icon}
-                              label={proposal.callOutcome}
-                              size="small"
-                              sx={{
-                                fontWeight: 600,
-                                fontSize: '0.8rem',
-                                borderRadius: 2,
-                                px: 1,
-                                background: statusConfig[proposal.callOutcome]?.bgColor,
-                                color: statusConfig[proposal.callOutcome]?.textColor,
-                                border: 'none',
-                              }}
-                            />
                           </TableCell>
                           <TableCell align="center">
                             <Stack

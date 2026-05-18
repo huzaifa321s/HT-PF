@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress, Typography, Snackbar, Alert } from "@mui/material";
-import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, Description, AttachMoney, CalendarMonth, Business } from "@mui/icons-material";
+import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, Description, AttachMoney, CalendarMonth, Business, AutoAwesome, ContentCopy } from "@mui/icons-material";
 import { Drawer, IconButton, Divider, List, ListItem, ListItemIcon, ListItemText, Stack, Chip } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
 import UnifiedPdfEditor from "../UnifiedPDFEditor";
@@ -9,7 +9,8 @@ import axiosInstance from "../../utils/axiosInstance";
 import { motion } from "framer-motion";
 import { Provider, useSelector, useDispatch } from "react-redux";
 import { store } from "../../utils/store";
-import { updateField } from "../../utils/proposalSlice";
+import { updateField, setFullFormData } from "../../utils/proposalSlice";
+import { historyManager } from "../../utils/historyManager";
 
 export default function ProposalStudio() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function ProposalStudio() {
   const [isStudioMode, setIsStudioMode] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   // Redux Data to compile PDF
@@ -30,27 +32,73 @@ export default function ProposalStudio() {
   const pricingPage = useSelector((s) => s.pricing.edit);
   const paymentTerms = useSelector((s) => s.paymentTerms.edit);
   const contactPage = useSelector((s) => s.contact);
+  
+  // AI Response from either create or edit mode
+  const originalAiResponse = useSelector((s) => s.page2?.edit?.originalAiResponse || s.page2?.create?.originalAiResponse);
+
   // Live-edited client info from Redux (updated by VisualCoverEditor)
   const reduxProposal = useSelector((s) => s.proposal);
   const dispatch = useDispatch();
 
+  // Undo / Redo Keyboard Listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check if Ctrl or Cmd is pressed
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "z" || e.key === "Z") {
+          if (e.shiftKey) {
+            // Ctrl + Shift + Z = Redo
+            e.preventDefault();
+            const nextState = historyManager.redo();
+            if (nextState) dispatch({ type: "RESTORE_SNAPSHOT", payload: nextState });
+          } else {
+            // Ctrl + Z = Undo
+            e.preventDefault();
+            const prevState = historyManager.undo();
+            if (prevState) dispatch({ type: "RESTORE_SNAPSHOT", payload: prevState });
+          }
+        } else if (e.key === "y" || e.key === "Y") {
+          // Ctrl + Y = Redo
+          e.preventDefault();
+          const nextState = historyManager.redo();
+          if (nextState) dispatch({ type: "RESTORE_SNAPSHOT", payload: nextState });
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [dispatch]);
+
   useEffect(() => {
     const fetchProposal = async () => {
       if (!id) return;
+      
+      if (id === "new") {
+        setFormData(reduxProposal);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const res = await axiosInstance.get(`/api/proposals/get-single-proposal/${id}`);
         const data = res.data.data;
-        setFormData(data);
-        // Seed the Redux proposal slice with fetched data
-        // so visual editors and the drawer show correct initial values
-        if (data?.clientName) dispatch(updateField({ field: "clientName", value: data.clientName }));
-        if (data?.date) dispatch(updateField({ field: "date", value: data.date }));
-        if (data?.additionalCosts) dispatch(updateField({ field: "additionalCosts", value: data.additionalCosts }));
-        if (data?.chargeAmount) dispatch(updateField({ field: "chargeAmount", value: data.chargeAmount }));
-        if (data?.advancePercent != null) dispatch(updateField({ field: "advancePercent", value: data.advancePercent }));
-        if (data?.selectedCurrency) dispatch(updateField({ field: "selectedCurrency", value: data.selectedCurrency }));
-        if (data?.brandName) dispatch(updateField({ field: "brandName", value: data.brandName }));
+        
+        if (reduxProposal?.isUnsavedEdit) {
+          // Merge Redux edited data over the database data for the UI
+          setFormData({ ...data, ...reduxProposal });
+        } else {
+          // Standard load: use DB data and seed Redux
+          setFormData(data);
+          if (data?.clientName) dispatch(updateField({ field: "clientName", value: data.clientName }));
+          if (data?.date) dispatch(updateField({ field: "date", value: data.date }));
+          if (data?.additionalCosts) dispatch(updateField({ field: "additionalCosts", value: data.additionalCosts }));
+          if (data?.chargeAmount) dispatch(updateField({ field: "chargeAmount", value: data.chargeAmount }));
+          if (data?.advancePercent != null) dispatch(updateField({ field: "advancePercent", value: data.advancePercent }));
+          if (data?.selectedCurrency) dispatch(updateField({ field: "selectedCurrency", value: data.selectedCurrency }));
+          if (data?.brandName) dispatch(updateField({ field: "brandName", value: data.brandName }));
+        }
       } catch (err) {
         console.error("Error fetching proposal:", err);
       } finally {
@@ -160,20 +208,6 @@ export default function ProposalStudio() {
       const blob = pdfDoc.output("blob");
       pdfDoc.save(fileName);
 
-      // 3. Upload to server
-      const formDataUpload = new FormData();
-      formDataUpload.append("pdfFile", blob, fileName);
-      formDataUpload.append("proposalId", id);
-
-      const uploadRes = await axiosInstance.post(
-        `/api/proposals/upload-pdf`,
-        formDataUpload,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      if (!uploadRes.data.success) throw new Error("PDF upload failed");
-
-      // 4. Update Database
       const pdfPages = {
         page1,
         page2,
@@ -183,15 +217,56 @@ export default function ProposalStudio() {
         contactPage,
       };
 
-      await axiosInstance.put(
-        `/api/proposals/update-proposal/${id}`,
-        {
-          data: { ...formData, clientName: liveClientName, date: liveDate }, // persist live edits
-          pdfPages,
-          pdfPath: uploadRes.data.filePath,
-        }
+      const finalData = { ...formData, clientName: liveClientName, date: liveDate };
+      let currentId = id;
+
+      // 3. Create Proposal if Draft
+      if (id === "new") {
+        const createRes = await axiosInstance.post("/api/proposals/create-proposal", {
+          data: finalData,
+          selectedCurrency: reduxProposal?.selectedCurrency || "USD",
+          pdfPages
+        });
+        if (!createRes.data.success) throw new Error("Failed to create proposal record");
+        currentId = createRes.data.data._id;
+      }
+
+      // 4. Upload PDF to server
+      const formDataUpload = new FormData();
+      formDataUpload.append("pdfFile", blob, fileName);
+      formDataUpload.append("proposalId", currentId);
+
+      const uploadRes = await axiosInstance.post(
+        `/api/proposals/upload-pdf`,
+        formDataUpload,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
+
+      if (!uploadRes.data.success) throw new Error("PDF upload failed");
+
+      // 5. Update Database if not newly created
+      // (If it was just created, the upload-pdf route already saves the pdfPath to it)
+      if (id !== "new") {
+        await axiosInstance.put(
+          `/api/proposals/update-proposal/${currentId}`,
+          {
+            data: finalData, // persist live edits
+            pdfPages,
+            pdfPath: uploadRes.data.filePath,
+          }
+        );
+      }
+
       setSnackbar({ open: true, message: "PDF generated and saved successfully!", severity: "success" });
+
+      if (id === "new") {
+        router.replace(`/proposal-studio/${currentId}`);
+      }
+
+      // Clear the unsaved edit flag since the DB is now in sync
+      if (reduxProposal?.isUnsavedEdit) {
+        dispatch(setFullFormData({ isUnsavedEdit: false }));
+      }
     } catch (err) {
       console.error("Generate PDF Error:", err);
       setSnackbar({ open: true, message: "Failed to generate PDF: " + err.message, severity: "error" });
@@ -289,6 +364,22 @@ export default function ProposalStudio() {
             <Settings className="w-4 h-4" />
             <span>Studio Mode: {isStudioMode ? 'ON' : 'OFF'}</span>
           </button>
+
+          <Button
+            variant="outlined"
+            onClick={() => setAiDrawerOpen(true)}
+            startIcon={<AutoAwesome />}
+            sx={{
+              color: "#c084fc",
+              borderColor: "rgba(192, 132, 252, 0.5)",
+              "&:hover": { borderColor: "#c084fc", bgcolor: "rgba(192, 132, 252, 0.1)" },
+              fontWeight: 700,
+              textTransform: "none",
+              borderRadius: 10
+            }}
+          >
+            AI Data
+          </Button>
 
           <Button
             variant="contained"
@@ -511,6 +602,103 @@ export default function ProposalStudio() {
           >
             {saving ? "Generating & Saving..." : "Generate Final PDF"}
           </Button>
+        </Box>
+      </Drawer>
+
+      {/* Right Drawer for AI Response Recovery */}
+      <Drawer
+        anchor="right"
+        open={aiDrawerOpen}
+        onClose={() => setAiDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: "100%", sm: "50%" },
+            bgcolor: "#111111",
+            color: "#f8fafc",
+            borderLeft: "1px solid rgba(192, 132, 252, 0.2)",
+            boxShadow: "-10px 0 40px rgba(0,0,0,0.8)"
+          }
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", bgcolor: "#0a0a0a" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AutoAwesome sx={{ color: "#c084fc" }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#f8fafc" }}>
+              Original AI Response
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setAiDrawerOpen(false)} sx={{ color: "#94a3b8" }}>
+            <Close />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ p: 3, flex: 1, overflowY: "auto" }}>
+          <Typography variant="body2" sx={{ color: "#94a3b8", mb: 4 }}>
+            Here is the raw AI response that was initially generated. If you deleted a section from the visual editor, you can copy its original content from here and recreate it.
+          </Typography>
+
+          {originalAiResponse && Array.isArray(originalAiResponse) ? (
+            <Stack spacing={3}>
+              {originalAiResponse.map((sec, idx) => (
+                <Box key={idx} sx={{ p: 3, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)", position: "relative" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                    <Box>
+                      <Chip label={sec.type} size="small" sx={{ mb: 1, bgcolor: "rgba(192,132,252,0.1)", color: "#c084fc", fontWeight: 600, textTransform: "uppercase", fontSize: "10px" }} />
+                      {sec.title && (
+                        <Typography variant="h6" sx={{ color: "#f3a833", fontWeight: 700 }}>
+                          {sec.title}
+                        </Typography>
+                      )}
+                    </Box>
+                    <IconButton 
+                      onClick={async () => {
+                        try {
+                          const htmlBlob = new Blob([sec.content || ""], { type: "text/html" });
+                          const textBlob = new Blob([(sec.content || "").replace(/<[^>]+>/g, '')], { type: "text/plain" });
+                          const data = [new ClipboardItem({ "text/html": htmlBlob, "text/plain": textBlob })];
+                          await navigator.clipboard.write(data);
+                          setSnackbar({ open: true, message: "Content copied to clipboard!", severity: "success" });
+                        } catch (err) {
+                          // Fallback
+                          navigator.clipboard.writeText(sec.content || "");
+                          setSnackbar({ open: true, message: "Content copied (fallback mode)!", severity: "success" });
+                        }
+                      }} 
+                      sx={{ color: "#94a3b8", "&:hover": { color: "#c084fc", bgcolor: "rgba(192,132,252,0.1)" } }}
+                      title="Copy HTML Content"
+                    >
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <Divider sx={{ borderColor: "rgba(255,255,255,0.05)", mb: 2 }} />
+                  {sec.content ? (
+                    <Box 
+                      className="ai-response-content" 
+                      dangerouslySetInnerHTML={{ __html: sec.content }} 
+                      sx={{ 
+                        color: "#cbd5e1", 
+                        fontSize: "14px", 
+                        lineHeight: 1.6,
+                        "& p": { m: 0, mb: 1 },
+                        "& ul, & ol": { pl: 3, mt: 0, mb: 1 },
+                        "& li": { mb: 0.5 }
+                      }} 
+                    />
+                  ) : (
+                    <Typography variant="body2" sx={{ color: "#64748b", fontStyle: "italic" }}>
+                      No content
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+          ) : (
+            <Box sx={{ p: 4, textAlign: "center", bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+              <Typography variant="body1" sx={{ color: "#94a3b8" }}>
+                No AI response data found for this proposal.
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Drawer>
 

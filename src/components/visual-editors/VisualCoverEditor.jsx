@@ -1,9 +1,9 @@
 "use client";
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, Button, IconButton, Tooltip, Stack } from "@mui/material";
-import { CloudUpload, Delete, Edit } from "@mui/icons-material";
-import { setBrandName, setBrandTagline, setClientLogo, setClientSectionVisibility } from "../../utils/page1Slice";
+import { Box, Typography, Button, IconButton, Tooltip, Stack, Chip } from "@mui/material";
+import { CloudUpload, Delete, Edit, Link as LinkIcon } from "@mui/icons-material";
+import { setBrandName, setBrandTagline, setClientLogo, setClientLogoFit, setClientSectionVisibility } from "../../utils/page1Slice";
 import { updateField } from "../../utils/proposalSlice";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
@@ -17,10 +17,13 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   const formDataRT = useSelector((state) => state.proposal);
   const clientName = formDataRT?.clientName || "Valued Client";
   const date = formDataRT?.date || "January 2026";
+  // Sync brand name from the proposal form field
+  const proposalBrandName = formDataRT?.brandName || "";
 
   const [localName, setLocalName] = useState(page1.brandName || "Your Brand");
   const [localTagline, setLocalTagline] = useState(page1.brandTagline || "Your Tagline Here");
   const [localLogo, setLocalLogo] = useState(page1.clientLogo || null);
+  const clientLogoFit = page1.clientLogoFit || "contain";
   const [localClientName, setLocalClientName] = useState(clientName);
   const [localDate, setLocalDate] = useState(date);
 
@@ -29,23 +32,41 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   const clientNameRef = useRef(null);
   const dateRef = useRef(null);
 
+  // Sync brandName and tagline via state (safe — those fields use EditableText pattern)
   useEffect(() => {
-    if (page1.brandName && page1.brandName !== localName && document.activeElement !== nameRef.current) {
-      setLocalName(page1.brandName);
-    }
     if (page1.brandTagline && page1.brandTagline !== localTagline && document.activeElement !== taglineRef.current) {
       setLocalTagline(page1.brandTagline);
     }
     if (page1.clientLogo !== localLogo) {
       setLocalLogo(page1.clientLogo || null);
     }
-    if (clientName && document.activeElement !== clientNameRef.current) {
-      setLocalClientName(clientName);
+  }, [page1.brandTagline, page1.clientLogo]);
+
+  // Sync brand name directly to DOM ref (from proposal form field)
+  useEffect(() => {
+    const name = proposalBrandName || page1.brandName;
+    if (name && nameRef.current && document.activeElement !== nameRef.current) {
+      nameRef.current.textContent = name;
+      // Also keep page1Slice in sync
+      if (proposalBrandName && proposalBrandName !== page1.brandName) {
+        dispatch(setBrandName(proposalBrandName));
+      }
     }
-    if (date && document.activeElement !== dateRef.current) {
-      setLocalDate(date);
+  }, [proposalBrandName, page1.brandName]);
+
+  // Sync clientName directly to DOM ref to avoid React re-render cursor bug
+  useEffect(() => {
+    if (clientNameRef.current && document.activeElement !== clientNameRef.current) {
+      clientNameRef.current.textContent = clientName;
     }
-  }, [page1.brandName, page1.brandTagline, page1.clientLogo, clientName, date]);
+  }, [clientName]);
+
+  // Sync date directly to DOM ref
+  useEffect(() => {
+    if (dateRef.current && document.activeElement !== dateRef.current) {
+      dateRef.current.textContent = date;
+    }
+  }, [date]);
 
   const debouncedSaveName = useCallback(
     debounce((val) => dispatch(setBrandName(val)), 500),
@@ -80,15 +101,13 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   };
 
   const handleClientNameInput = (e) => {
-    const val = e.currentTarget.textContent;
-    setLocalClientName(val);
-    debouncedSaveClientName(val);
+    // Do NOT call setLocalClientName — would trigger re-render and reset cursor position
+    debouncedSaveClientName(e.currentTarget.textContent);
   };
 
   const handleDateInput = (e) => {
-    const val = e.currentTarget.textContent;
-    setLocalDate(val);
-    debouncedSaveDate(val);
+    // Do NOT call setLocalDate — same reason
+    debouncedSaveDate(e.currentTarget.textContent);
   };
 
   const handleLogoUpload = (e) => {
@@ -160,39 +179,57 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       {/* Main Content Area */}
       <Box sx={{ position: "absolute", top: "470px", left: "67px", right: "27px", zIndex: 1 }}>
 
-        {/* Brand Name + Decorative Line */}
-        <Box sx={{ display: "flex", alignItems: "center", mb: 0 }}>
-          <Box
-            ref={nameRef}
-            contentEditable={isStudioMode}
-            suppressContentEditableWarning
-            onInput={handleNameInput}
-            sx={{
-              color: "white",
-              fontSize: 22,
-              fontWeight: 700,
-              fontFamily: "'Unbounded', sans-serif",
-              outline: "none",
-              borderBottom: isStudioMode ? "1px dashed transparent" : "none",
-              whiteSpace: "nowrap",
-              "&:hover, &:focus": isStudioMode ? {
-                borderBottom: "1px dashed rgba(243, 168, 51, 0.2)",
-                bgcolor: "rgba(255,255,255,0.05)"
-              } : {}
-            }}
-          >
-            {localName}
+        {/* Brand Name + Decorative Line + Form Field badge */}
+        <Box sx={{ position: "relative", mb: 0 }}>
+          {isStudioMode && (
+            <Chip
+              icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
+              label="Form Field"
+              size="small"
+              sx={{
+                position: "absolute",
+                top: -20,
+                left: 0,
+                bgcolor: "rgba(96,165,250,0.15)",
+                color: "#60a5fa",
+                fontWeight: 600,
+                border: "1px solid rgba(96,165,250,0.35)",
+                fontSize: "10px",
+                height: 20,
+                zIndex: 2,
+              }}
+            />
+          )}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box
+              ref={nameRef}
+              contentEditable={isStudioMode}
+              suppressContentEditableWarning
+              onInput={handleNameInput}
+              sx={{
+                color: "white",
+                fontSize: 22,
+                fontWeight: 700,
+                fontFamily: "'Unbounded', sans-serif",
+                outline: "none",
+                borderBottom: isStudioMode ? "1px dashed transparent" : "none",
+                whiteSpace: "nowrap",
+                "&:hover, &:focus": isStudioMode ? {
+                  borderBottom: "1px dashed rgba(243, 168, 51, 0.2)",
+                  bgcolor: "rgba(255,255,255,0.05)"
+                } : {}
+              }}
+            />
+            <Box
+              sx={{
+                flex: 1,
+                height: 2,
+                ml: 1.5,
+                background: "linear-gradient(90deg, #F3A833 0%, #F3A833 70%, transparent 100%)",
+                borderRadius: "1px"
+              }}
+            />
           </Box>
-
-          <Box
-            sx={{
-              flex: 1,
-              height: 2,
-              ml: 1.5,
-              background: "linear-gradient(90deg, #F3A833 0%, #F3A833 70%, transparent 100%)",
-              borderRadius: "1px"
-            }}
-          />
         </Box>
 
         {/* Brand Tagline */}
@@ -277,10 +314,14 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
             )}
 
             {/* Client Logo */}
-            <Box sx={{ position: "relative", "&:hover .logo-overlay": { opacity: 1 } }}>
-              <Box sx={{ width: "94px", height: "94px", borderRadius: "47px", backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", border: "5px solid #FFFFFF", overflow: "hidden" }}>
+            <Box sx={{ position: "relative", "&:hover .logo-overlay": { opacity: 1 }, "&:hover .logo-controls": { opacity: 1 } }}>
+              <Box sx={{ 
+                width: "94px", height: "94px", borderRadius: "47px", 
+                backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", 
+                border: clientLogoFit === "fill" ? "none" : "5px solid #FFFFFF", overflow: "hidden" 
+              }}>
                 {localLogo ? (
-                  <img src={localLogo} alt="Client Logo" style={{ maxWidth: "60px", maxHeight: "60px", objectFit: "contain" }} />
+                  <img src={localLogo} alt="Client Logo" style={{ width: "100%", height: "100%", objectFit: clientLogoFit === "fill" ? "cover" : "contain" }} />
                 ) : (
                   <Typography sx={{ fontSize: 10, color: "#ccc", textAlign: "center" }}>No Client<br />Logo</Typography>
                 )}
@@ -291,6 +332,22 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                   <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
                 </Box>
               )}
+              {isStudioMode && localLogo && (
+                <Box className="logo-controls" sx={{ position: "absolute", bottom: -24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, opacity: 0, transition: "opacity 0.2s" }}>
+                  <Button 
+                    size="small" 
+                    onClick={() => dispatch(setClientLogoFit("fit"))}
+                    variant={clientLogoFit === "fit" ? "contained" : "outlined"}
+                    sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fit" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fit" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
+                  >Fit</Button>
+                  <Button 
+                    size="small" 
+                    onClick={() => dispatch(setClientLogoFit("fill"))}
+                    variant={clientLogoFit === "fill" ? "contained" : "outlined"}
+                    sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fill" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fill" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
+                  >Fill</Button>
+                </Box>
+              )}
             </Box>
 
             {/* Client Details */}
@@ -298,16 +355,31 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
               <Typography sx={{ color: "#FFFFFF", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.3, opacity: 0.8 }}>
                 Prepared for:
               </Typography>
-              <Box ref={clientNameRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleClientNameInput}
-                sx={{ color: "#FF8C00", fontSize: 26, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
-              >
-                {localClientName}
+              {/* Client name row with Form Field badge to the right */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box ref={clientNameRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleClientNameInput}
+                  sx={{ color: "#FF8C00", fontSize: 26, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                />
+                {isStudioMode && (
+                  <Chip
+                    icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
+                    label="Form Field"
+                    size="small"
+                    sx={{
+                      bgcolor: "rgba(96,165,250,0.15)",
+                      color: "#60a5fa",
+                      fontWeight: 600,
+                      border: "1px solid rgba(96,165,250,0.35)",
+                      fontSize: "10px",
+                      height: 20,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
               </Box>
               <Box ref={dateRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleDateInput}
                 sx={{ color: "#FFFFFF", fontSize: 13, opacity: 0.7, outline: "none", minWidth: "60px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.05)" } : {} }}
-              >
-                {localDate}
-              </Box>
+              />
             </Box>
           </Box>
         ) : (

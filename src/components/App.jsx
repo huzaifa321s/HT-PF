@@ -112,6 +112,7 @@ import { addTable } from "../utils/page2Slice";
 import Pusher from 'pusher-js';
 import { Provider } from "react-redux";
 import { store } from "../utils/store";
+import { resetForm } from "../utils/proposalSlice";
 
 export default function App() {
   const router = useRouter();
@@ -186,6 +187,8 @@ export default function App() {
   const [refinedLiveText, setRefinedLiveText] = useState("");
   const rawLengthAtLastPolish = useRef(0);
 
+  const proposalState = useSelector((s) => s.proposal);
+
   const {
     control,
     handleSubmit,
@@ -226,6 +229,16 @@ export default function App() {
       date: "",
     },
   });
+
+  useEffect(() => {
+    if (proposalState && proposalState.isUnsavedEdit && !proposalState._id) {
+      reset({ ...getValues(), ...proposalState });
+      setFormData((prev) => ({ ...prev, ...proposalState }));
+    } else {
+      // Clear redux state to prevent old proposal's unsaved edits bleeding into new creation
+      dispatch(resetForm());
+    }
+  }, []);
 
   const [pdfUrl, setPdfUrl] = useState("");
   const [tabValue, setTabValue] = useState(0);
@@ -432,37 +445,18 @@ export default function App() {
   const generatePdfActual = async (data, currency) => {
     setLoading(true);
 
-    const pdfPages = {
-      paymentTerms,
-      pricingPage,
-      page1,
-      page2,
-      page3,
-      contactPage,
-    };
-
     try {
-      // 1. Save Draft Proposal
-      const res = await axiosInstance.post(
-        "/api/proposals/create-proposal",
-        { data: data, selectedCurrency: currency, pdfPages },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      // 1. Data is already saved to Redux via setFullFormData in ProposalFormWithStepper
+      dispatch(showToast({ message: "Draft saved! Redirecting to Studio...", severity: "success" }));
 
-      if (!res.data.success) throw new Error("Proposal creation failed");
-      const proposalId = res.data.data._id;
-
-      dispatch(showToast({ message: "Proposal saved! Redirecting to Studio...", severity: "success" }));
-
-      // 2. Redirect to Proposal Studio
-      router.push(`/proposal-studio/${proposalId}`);
-
+      // 2. Redirect to Proposal Studio without hitting database
+      router.push(`/proposal-studio/new`);
     } catch (err) {
       console.error(err);
       dispatch(hideToast());
       dispatch(
         showToast({
-          message: err.response?.data?.message || "Proposal generation failed",
+          message: err.message || "Proposal generation failed",
           severity: "error",
         })
       );

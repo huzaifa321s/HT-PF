@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     border: "4px solid #FFFFFF",
+    overflow: "hidden"
   },
   clientLogo: {
-    maxHeight: 45, // Reduced from 55
-    maxWidth: 45, // Reduced from 55
-    objectFit: "contain",
+    width: "100%",
+    height: "100%",
   },
   clientSection: {
     marginTop: 40,
@@ -163,6 +163,7 @@ export const PdfCoverPage = ({
   brandName = "Your Brand",
   brandTagline = "Your Tagline Here",
   clientLogo = null,
+  clientLogoFit = "contain",
   showLabels = false,
   clientName = "",
   date = "",
@@ -240,8 +241,8 @@ export const PdfCoverPage = ({
         {showClientSection && (
           <View style={styles.clientSection}>
             {clientLogo && (
-              <View style={styles.clientLogoContainer}>
-                <Image src={clientLogo} style={styles.clientLogo} />
+              <View style={[styles.clientLogoContainer, clientLogoFit === "fill" ? { border: "none" } : {}]}>
+                <Image src={clientLogo} style={[styles.clientLogo, { objectFit: clientLogoFit === "fill" ? "cover" : "contain" }]} />
               </View>
             )}
 

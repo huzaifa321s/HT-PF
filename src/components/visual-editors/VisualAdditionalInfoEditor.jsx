@@ -22,8 +22,8 @@ import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 
 const PAGE_HEIGHT = 1131;
-const TOP_PADDING = 90;
-const BOTTOM_PADDING = 90;
+const TOP_PADDING = 100;   // 50px header + 50px breathing room
+const BOTTOM_PADDING = 80; // 60px footer + 20px margin
 
 // ─── Floating Format Toolbar ──────────────────────────────────────────────────
 const FloatingToolbar = ({ containerRef }) => {
@@ -576,7 +576,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
   const colFlex = is3 ? [2, 2, 1] : [1, 1];
 
   return (
-    <Box ref={blockRef} sx={{ mx: "60px", mt: `${calculatedMargin !== undefined ? calculatedMargin : 24}px`, mb: "24px", position: "relative", "&:hover .tbl-del": { opacity: 1 } }}>
+    <Box ref={blockRef} sx={{ position: "absolute", top: `${calculatedMargin !== undefined ? calculatedMargin : 24}px`, left: "60px", right: "60px", "&:hover .tbl-del": { opacity: 1 } }}>
       {/* Table Title */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
         <Box
@@ -599,7 +599,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
             sx={{ bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", height: 24 }}
           />
         )}
-        {isStudioMode && (
+        {isStudioMode && !isThumbnail && (
           <Tooltip title="Delete Table">
             <IconButton
               className="tbl-del"
@@ -627,7 +627,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
               />
             </Box>
           ))}
-          {isStudioMode && <Box sx={{ width: 32, bgcolor: "#111" }} />}
+          {isStudioMode && !isThumbnail && <Box sx={{ width: 32, bgcolor: "#111" }} />}
         </Box>
 
         {/* Data Rows */}
@@ -646,7 +646,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
                 />
               </Box>
             ))}
-            {isStudioMode && (
+            {isStudioMode && !isThumbnail && (
               <Box sx={{ width: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <IconButton
                   className="row-del"
@@ -663,7 +663,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
       </Box>
 
       {/* Add Row + Bulk Add Buttons */}
-      {isStudioMode && (
+      {isStudioMode && !isThumbnail && (
         <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
           <Button
             size="small"
@@ -803,9 +803,11 @@ const SectionToolbar = ({ contentRef }) => {
 };
 
 // ─── Section Item ─────────────────────────────────────────────────────────────
-const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbnail, calculatedMargin, onHeightChange, handleInput, dispatch }) => {
+const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbnail, absoluteTop, onHeightChange, handleInput, dispatch }) => {
   const ref = useRef(null);
   const contentRef = useRef(null);
+  const [typeAnchor, setTypeAnchor] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -825,12 +827,17 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
     <Box
       ref={ref}
       sx={{
-        position: "relative", marginTop: `${calculatedMargin}px`, marginBottom: isHeading ? "12px" : "28px", paddingX: "60px",
-        "&:hover .delete-btn": { opacity: 1 },
+        position: "absolute",
+        top: `${absoluteTop}px`,
+        left: 0,
+        right: 0,
+        paddingX: "60px",
+        "&:hover .action-btns": { opacity: 1 },
+        "& .action-btns.menu-open": { opacity: 1 },
         "&:hover .section-toolbar": { opacity: 1 },
       }}
     >
-      {isStudioMode && (
+      {isStudioMode && !isThumbnail && (
         <>
           {section.isAiGenerated && (
             <Chip
@@ -840,19 +847,64 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               sx={{ position: "absolute", right: 20, top: isHeading ? -10 : -15, bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", zIndex: 2 }}
             />
           )}
-          <Tooltip title="Delete Section">
-            <IconButton
-              className="delete-btn"
-              onClick={() => {
-                dispatch(deleteSection(section.id));
-                dispatch(showToast({ message: "Section deleted", severity: "info", undoAction: restoreSection({ section, index }) }));
-              }}
-              sx={{ position: "absolute", left: 10, top: 0, opacity: 0, transition: "opacity 0.2s", bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", "&:hover": { bgcolor: "rgba(244,67,54,0.2)" } }}
-              size="small"
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          </Tooltip>
+
+          {/* Action Buttons Container */}
+          <Box 
+            className={`action-btns ${Boolean(typeAnchor) ? 'menu-open' : ''}`}
+            sx={{
+              position: "absolute", left: 6, top: isHeading ? 4 : 0,
+              display: "flex", flexDirection: "row", gap: "6px",
+              opacity: 0,
+              transition: "opacity 0.2s",
+              zIndex: 30,
+            }}
+          >
+            <Tooltip title="Delete Section">
+              <IconButton
+                onClick={() => {
+                  dispatch(deleteSection(section.id));
+                  dispatch(showToast({ message: "Section deleted", severity: "info", undoAction: restoreSection({ section, index }) }));
+                }}
+                sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", borderRadius: '6px', "&:hover": { bgcolor: "rgba(244,67,54,0.2)" } }}
+              >
+                <Delete sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Change Section Type">
+              <IconButton
+                onClick={(e) => setTypeAnchor(e.currentTarget)}
+                sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+              >
+                <Edit sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Menu
+            anchorEl={typeAnchor}
+            open={Boolean(typeAnchor)}
+            onClose={() => setTypeAnchor(null)}
+            PaperProps={{ sx: { bgcolor: "#1a1a1a", border: "1px solid rgba(243,168,51,0.2)", color: "#fff", borderRadius: '8px' } }}
+          >
+            {Object.entries(TYPE_META).map(([typeKey, meta]) => (
+              <MenuItem
+                key={typeKey}
+                onClick={() => {
+                  dispatch(updateSection({ id: section.id, type: typeKey }));
+                  setTypeAnchor(null);
+                }}
+                sx={{
+                  fontSize: 13,
+                  bgcolor: section.type === typeKey ? "rgba(243,168,51,0.15)" : "transparent",
+                  color: meta.color,
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.1)" }
+                }}
+              >
+                {meta.label}
+              </MenuItem>
+            ))}
+          </Menu>
           {!isHeading && <SectionToolbar contentRef={contentRef} />}
         </>
       )}
@@ -940,7 +992,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
   );
 }, (prev, next) =>
   prev.section === next.section &&
-  prev.calculatedMargin === next.calculatedMargin &&
+  prev.absoluteTop === next.absoluteTop &&
   prev.isStudioMode === next.isStudioMode &&
   prev.isLast === next.isLast
 );
@@ -1017,67 +1069,59 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
   };
 
   let maxPageIndex = 0;
-  // Paginated margin calc
+  // Compute absolute Y positions (not cumulative margins) to avoid drift on cloned pages
   let currentY = TOP_PADDING;
-  const margins = {};
+  const absoluteTops = {}; // absolute top for each section
   orderedSections.forEach((sec, idx) => {
     const h = sectionHeights[sec.id] || 60;
 
-    // Snap out of gap zone (between PAGE_HEIGHT and next CYCLE) before calculations
+    // Snap out of inter-page gap before calculations
     currentY = snapToPageStart(currentY);
 
     const pageIndex = Math.floor(currentY / CYCLE);
-    // The usable bottom of this page (content area ends here)
     const pageContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
-    // Space still available on the current page
     const spaceLeft = pageContentBottom - currentY;
 
-    let mt = 0;
     if (idx === 0) {
-      mt = TOP_PADDING;
+      absoluteTops[sec.id] = TOP_PADDING;
       currentY = TOP_PADDING + h + 28;
-      maxPageIndex = Math.max(maxPageIndex, Math.floor((currentY - 1) / CYCLE));
     } else {
-      // Only wrap if the section genuinely won't fit in the remaining space
       if (spaceLeft < h) {
+        // Push to next page
         const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
-        mt = nextY - currentY;
+        absoluteTops[sec.id] = nextY;
         currentY = nextY + h + 28;
         maxPageIndex = Math.max(maxPageIndex, pageIndex + 1);
       } else {
-        mt = 0;
+        absoluteTops[sec.id] = currentY;
         currentY = currentY + h + 28;
-        maxPageIndex = Math.max(maxPageIndex, pageIndex);
       }
     }
-    margins[sec.id] = mt;
+    maxPageIndex = Math.max(maxPageIndex, Math.floor(currentY / CYCLE));
   });
 
-  // ── Table page-break margins (continues from where sections left off) ──
-  const tableMargins = {};
+  // ── Table absolute top positions (continues from where sections left off) ──
+  const tableAbsoluteTops = {};
   tables.forEach((table) => {
     const h = tableHeights[table.id] || 250;
 
-    // Snap out of gap zone before calculations
+    // Snap out of inter-page gap before calculations
     currentY = snapToPageStart(currentY);
 
     const pageIndex = Math.floor(currentY / CYCLE);
     const pageContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
     const spaceLeft = pageContentBottom - currentY;
 
-    let mt;
     if (spaceLeft < h) {
-      // Doesn't fit — push to next page
       const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
-      mt = nextY - currentY;
+      tableAbsoluteTops[table.id] = nextY;
       currentY = nextY + h + 24;
       maxPageIndex = Math.max(maxPageIndex, pageIndex + 1);
     } else {
-      mt = 24; // normal spacing
+      tableAbsoluteTops[table.id] = currentY + 24;
       currentY = currentY + h + 24;
       maxPageIndex = Math.max(maxPageIndex, pageIndex);
     }
-    tableMargins[table.id] = mt;
   });
 
   // Derive totalPages strictly from where content actually ends — no extra blank pages
@@ -1121,11 +1165,11 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
         ))}
       </Box>
 
-      {/* Foreground Content */}
-      <Box ref={foregroundRef} sx={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
+      {/* Foreground Content — position:relative so absolute children use this as origin */}
+      <Box ref={foregroundRef} sx={{ position: "relative", zIndex: 1 }}>
         {/* Floating Format Toolbar */}
         {isStudioMode && <FloatingToolbar containerRef={foregroundRef} />}
-        {/* Sections */}
+        {/* Sections — each absolutely positioned at its exact Y */}
         {orderedSections.map((section, index) => (
           <SectionItem
             key={section.id}
@@ -1134,20 +1178,20 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
             isLast={index === orderedSections.length - 1}
             isStudioMode={isStudioMode}
             isThumbnail={isThumbnail}
-            calculatedMargin={margins[section.id] || 0}
+            absoluteTop={absoluteTops[section.id] ?? TOP_PADDING}
             onHeightChange={handleHeightChange}
             handleInput={handleInput}
             dispatch={dispatch}
           />
         ))}
 
-        {/* Tables */}
+        {/* Tables — each absolutely positioned at its exact Y */}
         {tables.map((table) => (
-          <TableBlock key={table.id} table={table} isStudioMode={isStudioMode} isThumbnail={isThumbnail} dispatch={dispatch} onHeightChange={handleTableHeightChange} calculatedMargin={tableMargins[table.id]} />
+          <TableBlock key={table.id} table={table} isStudioMode={isStudioMode} isThumbnail={isThumbnail} dispatch={dispatch} onHeightChange={handleTableHeightChange} calculatedMargin={tableAbsoluteTops[table.id]} />
         ))}
 
         {/* Add Button */}
-        {isStudioMode && (
+        {isStudioMode && !isThumbnail && (
           <Box sx={{ textAlign: "center", mt: 6, mb: 2 }}>
             <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", flexWrap: "wrap", mb: 1.5 }}>
               <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)}

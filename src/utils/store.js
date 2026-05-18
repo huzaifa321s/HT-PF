@@ -2,6 +2,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import { combineReducers } from "redux";
+import { debouncedPushToHistory, historyManager } from "./historyManager";
 import toastReducer from "./toastSlice";
 import recordingToastReducer from "./recordingToastSlice";
 import appReducer from "./appSlice";
@@ -21,7 +22,7 @@ import axiosInstance from "./axiosInstance";
 import proposalReducer from "./proposalSlice";
 import pdfNavigationReducer from "./pdfNavigationSlice";
 
-const rootReducer = combineReducers({
+const mainReducer = combineReducers({
   toast: toastReducer,
   recordingToast: recordingToastReducer,
   app: appReducer,
@@ -40,6 +41,33 @@ const rootReducer = combineReducers({
   proposal: proposalReducer,
   pdfNavigation: pdfNavigationReducer,
 });
+
+// Higher-order root reducer to handle global RESTORE actions
+const rootReducer = (state, action) => {
+  if (action.type === "RESTORE_SNAPSHOT") {
+    // Merge the restored PDF slice states over the current state
+    return mainReducer({
+      ...state,
+      ...action.payload
+    }, action);
+  }
+  return mainReducer(state, action);
+};
+
+// Middleware to capture state changes and push to history
+const historyMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+  
+  // Ignore specific actions that shouldn't trigger history saves
+  const ignoreActions = ["RESTORE_SNAPSHOT", "persist/PERSIST", "persist/REHYDRATE", "pdfNavigation/", "toast/", "recordingToast/"];
+  const shouldIgnore = ignoreActions.some(prefix => action.type.startsWith(prefix));
+  
+  if (!shouldIgnore && !historyManager.isRestoring) {
+    debouncedPushToHistory(store.getState());
+  }
+  
+  return result;
+};
 
 // makeStore is called once per client - we build it lazily
 // so that sessionStorage is only accessed in the browser
@@ -82,7 +110,7 @@ const makeStore = () => {
     const store = configureStore({
       reducer: persistedReducer,
       middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({ serializableCheck: false }),
+        getDefaultMiddleware({ serializableCheck: false }).concat(historyMiddleware),
     });
 
     store.persistor = persistStore(store);
@@ -93,7 +121,7 @@ const makeStore = () => {
   return configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({ serializableCheck: false }),
+      getDefaultMiddleware({ serializableCheck: false }).concat(historyMiddleware),
   });
 };
 

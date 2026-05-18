@@ -96,6 +96,7 @@ animated videos — all designed to reflect Trendfumes' premium and modern brand
   includeInPdf: true,
   currentPages: 1,
   pages: 1,
+  originalAiResponse: null,
 }
 
 const initialState = {
@@ -480,6 +481,11 @@ const page2Slice = createSlice({
       }
     },
 
+    setOriginalAiResponse: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].originalAiResponse = action.payload;
+    },
+
   },
 });
 
@@ -514,6 +520,7 @@ export const {
   setPageCount,
   resetPage2,
   replacePage2Content,
+  setOriginalAiResponse,
 } = page2Slice.actions;
 
 export default page2Slice.reducer;

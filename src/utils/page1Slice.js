@@ -8,6 +8,7 @@ const modeDefaults = {
   customElements: [],
   includeInPdf: true,
   clientLogo: null,
+  clientLogoFit: "contain",
   showClientSection: true,
 };
 
@@ -45,6 +46,11 @@ const page1Slice = createSlice({
     setClientLogo: (state, action) => {
       const mode = state.currentMode;
       state[mode].clientLogo = action.payload;
+    },
+
+    setClientLogoFit: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].clientLogoFit = action.payload;
     },
 
     setClientSectionVisibility: (state, action) => {
@@ -101,6 +107,7 @@ export const {
   deleteCustomElement,
   setDBData,
   setClientLogo,
+  setClientLogoFit,
   setClientSectionVisibility,
   resetPage1,
 } = page1Slice.actions;

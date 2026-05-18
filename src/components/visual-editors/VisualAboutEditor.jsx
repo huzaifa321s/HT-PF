@@ -1,8 +1,8 @@
 "use client";
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, IconButton, Tooltip, Button, Alert } from "@mui/material";
-import { Add, Delete, Edit, Image as ImageIcon } from "@mui/icons-material";
+import { Box, Typography, IconButton, Tooltip, Button, Alert, Chip } from "@mui/material";
+import { Add, Delete, Edit, Image as ImageIcon, Link as LinkIcon } from "@mui/icons-material";
 import { updateTitle, updateSubtitle, editElementContent, addElement, deleteElement, restoreElement } from "../../utils/page3Slice";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
@@ -118,6 +118,35 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
   const page3 = useSelector((state) => state.page3[currentMode] || state.page3);
   const elements = page3.elements || [];
 
+  // Sync brand name from proposal form field
+  const brandName = useSelector((state) => state.proposal?.brandName || state.page1Slice?.create?.brandName || state.page1Slice?.edit?.brandName || "");
+
+  // Derive the heading: if the stored title looks like a default or is empty, use brandName
+  const derivedTitle = (() => {
+    const stored = page3.title || "";
+    if (!stored || stored === "About Humantek" || stored === "Proposal for Humantek" || stored.startsWith("About ") || stored.startsWith("Proposal for ")) {
+      return brandName ? `Proposal for ${brandName}` : "Proposal for Humantek";
+    }
+    return stored;
+  })();
+
+  // Keep Redux in sync when brandName changes and title is default
+  useEffect(() => {
+    if (brandName) {
+      const isDefaultOrSynced = !page3.title || 
+                                page3.title === "About Humantek" || 
+                                page3.title === "Proposal for Humantek" || 
+                                page3.title.startsWith("About ") ||
+                                page3.title.startsWith("Proposal for ");
+                                
+      // Only dispatch if it's actually changing to avoid infinite loops
+      const newTitle = `Proposal for ${brandName}`;
+      if (isDefaultOrSynced && page3.title !== newTitle) {
+        dispatch(updateTitle(newTitle));
+      }
+    }
+  }, [brandName, page3.title, dispatch]);
+
   const contentRef = useRef(null);
   const [contentHeight, setContentHeight] = useState(0);
 
@@ -204,9 +233,30 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
 
 
           <Box sx={{ position: "relative", width: "100%", textAlign: "center", "&:hover .title-actions": { opacity: 1 } }}>
+            {/* Form Field badge — studio mode only */}
+            {isStudioMode && (
+              <Chip
+                icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
+                label="Form Field"
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: -14,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  bgcolor: "rgba(96,165,250,0.1)",
+                  color: "#60a5fa",
+                  fontWeight: 600,
+                  border: "1px solid rgba(96,165,250,0.3)",
+                  fontSize: "10px",
+                  height: 20,
+                  zIndex: 2,
+                }}
+              />
+            )}
             <EditableText
-              value={page3.title}
-              fallback="About Humantek"
+              value={derivedTitle}
+              fallback="Proposal for Humantek"
               isStudioMode={isStudioMode}
               onInput={handleTitleInput}
               sx={{

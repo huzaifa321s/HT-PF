@@ -9,8 +9,6 @@ const initialState = {
   developmentPlatforms: [],
   projectDuration: "6 weeks",
   chargeAmount: "800",
-  advancePercent: "50",
-  additionalCosts: "",
   brandName: "",
   proposedBy: "Humantek",
   projectBrief: "",
@@ -25,10 +23,8 @@ const initialState = {
   timelineMilestones:
     "Week 1: Design\nWeeks 2-3: Frontend\nWeeks 4-5: Backend\nWeek 6: Deploy & QA",
   terms: "Payments due within 7 days. 30 days post-launch support.",
-  callOutcome: "Interested",
   yourName: "Your Name",
   yourEmail: "your.email@example.com",
-  date: new Date().toLocaleDateString(),
 };
 
 const formSlice = createSlice({

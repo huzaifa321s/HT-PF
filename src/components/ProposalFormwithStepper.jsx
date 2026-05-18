@@ -73,9 +73,10 @@ import {
   updateCharges,
   updateField,
   updateServices,
+  setFullFormData,
 } from "../utils/proposalSlice";
 import axiosInstance from "../utils/axiosInstance";
-import { addSection, updateSection, replacePage2Content } from "../utils/page2Slice";
+import { addSection, updateSection, replacePage2Content, setOriginalAiResponse } from "../utils/page2Slice";
 import { setBrandName } from "../utils/page1Slice";
 import { updateTitle } from "../utils/page3Slice";
 import { useDebounce } from "use-debounce";
@@ -102,6 +103,7 @@ const ProposalFormWithStepper = ({
   const [creds, setCreds] = useState({ yourName: "", yourEmail: "" });
   const [baseCost, setBaseCost] = useState(watch("additionalCosts") || "");
   const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
+  const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -293,9 +295,7 @@ const ProposalFormWithStepper = ({
 
     console.log("Form data submitted:", submitData);
     console.log("selected", selectedCurrency);
-    dispatch(updateField({ field: "clientName", value: data.clientName }));
-    dispatch(updateField({ field: "clientEmail", value: data.clientEmail }));
-    dispatch(updateField({ field: "brandName", value: data.brandName }));
+    dispatch(setFullFormData({ ...submitData, selectedCurrency, isUnsavedEdit: true }));
 
     await handleSubmitForm(submitData, selectedCurrency);
   };
@@ -317,6 +317,7 @@ const ProposalFormWithStepper = ({
       const data = response.data;
       if (data && data.sections && data.tables) {
         dispatch(replacePage2Content(data));
+        dispatch(setOriginalAiResponse(data.sections));
         dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
         handleNext(); // Move to the next step
       } else {
@@ -414,7 +415,7 @@ const ProposalFormWithStepper = ({
       setSelectedCurrency(newCurrency);
     }
   };
-  const steps = [
+  const allSteps = [
     {
       label: "Your & Client Information",
       icon: <Person />,
@@ -809,327 +810,6 @@ const ProposalFormWithStepper = ({
         </>
       ),
     },
-    {
-      label: "Costs",
-      icon: <Payment />,
-      content: (
-        <>
-          {sectionHeader(<Payment />, "Costs")}
-
-          {/* Currency Toggle - 5 Currencies */}
-          <Box component={motion.div} variants={fieldVariants} sx={{ mb: 4, display: "flex", justifyContent: "start" }}>
-            <ToggleButtonGroup
-              value={selectedCurrency}
-              exclusive
-              onChange={handleCurrencyChange}
-              aria-label="currency selection"
-              sx={{
-                gap: 1,
-                flexWrap: "wrap",
-                "& .MuiToggleButton-root": {
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.3, sm: 0.5 },
-                  fontSize: { xs: "0.65rem", sm: "0.85rem" },
-                  fontWeight: 700,
-                  border: "2px solid",
-                  borderColor: colorScheme.primary,
-                  borderRadius: 3,
-                  minWidth: { xs: 60, sm: 90 },
-                  "&.Mui-selected": {
-                    background: colorScheme.gradient,
-                    color: "#fff",
-                    "&:hover": {
-                      background: colorScheme.hoverGradient,
-                    },
-                  },
-                  "&:hover": {
-                    background: `${colorScheme.primary}15`,
-                  },
-                },
-              }}
-            >
-              <ToggleButton value="USD">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>$</Typography>
-                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>USD</Typography>
-                </Box>
-              </ToggleButton>
-
-              <ToggleButton value="PKR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>₨</Typography>
-                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>PKR</Typography>
-                </Box>
-              </ToggleButton>
-              <ToggleButton value="GBP">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>£</Typography>
-                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>GBP</Typography>
-                </Box>
-              </ToggleButton>
-
-              <ToggleButton value="EUR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>€</Typography>
-                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>EUR</Typography>
-                </Box>
-              </ToggleButton>
-
-              <ToggleButton value="AED">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.3, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1.3rem" }, fontWeight: 800 }}>
-                    د.إ
-                  </Typography>
-                  <Typography sx={{ fontSize: { xs: "0.65rem", sm: "0.85rem" } }}>AED</Typography>
-                </Box>
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-
-          {/* Advance Percentage */}
-          <Box component={motion.div} variants={fieldVariants}>
-            <Controller
-              name="advancePercent"
-              control={control}
-              render={({ field: { onChange, value, ...field } }) => (
-                <TextField
-                  {...field}
-                  label="Advance Percentage"
-                  type="text"
-                  fullWidth
-                  value={value || ""}
-                  onChange={(e) => {
-                    // Only allow numbers
-                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                    // Limit to 100
-                    const limitedValue = numericValue
-                      ? Math.min(parseInt(numericValue), 100).toString()
-                      : "";
-                    onChange(limitedValue);
-
-                    // Auto-calculate cost based on advance percentage if toggle is ON
-                    if (autoApplyAdvance) {
-                      const advance = parseFloat(limitedValue) || 0;
-                      if (baseCost) {
-                        const base = parseFloat(baseCost) || 0;
-                        const discounted = base * (1 - advance / 100);
-                        setValue("additionalCosts", Math.round(discounted).toString());
-                      }
-                    }
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Typography
-                          sx={{ fontWeight: 600, color: colorScheme.primary }}
-                        >
-                          %
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  }}
-                  placeholder="Enter percentage (e.g., 50)"
-                  sx={inputStyle}
-                />
-              )}
-            />
-          </Box>
-
-          {/* Auto-Cut Toggle */}
-          <Box>
-            <Box
-              onClick={() => {
-                const newValue = !autoApplyAdvance;
-                setAutoApplyAdvance(newValue);
-
-                // Recalculate instantly on toggle
-                if (newValue && baseCost) {
-                  const advance = parseFloat(watch("advancePercent")) || 0;
-                  const discounted = parseFloat(baseCost) * (1 - advance / 100);
-                  setValue("additionalCosts", Math.round(discounted || 0).toString());
-                } else if (!newValue && baseCost) {
-                  setValue("additionalCosts", baseCost.toString());
-                }
-              }}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                bgcolor: autoApplyAdvance ? "rgba(243,168,51,0.08)" : "#141414",
-                border: `2px solid ${autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.15)"}`,
-                borderRadius: 2,
-                px: 2,
-                py: 1.5,
-                mb: 2,
-                mt: 1,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                "&:hover": { borderColor: colorScheme.primary, bgcolor: "rgba(243,168,51,0.05)" },
-              }}
-            >
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: autoApplyAdvance ? colorScheme.primary : "#f8fafc" }}>
-                  Auto-Deduct Advance from Cost
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mt: 0.3 }}>
-                  {autoApplyAdvance ? "Cost will be automatically reduced by advance %" : "Advance % is saved separately — cost unchanged"}
-                </Typography>
-              </Box>
-              <Box sx={{
-                width: 44, height: 24, borderRadius: 12, position: "relative",
-                bgcolor: autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.2)",
-                transition: "background-color 0.3s ease", flexShrink: 0, ml: 2,
-              }}>
-                <Box sx={{
-                  width: 18, height: 18, borderRadius: "50%", bgcolor: "#fff",
-                  position: "absolute", top: 3,
-                  left: autoApplyAdvance ? 23 : 3,
-                  transition: "left 0.3s ease",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                }} />
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Additional Costs with Currency Symbol and Formatting */}
-          <Box component={motion.div} variants={fieldVariants}>
-            <Controller
-              name="additionalCosts"
-              control={control}
-              render={({ field: { onChange, value, ...field } }) => (
-                <TextField
-                  {...field}
-                  label={`Cost (${selectedCurrency})`}
-                  type="text"
-                  fullWidth
-                  value={value ? parseInt(value).toLocaleString() : ""}
-                  onChange={(e) => {
-                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                    setBaseCost(numericValue); // Store original cost
-
-                    if (autoApplyAdvance) {
-                      const advance = parseFloat(watch("advancePercent")) || 0;
-                      const discounted = parseFloat(numericValue) * (1 - advance / 100);
-                      onChange(Math.round(discounted || 0).toString());
-                    } else {
-                      onChange(numericValue);
-                    }
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Typography
-                          sx={{
-                            fontWeight: 800,
-                            fontSize: "1.4rem",
-                            color: colorScheme.primary,
-                          }}
-                        >
-                          {selectedCurrency === "USD" && "$"}
-                          {selectedCurrency === "GBP" && "£"}
-                          {selectedCurrency === "EUR" && "€"}
-                          {selectedCurrency === "AED" && "د.إ"}
-                          {selectedCurrency === "PKR" && "₨"}
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                    endAdornment: value && (
-                      <InputAdornment position="end">
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: colorScheme.primary,
-                            fontWeight: 700,
-                            fontSize: "0.9rem",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {formatNumberInWords(value, selectedCurrency)}
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  }}
-                  placeholder={`Enter amount in ${selectedCurrency}`}
-                  sx={inputStyle}
-                />
-              )}
-            />
-          </Box>
-        </>
-      ),
-    },
-    {
-      label: "Additional Details",
-      icon: <Info />,
-      content: (
-        <>
-          {sectionHeader(<Info />, "Additional Details")}
-          <Box component={motion.div} variants={fieldVariants}>
-            <Controller
-              name="callOutcome"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <FormControl fullWidth error={!!error} sx={inputStyle}>
-                  <InputLabel>Call Outcome</InputLabel>
-                  <Select {...field} label="Call Outcome">
-                    <MenuItem value="Interested">Interested</MenuItem>
-                    <MenuItem value="No Fit">No Fit</MenuItem>
-                    <MenuItem value="Flaked">Flaked</MenuItem>
-                    <MenuItem value="Follow-up">Follow-up</MenuItem>
-                  </Select>
-                  {error && (
-                    <FormHelperText error>{error.message}</FormHelperText>
-                  )}
-                </FormControl>
-              )}
-            />
-          </Box>
-          <Box component={motion.div} variants={fieldVariants}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Controller
-                name="date"
-                control={control}
-                defaultValue={dayjs().format("YYYY-MM-DD")} // ✅ String format for form
-                render={({ field: { onChange, value, ...field } }) => (
-                  <DatePicker
-                    {...field}
-                    label="Date"
-                    value={value ? dayjs(value) : dayjs()} // ✅ Convert string back to dayjs for display
-                    onChange={(newValue) => {
-                      // ✅ Convert dayjs to string before saving to form
-                      const formattedDate = newValue
-                        ? newValue.format("YYYY-MM-DD")
-                        : "";
-                      onChange(formattedDate);
-                    }}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        InputLabelProps: {
-                          shrink: true,
-                        },
-                        sx: {
-                          height: 56,
-                          width: "100%",
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          background: "#141414",
-                          borderRadius: 2,
-                          mb: 2,
-                          "& .MuiInputBase-root": {
-                            height: 56,
-                          },
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-            </LocalizationProvider>
-          </Box>
-        </>
-      ),
-    },
 
     {
       label: "Review & Continue",
@@ -1183,6 +863,9 @@ const ProposalFormWithStepper = ({
       ),
     },
   ];
+
+  const steps = allSteps.filter(step => step.label !== "Additional Details" || showAdditionalDetails);
+
   const handleNext = async (targetStep) => {
     const currentStepFields = stepFields[activeStep];
 
@@ -1380,67 +1063,26 @@ const ProposalFormWithStepper = ({
                             width: activeStep === 1 && isSmall ? "100%" : "auto",
                           }}
                         >
-                          {activeStep === 2 ? (
-                            <>
-                              <Button
-                                component={motion.button}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleNext(3)}
-                                variant="outlined"
-                                sx={{
-                                  borderColor: colorScheme.primary,
-                                  borderRadius: 10,
-                                  color: colorScheme.primary,
-                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
-                                  "&:hover": {
-                                    background: `${colorScheme.primary}10`,
-                                  },
-                                }}
-                              >
-                                Additional Details
-                              </Button>
-                              <Button
-                                component={motion.button}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleNext(4)}
-                                endIcon={<ArrowForward />}
-                                variant="contained"
-                                sx={{
-                                  background: colorScheme.gradient,
-                                  borderRadius: 10,
-                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
-                                  "&:hover": {
-                                    background: colorScheme.hoverGradient,
-                                  },
-                                }}
-                              >
-                                Review & Continue
-                              </Button>
-                            </>
-                          ) : (
-                            index < steps.length - 1 && (
-                              <Button
-                                component={motion.button}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleNext()}
-                                endIcon={<ArrowForward />}
-                                variant="contained"
-                                disabled={!isStepAccessible(index + 1)}
-                                sx={{
-                                  background: colorScheme.gradient,
-                                  borderRadius: 10,
-                                  width: activeStep === 1 && isSmall ? "100%" : "auto",
-                                  "&:hover": {
-                                    background: colorScheme.hoverGradient,
-                                  },
-                                }}
-                              >
-                                Next
-                              </Button>
-                            )
+                          {index < steps.length - 1 && (
+                            <Button
+                              component={motion.button}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleNext()}
+                              endIcon={<ArrowForward />}
+                              variant="contained"
+                              disabled={!isStepAccessible(index + 1)}
+                              sx={{
+                                background: colorScheme.gradient,
+                                borderRadius: 10,
+                                width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                "&:hover": {
+                                  background: colorScheme.hoverGradient,
+                                },
+                              }}
+                            >
+                              Next
+                            </Button>
                           )}
                         </Box>
                       </Box>

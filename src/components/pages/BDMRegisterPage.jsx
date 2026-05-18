@@ -25,6 +25,9 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
+    Grid,
+    Card,
+    CardContent,
   } from "@mui/material";
 import { motion } from "framer-motion";
 import EditIcon from "@mui/icons-material/Edit";
@@ -233,6 +236,13 @@ const BDMRegisterPage = () => {
     fetchBDMs(value);
   };
 
+  const selectedBdo = editId ? bdms.find((b) => b._id === editId) : null;
+  const hasChanges = editId && selectedBdo 
+    ? formData.name !== selectedBdo.name || formData.email !== selectedBdo.email || formData.password !== ""
+    : true;
+  const isFormValid = editId ? (formData.name && formData.email && hasChanges) : (formData.name && formData.email && formData.password);
+  const isSubmitDisabled = !isFormValid;
+
   return (
     <Box
       component={motion.div}
@@ -246,7 +256,7 @@ const BDMRegisterPage = () => {
         position: "relative",
       }}
     >
-      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+      <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, md: 4 } }}>
         {/* Header */}
         <Box component={motion.div} variants={cardVariants} initial="hidden" animate="visible" sx={{ display: "flex", alignItems: "center", mb: 4 }}>
           <Box
@@ -298,245 +308,245 @@ const BDMRegisterPage = () => {
           </Box>
         </Box>
 
-        {/* Form */}
-        <Paper
-          component={motion.div}
-          elevation={0}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.05 }}
-          sx={{
-            p: { xs: 3, sm: 4 },
-            mb: 5,
-            borderRadius: 4,
-            background: "rgba(20, 20, 20, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: '1px solid rgba(243, 168, 51, 0.2)',
-            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            position: "relative",
-            overflow: "hidden",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              boxShadow: "0 20px 40px rgba(243, 168, 51, 0.15)",
-            },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "4px",
-              background:
-                "linear-gradient(90deg, #f3a833 0%, #f59e0b 50%, #fbbf24 100%)",
-              backgroundSize: "200% 100%",
-              animation: loading ? "shimmer 2s infinite" : "none",
-            },
-            "@keyframes shimmer": {
-              "0%": { backgroundPosition: "-200% 0" },
-              "100%": { backgroundPosition: "200% 0" },
-            },
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, color: "#f3a833", mb: 3 }}
-          >
-            {editId ? "Edit BDO" : "Register New BDO"}
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              variant="outlined"
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4, alignItems: 'flex-start' }}>
+          {/* Left Column: Form */}
+          <Box sx={{ width: { xs: '100%', lg: '33.333%' } }}>
+            <Card
+              component={motion.div}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ duration: 0.5, delay: 0.05 }}
               sx={{
-                mb: 2,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "#141414",
-                  "& fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.3)",
-                    borderWidth: 2,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.5)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#f3a833",
-                  },
+                borderRadius: 4,
+                background: "rgba(20, 20, 20, 0.8)",
+                backdropFilter: "blur(20px)",
+                border: '1px solid rgba(243, 168, 51, 0.2)',
+                boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
+                position: "relative",
+                overflow: "hidden",
+                height: 'fit-content',
+                position: { md: 'sticky' },
+                top: { md: 24 },
+                "&:hover": {
+                  boxShadow: "0 20px 40px rgba(243, 168, 51, 0.15)",
                 },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              variant="outlined"
-              sx={{
-                mb: 2,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "#141414",
-                  "& fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.3)",
-                    borderWidth: 2,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.5)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#f3a833",
-                  },
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              label={editId ? "New Password (Optional)" : "Password"}
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              variant="outlined"
-              sx={{
-                mb: 2,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "#141414",
-                  "& fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.3)",
-                    borderWidth: 2,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "rgba(243, 168, 51, 0.5)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#f3a833",
-                  },
-                },
-              }}
-            />
-            {error && (
-              <Typography component={motion.div} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} variant="body2" sx={{ color: "#d32f2f", mb: 2 }}>
-                {error}
-              </Typography>
-            )}
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button
-                component={motion.button}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                variant="contained"
-                fullWidth={true}
-                sx={{
-                  py: 1.2,
-                  px: 4,
-                  borderRadius: 3,
-                  textTransform: "none",
-                  fontSize: "1rem",
-                  fontWeight: 600,
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
                   background:
-                    "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
-                  boxShadow: "0 8px 24px rgba(243, 168, 51, 0.4)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #eab308 0%, #d97706 100%)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(243, 168, 51, 0.5)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
-                startIcon={<SaveIcon />}
-              >
-                {editId ? "Update" : "Register"}
-              </Button>
-              {editId && (
-                <Button
-                  component={motion.button}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  variant="outlined"
-                  fullWidth={true}
-                  onClick={handleCancelEdit}
-                  sx={{
-                    py: 1.2,
-                    px: 4,
-                    borderRadius: 3,
-                    textTransform: "none",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    borderColor: "#f3a833",
-                    color: "#f3a833",
-                    "&:hover": {
-                      borderColor: "#eab308",
-                      color: "#eab308",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                  startIcon={<CloseIcon />}
+                    "linear-gradient(90deg, #f3a833 0%, #f59e0b 50%, #fbbf24 100%)",
+                  backgroundSize: "200% 100%",
+                },
+              }}
+            >
+              <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: "#f3a833", mb: 3 }}
                 >
-                  Cancel
-                </Button>
-              )}
-            </Stack>
+                  {editId ? "Edit BDO" : "Register New BDO"}
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    sx={{
+                      mb: 2,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        bgcolor: "#141414",
+                        "& fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.3)",
+                          borderWidth: 2,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.5)",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#f3a833",
+                        },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    sx={{
+                      mb: 2,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        bgcolor: "#141414",
+                        "& fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.3)",
+                          borderWidth: 2,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.5)",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#f3a833",
+                        },
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label={editId ? "New Password (Optional)" : "Password"}
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    sx={{
+                      mb: 2,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        bgcolor: "#141414",
+                        "& fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.3)",
+                          borderWidth: 2,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(243, 168, 51, 0.5)",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#f3a833",
+                        },
+                      },
+                    }}
+                  />
+                  {error && (
+                    <Typography component={motion.div} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} variant="body2" sx={{ color: "#d32f2f", mb: 2 }}>
+                      {error}
+                    </Typography>
+                  )}
+                  <Stack direction="column" spacing={2} sx={{ mt: 2 }}>
+                    <Button
+                      component={motion.button}
+                      whileHover={{ scale: !isSubmitDisabled ? 1.02 : 1 }}
+                      whileTap={{ scale: !isSubmitDisabled ? 0.98 : 1 }}
+                      type="submit"
+                      variant="contained"
+                      fullWidth
+                      disabled={isSubmitDisabled}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 3,
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        background:
+                          "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+                        boxShadow: "0 8px 24px rgba(243, 168, 51, 0.4)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #eab308 0%, #d97706 100%)",
+                          boxShadow: "0 12px 32px rgba(243, 168, 51, 0.5)",
+                        },
+                        "&.Mui-disabled": {
+                          background: "rgba(255, 255, 255, 0.1)",
+                          color: "rgba(255, 255, 255, 0.3)",
+                          boxShadow: "none",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                      startIcon={<SaveIcon />}
+                    >
+                      {editId ? "Update" : "Register BDO"}
+                    </Button>
+                    {editId && (
+                      <Button
+                        component={motion.button}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        variant="outlined"
+                        fullWidth
+                        onClick={handleCancelEdit}
+                        sx={{
+                          py: 1.5,
+                          borderRadius: 3,
+                          textTransform: "none",
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          borderColor: "rgba(243, 168, 51, 0.5)",
+                          color: "#f3a833",
+                          "&:hover": {
+                            borderColor: "#eab308",
+                            background: "rgba(243, 168, 51,0.06)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                        startIcon={<CloseIcon />}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </Stack>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
-        </Paper>
 
-        {/* BDM List */}
-        <Paper
-          component={motion.div}
-          elevation={0}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.15 }}
-          sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 4,
-            background: "rgba(20, 20, 20, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: '1px solid rgba(243, 168, 51, 0.2)',
-            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            position: "relative",
-            overflow: "hidden",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              boxShadow: "0 20px 40px rgba(243, 168, 51, 0.15)",
-            },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "4px",
-              background:
-                "linear-gradient(90deg, #f3a833 0%, #f59e0b 50%, #fbbf24 100%)",
-              backgroundSize: "200% 100%",
-              animation: loading ? "shimmer 2s infinite" : "none",
-            },
-            "@keyframes shimmer": {
-              "0%": { backgroundPosition: "-200% 0" },
-              "100%": { backgroundPosition: "200% 0" },
-            },
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, color: "#f3a833", mb: 3 }}
-          >
-            BDO List
-          </Typography>
+          {/* Right Column: BDM List */}
+          <Box sx={{ width: { xs: '100%', lg: '66.666%' }, flex: 1 }}>
+            <Card
+              component={motion.div}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ duration: 0.5, delay: 0.15 }}
+              sx={{
+                borderRadius: 4,
+                background: "rgba(20, 20, 20, 0.8)",
+                backdropFilter: "blur(20px)",
+                border: '1px solid rgba(243, 168, 51, 0.2)',
+                boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                position: "relative",
+                overflow: "hidden",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 20px 40px rgba(243, 168, 51, 0.15)",
+                },
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
+                  background:
+                    "linear-gradient(90deg, #f3a833 0%, #f59e0b 50%, #fbbf24 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: loading ? "shimmer 2s infinite" : "none",
+                },
+                "@keyframes shimmer": {
+                  "0%": { backgroundPosition: "-200% 0" },
+                  "100%": { backgroundPosition: "200% 0" },
+                },
+              }}
+            >
+              <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: "#f3a833", mb: 3 }}
+                >
+                  BDO List
+                </Typography>
 
           <Box component={motion.div} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
@@ -703,7 +713,10 @@ const BDMRegisterPage = () => {
               </Box>
             </>
           )}
-        </Paper>
+          </CardContent>
+        </Card>
+        </Box>
+      </Box>
 
         {/* Delete Confirmation Modal */}
         <Modal

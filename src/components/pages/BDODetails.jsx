@@ -21,25 +21,40 @@ import {
   Pagination,
   Tooltip,
   IconButton,
+  Card,
+  CardContent,
+  Grid,
 } from "@mui/material";
 import {
   Person,
   ArrowBack,
   Edit,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import { useParams, useRouter } from "next/navigation";
 import axiosInstance from "../../utils/axiosInstance";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDebounce } from "use-debounce";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
+import { TextField, InputAdornment, useMediaQuery, useTheme } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../utils/toastSlice";
 
 const BDODetails = () => {
   const { id } = useParams();
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const dispatch = useDispatch();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +63,12 @@ const BDODetails = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingProposals, setLoadingProposals] = useState(false);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [dateFilter, setDateFilter] = useState("");
+  const hasActiveFilters = Boolean(searchTerm.trim() || dateFilter);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -83,43 +104,17 @@ const BDODetails = () => {
     router.push("/admin/bdms");
   };
 
-  const statusConfig = {
-    Interested: {
-      color: "success",
-      icon: <CheckCircleIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha("#4caf50", 0.1),
-      textColor: "#4caf50",
-    },
-    "No Fit": {
-      color: "error",
-      icon: <DeleteIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha("#f44336", 0.1),
-      textColor: "#ef5350",
-    },
-    Flaked: {
-      color: "warning",
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha("#ff9800", 0.1),
-      textColor: "#ffb74d",
-    },
-    "Follow-up": {
-      color: "info",
-      icon: <PendingIcon sx={{ fontSize: 16 }} />,
-      bgColor: alpha("#2196f3", 0.1),
-      textColor: "#64b5f6",
-    },
-  };
-
-  const fetchProposals = async (pageNumber = 1) => {
+  const fetchProposals = async (pageNumber = 1, filtersOverride) => {
     try {
       setLoadingProposals(true);
-      const res = await axiosInstance.get(`/api/proposals/get-all-proposals`, {
-        params: {
-          page: pageNumber,
-          limit: 5,
-          createdBy: id,
-        },
-      });
+      const params = {
+        page: pageNumber,
+        limit: 5,
+        createdBy: id,
+        search: filtersOverride?.search ?? debouncedSearchTerm,
+        date: filtersOverride?.date ?? dateFilter,
+      };
+      const res = await axiosInstance.get(`/api/proposals/get-all-proposals`, { params });
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);
     } catch {
@@ -127,6 +122,13 @@ const BDODetails = () => {
     } finally {
       setLoadingProposals(false);
     }
+  };
+
+  const handleClearFilters = () => {
+    setPage(1);
+    setSearchTerm("");
+    setDateFilter("");
+    fetchProposals(1, { search: "", date: "" });
   };
 
   useEffect(() => {
@@ -157,7 +159,7 @@ const BDODetails = () => {
       fetchProposals(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, debouncedSearchTerm, dateFilter]);
 
   const handleViewProposal = (proposalId) => {
     router.push(`/admin/proposals/${proposalId}`);
@@ -170,12 +172,12 @@ const BDODetails = () => {
       );
       const pdfPath = res.data.data.pdfPath;
       if (!pdfPath) {
-        alert("PDF not found.");
+        dispatch(showToast({ message: "PDF not found.", severity: "error" }));
         return;
       }
       window.open(pdfPath, "_blank", "noopener,noreferrer");
     } catch {
-      alert("Failed to open PDF.");
+      dispatch(showToast({ message: "Failed to open PDF.", severity: "error" }));
     }
   };
 
@@ -193,217 +195,308 @@ const BDODetails = () => {
         position: "relative",
       }}
     >
-      <Container maxWidth="md">
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBack />}
-            onClick={() => router.back()}
-            sx={{
-              borderRadius: 3,
-              textTransform: "none",
-              fontWeight: 700,
-              borderColor: "#f3a833",
-              color: "#f3a833",
-              "&:hover": {
-                borderColor: "#eab308",
-                color: "#eab308",
-                background: "rgba(243, 168, 51,0.06)",
-              },
-            }}
-          >
-            Back
-          </Button>
-
-          {data && (
+      <Container maxWidth="lg">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible">
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4, alignItems: "center" }}>
             <Button
-              variant="contained"
-              startIcon={<Edit />}
-              onClick={handleEdit}
+              variant="outlined"
+              startIcon={<ArrowBack />}
+              onClick={() => router.back()}
               sx={{
                 borderRadius: 3,
                 textTransform: "none",
                 fontWeight: 700,
-                background: colorScheme.gradient,
-                boxShadow: "0 4px 14px rgba(243, 168, 51, 0.4)",
+                borderColor: "rgba(243, 168, 51, 0.5)",
+                color: "#f3a833",
                 "&:hover": {
-                  background: colorScheme.hoverGradient,
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 20px rgba(243, 168, 51, 0.6)",
+                  borderColor: "#eab308",
+                  background: "rgba(243, 168, 51,0.1)",
                 },
-                transition: "all 0.3s ease",
               }}
             >
-              Edit BDO
+              Back to BDOs
             </Button>
-          )}
-        </Box>
-        <Paper
-          component={motion.div}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          elevation={0}
-          sx={{
-            width: "100%",
-            maxWidth: 720,
-            mx: "auto",
-            p: { xs: 4, sm: 5, md: 6 },
-            borderRadius: 5,
-            textAlign: "center",
-            background: "rgba(20, 20, 20, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(243, 168, 51, 0.2)",
-            boxShadow: "0 20px 60px rgba(243, 168, 51,0.1)",
-            transition: "all 0.4s cubic-bezier(0.4,0,0.2,1)",
-            position: "relative",
-            overflow: "hidden",
-            "&:hover": {
-              transform: "translateY(-8px)",
-              boxShadow: "0 30px 80px rgba(243, 168, 51,0.2)",
-              borderColor: "rgba(243, 168, 51,0.3)",
-            },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "6px",
-              background: colorScheme.gradient,
-            },
-          }}
-        >
+
+            {data && (
+              <Button
+                variant="contained"
+                startIcon={<Edit />}
+                onClick={handleEdit}
+                sx={{
+                  borderRadius: 3,
+                  textTransform: "none",
+                  fontWeight: 700,
+                  background: colorScheme.gradient,
+                  boxShadow: "0 4px 14px rgba(243, 168, 51, 0.4)",
+                  "&:hover": {
+                    background: colorScheme.hoverGradient,
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 6px 20px rgba(243, 168, 51, 0.6)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+              >
+                Edit BDO
+              </Button>
+            )}
+          </Box>
+
           {loading ? (
-            <Box component={motion.div} variants={itemVariants} initial="hidden" animate="visible" sx={{ py: 10 }}>
+            <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
               <CircularProgress size={56} sx={{ color: colorScheme.primary }} />
             </Box>
           ) : !data ? (
-            <Box component={motion.div} variants={itemVariants} initial="hidden" animate="visible" sx={{ py: 10 }}>
+            <Box sx={{ py: 10, textAlign: 'center' }}>
               <Typography variant="h6" sx={{ color: "#94a3b8" }}>
                 BDO not found
               </Typography>
             </Box>
           ) : (
-            <>
-              <Box
-                component={motion.div}
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 3,
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    background: colorScheme.gradient,
-                    boxShadow: "0 12px 28px rgba(0,0,0,0.8)",
-                  }}
-                >
-                  <Person sx={{ fontSize: 42, color: "#fff" }} />
-                </Avatar>
-              </Box>
+            <Grid container spacing={3}>
+              {/* Left Column: Profile & Stats */}
+              <Grid item xs={12} md={4}>
+                <Stack spacing={3}>
+                  <Card
+                    component={motion.div}
+                    variants={itemVariants}
+                    sx={{
+                      background: "#0a0a0a",
+                      border: "1px solid rgba(243, 168, 51, 0.2)",
+                      borderRadius: 4,
+                      boxShadow: "0 4px 20px rgba(243, 168, 51, 0.1)",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <Box sx={{ height: 6, background: colorScheme.gradient }} />
+                    <CardContent sx={{ p: 4, textAlign: "center" }}>
+                      <Avatar
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          background: colorScheme.gradient,
+                          boxShadow: "0 8px 24px rgba(243, 168, 51, 0.3)",
+                          mx: "auto",
+                          mb: 2,
+                        }}
+                      >
+                        <Person sx={{ fontSize: 40, color: "#fff" }} />
+                      </Avatar>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          fontWeight: 800,
+                          color: "#f8fafc",
+                          mb: 0.5,
+                        }}
+                      >
+                        {data.name}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
+                        {data.email}
+                      </Typography>
+                      
+                      <Divider sx={{ mb: 3, borderColor: "rgba(255,255,255,0.05)" }} />
+                      
+                      <Stack spacing={1.5} alignItems="center">
+                        <Chip
+                          label={`Created: ${formatTS(data.createdAt)}`}
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            borderRadius: 1.5,
+                            background: "rgba(243, 168, 51,0.08)",
+                            color: "#f3a833",
+                            width: "100%",
+                          }}
+                        />
+                        <Chip
+                          label={`Updated: ${formatTS(data.updatedAt)}`}
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            borderRadius: 1.5,
+                            background: "rgba(255, 255, 255, 0.05)",
+                            color: "#94a3b8",
+                            width: "100%",
+                          }}
+                        />
+                      </Stack>
+                    </CardContent>
+                  </Card>
 
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 800,
-                    background: colorScheme.gradient,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    letterSpacing: "-0.5px",
-                    mb: 1,
-                  }}
-                >
-                  {data.name}
-                </Typography>
-              </motion.div>
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <Typography variant="body1" sx={{ color: "#94a3b8", mb: 3 }}>
-                  {data.email}
-                </Typography>
-              </motion.div>
+                  <Card
+                    component={motion.div}
+                    variants={itemVariants}
+                    sx={{
+                      background: "linear-gradient(135deg, #111111 0%, #0a0a0a 100%)",
+                      border: "1px solid rgba(243, 168, 51, 0.15)",
+                      borderRadius: 4,
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#94a3b8", mb: 0.5 }}>
+                          Total Proposals
+                        </Typography>
+                        <Typography
+                          variant="h3"
+                          sx={{
+                            fontWeight: 800,
+                            background: colorScheme.gradient,
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                          }}
+                        >
+                          {data.totalProposals}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 3,
+                          background: "rgba(243, 168, 51, 0.1)",
+                        }}
+                      >
+                        <DescriptionIcon sx={{ fontSize: 32, color: "#f3a833" }} />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Stack>
+              </Grid>
 
-              <Divider sx={{ mb: 4, borderColor: "rgba(243, 168, 51,0.15)" }} />
-
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  justifyContent="center"
-                  alignItems="center"
-                  sx={{ mb: 3 }}
-                >
-                <Chip
-                  label={`Created: ${formatTS(data.createdAt)}`}
+              {/* Right Column: Proposals */}
+              <Grid item xs={12} md={8}>
+                <Card
+                  component={motion.div}
+                  variants={itemVariants}
                   sx={{
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    background: "rgba(243, 168, 51,0.1)",
-                    color: "#f3a833",
-                  }}
-                />
-                <Chip
-                  label={`Updated: ${formatTS(data.updatedAt)}`}
-                  sx={{
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    background: "rgba(245, 158, 11,0.1)",
-                    color: "#f59e0b",
-                  }}
-                />
-              </Stack>
-              </motion.div>
-
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <Box
-                  sx={{
-                    mt: 2,
-                    p: 3,
-                    borderRadius: 3,
-                    background: "linear-gradient(135deg, #1a1a1a 0%, #111111 100%)",
-                    border: "1px solid rgba(243, 168, 51, 0.15)",
-                  }}
-                >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                  Total Proposals
-                </Typography>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 800,
-                    background: colorScheme.gradient,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  {data.totalProposals}
-                </Typography>
-              </Box>
-              </motion.div>
-
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <Box
-                  sx={{
-                    mt: 4,
-                    p: { xs: 2.5, sm: 4 },
-                    borderRadius: 4,
                     background: "#0a0a0a",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
                     border: "1px solid rgba(243, 168, 51, 0.2)",
-                    textAlign: "left",
+                    borderRadius: 4,
+                    boxShadow: "0 4px 20px rgba(243, 168, 51, 0.1)",
+                    height: "100%",
                   }}
                 >
-                <Typography variant="h5" fontWeight="700" sx={{ mb: 3, color: "#f3a833" }}>
-                  Proposals by {data.name}
-                </Typography>
+                  <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h5" fontWeight="700" sx={{ color: "#f3a833" }}>
+                    Proposals by {data.name}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    mb: 4,
+                    p: 3,
+                    borderRadius: 4,
+                    background: "rgba(0, 0, 0, 0.2)",
+                    border: "1px solid rgba(243, 168, 51, 0.2)",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: { xs: "flex-start", md: "center" },
+                      gap: 2,
+                      mb: 2,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: 800, color: "#f8fafc" }}>
+                      Filters
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      startIcon={<FilterAltOffIcon />}
+                      disabled={!hasActiveFilters}
+                      onClick={handleClearFilters}
+                      sx={{
+                        borderRadius: 3,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        borderColor: alpha(colorScheme.primary, 0.35),
+                        color: colorScheme.primary,
+                        background: "#141414",
+                        "&:hover": {
+                          borderColor: colorScheme.primary,
+                          background: alpha(colorScheme.primary, 0.06),
+                        },
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </Box>
+
+                  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                    <TextField
+                      placeholder="Search by title, client name or email..."
+                      variant="outlined"
+                      size="small"
+                      fullWidth={isMobile}
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setPage(1);
+                        setSearchTerm(e.target.value);
+                      }}
+                      sx={{
+                        flex: { xs: "1 1 100%", md: 2 },
+                        minWidth: 260,
+                        "& .MuiInputBase-root": {
+                          background: "#141414",
+                          borderRadius: 2,
+                          color: "#fff",
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: "#94a3b8" }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Date"
+                        value={dateFilter ? dayjs(dateFilter) : null}
+                        onChange={(newValue) => {
+                          setPage(1);
+                          setDateFilter(newValue ? newValue.format("YYYY-MM-DD") : "");
+                        }}
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                            sx: {
+                              flex: { xs: "1 1 100%", sm: "0 1 auto" },
+                              minWidth: 180,
+                              "& .MuiInputBase-root": {
+                                background: "#141414",
+                                borderRadius: 2,
+                                color: "#fff",
+                              },
+                              "& .MuiInputLabel-root": { color: "#94a3b8" },
+                              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
+                              "& .MuiIconButton-root": { color: "#94a3b8" },
+                              "& .MuiSvgIcon-root": { color: "#94a3b8" },
+                            },
+                          },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Box>
+                </Box>
 
                 {loadingProposals ? (
                   <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -419,21 +512,14 @@ const BDODetails = () => {
                 ) : (
                   <>
                     <TableContainer sx={{ overflowX: "auto" }}>
-                      <Table>
+                      <Table sx={{ minWidth: 800 }}>
                         <TableHead>
-                          <TableRow
-                            sx={{ background: "rgba(243, 168, 51, 0.08)" }}
-                          >
-                            {["Title", "Client", "Date", "Status", "Actions"].map(
-                              (h) => (
-                                <TableCell
-                                  key={h}
-                                  sx={{ fontWeight: "700", color: "#f8fafc" }}
-                                >
-                                  {h}
-                                </TableCell>
-                              )
-                            )}
+                          <TableRow sx={{ background: "rgba(243, 168, 51, 0.08)" }}>
+                            {["Title", "Client", "Client Email", "Date", "Actions"].map((h) => (
+                              <TableCell key={h} sx={{ fontWeight: "700", color: "#f8fafc" }}>
+                                {h}
+                              </TableCell>
+                            ))}
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -449,64 +535,33 @@ const BDODetails = () => {
                                 layout
                                 hover
                                 sx={{
-                                  "&:hover": {
-                                    bgcolor: "rgba(243, 168, 51, 0.1) !important",
-                                  },
+                                  "&:hover": { bgcolor: "rgba(243, 168, 51, 0.1) !important" },
                                 }}
                               >
-                              <TableCell sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                                <Typography fontWeight={600}>
-                                  {proposal.projectTitle}
-                                </Typography>
-                              </TableCell>
-                              <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientName}</TableCell>
-                              <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.date}</TableCell>
-                              <TableCell sx={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                                <Chip
-                                  icon={statusConfig[proposal.callOutcome]?.icon}
-                                  label={proposal.callOutcome}
-                                  size="small"
-                                  sx={{
-                                    fontWeight: 600,
-                                    borderRadius: 2,
-                                    background:
-                                      statusConfig[proposal.callOutcome]?.bgColor,
-                                    color:
-                                      statusConfig[proposal.callOutcome]
-                                        ?.textColor,
-                                  }}
-                                />
-                              </TableCell>
-                              <TableCell sx={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                                <Stack direction="row" spacing={1}>
-                                  <Tooltip title="View">
-                                    <IconButton
-                                      onClick={() =>
-                                        handleViewProposal(proposal._id)
-                                      }
-                                      size="small"
-                                    >
-                                      <VisibilityIcon
-                                        fontSize="small"
-                                        color="primary"
-                                      />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title="Download">
-                                    <IconButton
-                                      onClick={() => handleDownload(proposal._id)}
-                                      size="small"
-                                    >
-                                      <DownloadIcon
-                                        fontSize="small"
-                                        color="success"
-                                      />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Stack>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                <TableCell sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                  <Typography fontWeight={600}>{proposal.projectTitle}</Typography>
+                                </TableCell>
+                                <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientName}</TableCell>
+                                <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientEmail}</TableCell>
+                                <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                  {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
+                                </TableCell>
+                                <TableCell sx={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                  <Stack direction="row" spacing={1}>
+                                    <Tooltip title="View">
+                                      <IconButton onClick={() => handleViewProposal(proposal._id)} size="small">
+                                        <VisibilityIcon fontSize="small" sx={{ color: colorScheme.primary }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Download">
+                                      <IconButton onClick={() => handleDownload(proposal._id)} size="small">
+                                        <DownloadIcon fontSize="small" sx={{ color: "#4caf50" }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Stack>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                           </AnimatePresence>
                         </TableBody>
                       </Table>
@@ -529,11 +584,12 @@ const BDODetails = () => {
                     )}
                   </>
                 )}
-              </Box>
-              </motion.div>
-            </>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
           )}
-        </Paper>
+        </motion.div>
       </Container>
     </Box>
   );

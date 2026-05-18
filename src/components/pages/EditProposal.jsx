@@ -53,8 +53,9 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { replacePage2Content } from "../../utils/page2Slice";
+import { replacePage2Content, setOriginalAiResponse } from "../../utils/page2Slice";
 import { showToast } from "../../utils/toastSlice";
+import { setFullFormData } from "../../utils/proposalSlice";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
@@ -147,6 +148,8 @@ const EditProposal = () => {
   const pricingPage = useSelector((s) => s.pricing.edit);
   const paymentTerms = useSelector((s) => s.paymentTerms.edit);
   const contactPage = useSelector((s) => s.contact);
+  const proposalState = useSelector((s) => s.proposal);
+
 
   const [formData, setFormData] = useState({
     clientName: "",
@@ -208,7 +211,7 @@ const EditProposal = () => {
         );
         const data = res.data.data;
 
-        const updatedData = {
+        let updatedData = {
           clientName: data.clientName || "",
           clientEmail: data.clientEmail || "",
           brandName: data.brandName || "",
@@ -226,9 +229,14 @@ const EditProposal = () => {
           projectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? (data.projectCategory || "") : "Other",
           customProjectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? "" : data.projectCategory,
         };
-        setSelectedCurrency(data.selectedCurrency);
+
+        if (proposalState && proposalState.isUnsavedEdit && proposalState._id === id) {
+          updatedData = { ...updatedData, ...proposalState };
+        }
+
+        setSelectedCurrency(updatedData.selectedCurrency || data.selectedCurrency);
         setFormData(updatedData);
-        setBaseCost(data.additionalCosts || "");
+        setBaseCost(updatedData.additionalCosts || "");
         reset(updatedData);
 
         setTimeout(() => {
@@ -484,6 +492,7 @@ const EditProposal = () => {
       const data = response.data;
       if (data && data.sections && data.tables) {
         dispatch(replacePage2Content(data));
+        dispatch(setOriginalAiResponse(data.sections));
         dispatch(showToast({ message: "Proposal content generated successfully!", type: "success" }));
         setActiveStep(2); // Automatically jump to the Additional Details step to review
       } else {
@@ -504,17 +513,18 @@ const EditProposal = () => {
     try {
       setLoading(true);
       const dataToSend = {
-        data: { ...formDataToSave, selectedCurrency },
+        ...formDataToSave, 
+        selectedCurrency,
+        _id: id,
+        isUnsavedEdit: true // Flag to tell Proposal Studio to prefer this data over the DB
       };
 
-      await axiosInstance.put(
-        `${process.env.NEXT_PUBLIC_APP_BASE_URL}api/proposals/update-proposal/${id}`,
-        dataToSend
-      );
+      // Store in Redux memory instead of hitting the DB immediately
+      dispatch(setFullFormData(dataToSend));
 
       setSnackbar({
         open: true,
-        message: "Proposal saved! Redirecting to Studio...",
+        message: "Draft changes saved! Redirecting to Studio...",
         severity: "success",
       });
 
@@ -524,7 +534,7 @@ const EditProposal = () => {
       console.error("Save Error:", error);
       setSnackbar({
         open: true,
-        message: "Failed to save proposal.",
+        message: "Failed to process proposal changes.",
         severity: "error",
       });
       setLoading(false);
@@ -860,295 +870,7 @@ const EditProposal = () => {
         </>
       ),
     },
-    {
-      label: "Costs",
-      icon: <AttachMoney />,
-      content: (
-        <>
-          {sectionHeader(<AttachMoney />, "Costs")}
-          {/* Currency Toggle - 5 Currencies */}
-          <Box sx={{ mb: 4, display: "flex", justifyContent: "start" }}>
-            <ToggleButtonGroup
-              value={selectedCurrency}
-              exclusive
-              onChange={handleCurrencyChange}
-              aria-label="currency selection"
-              size="small"
-              sx={{
-                gap: { xs: 0.5, sm: 1 },
-                flexWrap: "wrap",
-                "& .MuiToggleButton-root": {
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.3, sm: 0.5 },
-                  fontSize: { xs: "0.7rem", sm: "0.9rem" },
-                  fontWeight: 700,
-                  border: "2px solid",
-                  borderColor: colorScheme.primary,
-                  borderRadius: 3,
-                  minWidth: { xs: 60, sm: 90 },
-                  "&.Mui-selected": {
-                    background: colorScheme.gradient,
-                    color: "#fff",
-                    "&:hover": {
-                      background: colorScheme.hoverGradient,
-                    },
-                  },
-                  "&:hover": {
-                    background: `${colorScheme.primary}15`,
-                  },
-                },
-              }}
-            >
-              <ToggleButton value="USD">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>$</Typography>
-                  <Typography>USD</Typography>
-                </Box>
-              </ToggleButton>
 
-              <ToggleButton value="PKR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>₨</Typography>
-                  <Typography>PKR</Typography>
-                </Box>
-              </ToggleButton>
-              <ToggleButton value="GBP">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>£</Typography>
-                  <Typography>GBP</Typography>
-                </Box>
-              </ToggleButton>
-
-              <ToggleButton value="EUR">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.4rem" } }}>€</Typography>
-                  <Typography>EUR</Typography>
-                </Box>
-              </ToggleButton>
-
-              <ToggleButton value="AED">
-                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 0.8 } }}>
-                  <Typography sx={{ fontSize: { xs: "1rem", sm: "1.3rem" }, fontWeight: 800 }}>
-                    د.إ
-                  </Typography>
-                  <Typography>AED</Typography>
-                </Box>
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-          <TextField
-            label="Advance Percentage"
-            type="number"
-            fullWidth
-            value={formData.advancePercent}
-            onChange={(e) => {
-              const numericValue = e.target.value.replace(/[^0-9]/g, "");
-              const limitedValue = numericValue
-                ? Math.min(parseInt(numericValue), 100).toString()
-                : "";
-
-              handleChange("advancePercent", limitedValue);
-
-              // Only auto-calculate cost if toggle is ON
-              if (autoApplyAdvance) {
-                const advance = parseFloat(limitedValue) || 0;
-                if (baseCost) {
-                  const base = parseFloat(baseCost) || 0;
-                  const discounted = base * (1 - advance / 100);
-                  handleChange("additionalCosts", Math.round(discounted).toString());
-                }
-              }
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Typography
-                    sx={{ fontWeight: 600, color: colorScheme.primary }}
-                  >
-                    %
-                  </Typography>
-                </InputAdornment>
-              ),
-            }}
-            placeholder="Enter percentage (e.g., 50)"
-            sx={inputStyle}
-          />
-
-          {/* Auto-Cut Toggle */}
-          <Box
-            onClick={() => {
-              const newValue = !autoApplyAdvance;
-              setAutoApplyAdvance(newValue);
-
-              if (newValue && baseCost) {
-                const advance = parseFloat(formData.advancePercent) || 0;
-                const discounted = parseFloat(baseCost) * (1 - advance / 100);
-                handleChange("additionalCosts", Math.round(discounted || 0).toString());
-              } else if (!newValue && baseCost) {
-                handleChange("additionalCosts", baseCost.toString());
-              }
-            }}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              bgcolor: autoApplyAdvance ? "rgba(243,168,51,0.08)" : "#141414",
-              border: `2px solid ${autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.15)"}`,
-              borderRadius: 2,
-              px: 2,
-              py: 1.5,
-              mb: 2,
-              mt: 1,
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              "&:hover": { borderColor: colorScheme.primary, bgcolor: "rgba(243,168,51,0.05)" },
-            }}
-          >
-            <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: autoApplyAdvance ? colorScheme.primary : "#f8fafc" }}>
-                Auto-Deduct Advance from Cost
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mt: 0.3 }}>
-                {autoApplyAdvance ? "Cost will be automatically reduced by advance %" : "Advance % is saved separately — cost unchanged"}
-              </Typography>
-            </Box>
-            <Box sx={{
-              width: 44, height: 24, borderRadius: 12, position: "relative",
-              bgcolor: autoApplyAdvance ? colorScheme.primary : "rgba(255,255,255,0.2)",
-              transition: "background-color 0.3s ease", flexShrink: 0, ml: 2,
-            }}>
-              <Box sx={{
-                width: 18, height: 18, borderRadius: "50%", bgcolor: "#fff",
-                position: "absolute", top: 3,
-                left: autoApplyAdvance ? 23 : 3,
-                transition: "left 0.3s ease",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-              }} />
-            </Box>
-          </Box>
-
-          <TextField
-            label={`Cost (${selectedCurrency})`}
-            type="text"
-            fullWidth
-            value={formData.additionalCosts}
-            onChange={(e) => {
-              const numericValue = e.target.value.replace(/[^0-9]/g, "");
-              setBaseCost(numericValue);
-
-              if (autoApplyAdvance) {
-                const advance = parseFloat(formData.advancePercent) || 0;
-                const discounted = parseFloat(numericValue) * (1 - advance / 100);
-                handleChange("additionalCosts", Math.round(discounted || 0).toString());
-              } else {
-                handleChange("additionalCosts", numericValue);
-              }
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Typography
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: "1.4rem",
-                      color: colorScheme.primary,
-                    }}
-                  >
-                    {selectedCurrency === "USD" && "$"}
-                    {selectedCurrency === "GBP" && "£"}
-                    {selectedCurrency === "EUR" && "€"}
-                    {selectedCurrency === "AED" && "د.إ"}
-                    {selectedCurrency === "PKR" && "₨"}
-                  </Typography>
-                </InputAdornment>
-              ),
-              endAdornment: formData.additionalCosts && (
-                <InputAdornment position="end">
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: colorScheme.primary,
-                      fontWeight: 700,
-                      fontSize: "0.9rem",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {formatNumberInWords(formData.additionalCosts, selectedCurrency)}
-                  </Typography>
-                </InputAdornment>
-              ),
-            }}
-            placeholder={`Enter amount in ${selectedCurrency}`}
-            sx={inputStyle}
-          />
-        </>
-      ),
-    },
-    {
-      label: "Additional Details",
-      icon: <Info />,
-      content: (
-        <>
-          {sectionHeader(<Info />, "Additional Details")}
-          <FormControl fullWidth sx={inputStyle}>
-            <InputLabel>Call Outcome</InputLabel>
-            <Controller
-              name="callOutcome"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  label="Call Outcome"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleChange("callOutcome", e.target.value);
-                  }}
-                >
-                  <MenuItem value="Interested">Interested</MenuItem>
-                  <MenuItem value="No Fit">No Fit</MenuItem>
-                  <MenuItem value="Flaked">Flaked</MenuItem>
-                  <MenuItem value="Follow-up">Follow-up</MenuItem>
-                </Select>
-              )}
-            />
-          </FormControl>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Date"
-              value={formData.date ? dayjs(formData.date) : dayjs()} // ✅ Convert string back to dayjs for display
-              onChange={(newValue) => {
-                // ✅ Convert dayjs to string before saving to form
-                const formattedDate = newValue
-                  ? newValue.format("YYYY-MM-DD")
-                  : "";
-                // onChange(formattedDate);
-                handleChange("date", formattedDate);
-              }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  InputLabelProps: {
-                    shrink: true,
-                  },
-                  sx: {
-                    height: 56,
-                    width: "100%",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    background: "#141414",
-                    borderRadius: 2,
-                    mb: 2,
-                    "& .MuiInputBase-root": {
-                      height: 56,
-                    },
-                  },
-                },
-              }}
-            />
-          </LocalizationProvider>
-        </>
-      ),
-    },
     {
       label: "Review & Continue",
       icon: <EditDocument />,
