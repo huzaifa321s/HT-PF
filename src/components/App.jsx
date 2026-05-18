@@ -232,7 +232,7 @@ export default function App() {
 
   // === Socket Setup ===
   useEffect(() => {
-    socketRef.current = io("https://ht-pb.vercel.app");
+    socketRef.current = io(process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000");
 
     socketRef.current.on("connect", () => {
       setConnectionStatus(true);

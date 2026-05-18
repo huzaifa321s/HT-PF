@@ -156,7 +156,7 @@ export const AppProvider = ({ children }) => {
 
   // SSE setup
   useEffect(() => {
-    const evtSource = new EventSource("http://localhost:5000/api/transcribe/sse");
+    const evtSource = new EventSource(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000/"}api/transcribe/sse`);
     evtSource.onmessage = (e) => {
       const { event, data } = JSON.parse(e.data);
       if (event === "upload_status" || event === "transcription_status" || event === "pipeline_status") {
@@ -202,7 +202,7 @@ export const AppProvider = ({ children }) => {
     async function fetchBDM() {
       try {
         setFetchingBDM(true);
-        const res = await axiosInstance.get("http://localhost:5000/api/bdms/get");
+        const res = await axiosInstance.get("api/bdms/get");
         setOptions(res.data.data);
       } catch (err) {
         console.error("Error fetching BDM:", err);
@@ -218,7 +218,7 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axiosInstance.get("http://localhost:5000/api/get-creds");
+        const res = await axiosInstance.get("api/get-creds");
         if (res.data && res.data.success) {
           setFormData((prev) => ({
             ...prev,
@@ -246,7 +246,7 @@ export const AppProvider = ({ children }) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      await fetch("http://localhost:5000/api/transcribe", {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000/"}api/transcribe`, {
         method: "POST",
         body: formData,
       });
@@ -345,7 +345,7 @@ export const AppProvider = ({ children }) => {
     setProcessing(true);
     setSnackbar({ open: true, message: "Generating PDF...", severity: "info" });
     try {
-      const res = await axiosInstance.post("http://localhost:5000/api/proposals/create-proposal", formData, {
+      const res = await axiosInstance.post("api/proposals/create-proposal", formData, {
         headers: { "Content-Type": "application/json" },
       });
       if (res.data.success) {
