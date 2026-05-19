@@ -125,6 +125,11 @@ export default function ProposalStudio() {
       // Wait for React to re-render without studio UI (gap becomes 0)
       await new Promise(resolve => setTimeout(resolve, 600));
 
+      // Ensure all custom fonts are completely loaded before capturing
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
       // Scroll the canvas area to top so html2canvas sees everything
       const canvasArea = document.getElementById("canvas-area");
       if (canvasArea) canvasArea.scrollTop = 0;
@@ -151,17 +156,32 @@ export default function ProposalStudio() {
       await new Promise(r => setTimeout(r, 100));
 
       const fullCanvas = await html2canvas(container, {
-        scale: 2,
+        scale: 2, // High resolution
         useCORS: true,
         allowTaint: true,
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        backgroundColor: null,
+        backgroundColor: "#ffffff", // Explicit white background instead of null
         width: PAGE_PX_WIDTH,
         height: container.scrollHeight,
         windowWidth: PAGE_PX_WIDTH,
         windowHeight: container.scrollHeight,
+        imageTimeout: 0, // Never timeout on images (helps slow devices)
+        onclone: (clonedDoc) => {
+          // Force the cloned document to behave like a desktop screen
+          // This prevents mobile responsive CSS from breaking the PDF layout
+          const clonedBody = clonedDoc.body;
+          clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
+          clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
+          
+          const clonedContainer = clonedDoc.getElementById("pdf-export-container");
+          if (clonedContainer) {
+            clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
+            clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+            clonedContainer.style.transform = "none";
+          }
+        }
       });
 
       // Restore original styles
