@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
-import { Box, Grid, Paper, Button, Snackbar, Alert } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { Box, Grid, Paper, Button } from "@mui/material";
+import { showToast } from "../../utils/toastSlice";
 import axios from "axios";
 import { io } from "socket.io-client";
 import html2canvas from "html2canvas";
@@ -16,6 +18,7 @@ import PDFPreview from "../components/pdf/ProposalDocument";
 import EmailPreview from "../components/EmailPreview";
 
 export default function ProposalFormPage() {
+  const dispatch = useDispatch();
   const pdfRef = useRef();
   const inputRefs = useRef([]);
   const [isLoading, setLoading] = useState(false);
@@ -50,11 +53,6 @@ export default function ProposalFormPage() {
     date: new Date().toLocaleDateString(),
   });
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   const [currency, setCurrency] = useState("USD");
   const [customPlatform, setCustomPlatform] = useState("");
@@ -220,17 +218,9 @@ export default function ProposalFormPage() {
       let pageCount = 1;
 
       if (res.data.success) {
-        setSnackbar({
-          open: true,
-          message: "✅ Proposal created successfully!",
-          severity: "success",
-        });
+        dispatch(showToast({ message: "✅ Proposal created successfully!", severity: "success" }));
       } else {
-        setSnackbar({
-          open: true,
-          message: "⚠️ Failed to create proposal. Please try again.",
-          severity: "warning",
-        });
+        dispatch(showToast({ message: "⚠️ Failed to create proposal. Please try again.", severity: "warning" }));
       }
 
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
@@ -246,11 +236,7 @@ export default function ProposalFormPage() {
       }
 
       pdf.save(filename);
-      setSnackbar({
-        open: true,
-        message: "PDF generated successfully!",
-        severity: "success",
-      });
+      dispatch(showToast({ message: "PDF generated successfully!", severity: "success" }));
     } catch (err) {
       console.error("❌ PDF generation error:", err);
       alert("PDF generation failed.");
@@ -264,9 +250,6 @@ export default function ProposalFormPage() {
     await generatePdf(`${formData.clientName || "proposal"}_proposal.pdf`);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -367,20 +350,7 @@ export default function ProposalFormPage() {
         </Grid>
       </Grid>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      {/* Toast notifications handled globally by GlobalToast via Redux */}
     </Box>
   );
 }

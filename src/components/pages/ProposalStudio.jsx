@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Typography, Snackbar, Alert } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, Description, AttachMoney, CalendarMonth, Business, AutoAwesome, ContentCopy } from "@mui/icons-material";
 import { Drawer, IconButton, Divider, List, ListItem, ListItemIcon, ListItemText, Stack, Chip } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
@@ -11,6 +11,7 @@ import { Provider, useSelector, useDispatch } from "react-redux";
 import { store } from "../../utils/store";
 import { updateField, setFullFormData } from "../../utils/proposalSlice";
 import { historyManager } from "../../utils/historyManager";
+import { showToast } from "../../utils/toastSlice";
 
 export default function ProposalStudio() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function ProposalStudio() {
   const [zoomLevel, setZoomLevel] = useState(100);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  // Toast notifications handled globally via Redux showToast
 
   // Redux Data to compile PDF
   const page1 = useSelector((s) => s.page1Slice.edit);
@@ -257,7 +258,7 @@ export default function ProposalStudio() {
         );
       }
 
-      setSnackbar({ open: true, message: "PDF generated and saved successfully!", severity: "success" });
+      dispatch(showToast({ message: "PDF generated and saved successfully!", severity: "success" }));
 
       if (id === "new") {
         router.replace(`/proposal-studio/${currentId}`);
@@ -269,7 +270,7 @@ export default function ProposalStudio() {
       }
     } catch (err) {
       console.error("Generate PDF Error:", err);
-      setSnackbar({ open: true, message: "Failed to generate PDF: " + err.message, severity: "error" });
+      dispatch(showToast({ message: "Failed to generate PDF: " + err.message, severity: "error" }));
     } finally {
       setIsStudioMode(true);
       setSaving(false);
@@ -657,11 +658,11 @@ export default function ProposalStudio() {
                           const textBlob = new Blob([(sec.content || "").replace(/<[^>]+>/g, '')], { type: "text/plain" });
                           const data = [new ClipboardItem({ "text/html": htmlBlob, "text/plain": textBlob })];
                           await navigator.clipboard.write(data);
-                          setSnackbar({ open: true, message: "Content copied to clipboard!", severity: "success" });
+                          dispatch(showToast({ message: "Content copied to clipboard!", severity: "success" }));
                         } catch (err) {
                           // Fallback
                           navigator.clipboard.writeText(sec.content || "");
-                          setSnackbar({ open: true, message: "Content copied (fallback mode)!", severity: "success" });
+                          dispatch(showToast({ message: "Content copied!", severity: "success" }));
                         }
                       }} 
                       sx={{ color: "#94a3b8", "&:hover": { color: "#c084fc", bgcolor: "rgba(192,132,252,0.1)" } }}
@@ -702,21 +703,7 @@ export default function ProposalStudio() {
         </Box>
       </Drawer>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", borderRadius: 2 }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      {/* Toast notifications handled globally by GlobalToast via Redux */}
     </Box>
   );
 }

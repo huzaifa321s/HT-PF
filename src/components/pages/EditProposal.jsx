@@ -15,8 +15,6 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Snackbar,
-  Alert,
   Stepper,
   Step,
   StepLabel,
@@ -136,11 +134,7 @@ const EditProposal = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  // Toast notifications handled globally via Redux showToast
 
   const page1 = useSelector((s) => s.page1Slice.edit);
   const page2 = useSelector((s) => s.page3.edit);
@@ -244,11 +238,7 @@ const EditProposal = () => {
         }, 100);
       } catch (err) {
         console.error("Error fetching proposal:", err);
-        setSnackbar({
-          open: true,
-          message: "Failed to load proposal.",
-          severity: "error",
-        });
+        dispatch(showToast({ message: "Failed to load proposal.", severity: "error" }));
       } finally {
         setLoading(false);
       }
@@ -522,21 +512,13 @@ const EditProposal = () => {
       // Store in Redux memory instead of hitting the DB immediately
       dispatch(setFullFormData(dataToSend));
 
-      setSnackbar({
-        open: true,
-        message: "Draft changes saved! Redirecting to Studio...",
-        severity: "success",
-      });
+      dispatch(showToast({ message: "Draft changes saved! Redirecting to Studio...", severity: "success" }));
 
       router.push(`/proposal-studio/${id}`);
 
     } catch (error) {
       console.error("Save Error:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to process proposal changes.",
-        severity: "error",
-      });
+      dispatch(showToast({ message: "Failed to process proposal changes.", severity: "error" }));
       setLoading(false);
     }
   };
