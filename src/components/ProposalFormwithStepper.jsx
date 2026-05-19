@@ -301,9 +301,21 @@ const ProposalFormWithStepper = ({
   };
 
   const handleGenerateAI = async () => {
-    const brief = watch("projectBrief");
-    if (!brief || brief.trim() === "") {
-      dispatch(showToast({ message: "Please enter a Project Brief first.", severity: "error" }));
+    const brief = watch("projectBrief")?.trim() || "";
+    const charCount = brief.length;
+    const MIN_CHARS = 50;
+    const MAX_CHARS = 2000;
+
+    if (charCount === 0) {
+      dispatch(showToast({ message: "Project Brief is required to generate AI content.", severity: "warning" }));
+      return;
+    }
+    if (charCount < MIN_CHARS) {
+      dispatch(showToast({ message: `Brief is too short — add at least ${MIN_CHARS - charCount} more character${MIN_CHARS - charCount === 1 ? '' : 's'} for the AI to produce quality output.`, severity: "warning" }));
+      return;
+    }
+    if (charCount > MAX_CHARS) {
+      dispatch(showToast({ message: `Brief exceeds the ${MAX_CHARS}-character limit. Please shorten it by ${charCount - MAX_CHARS} character${charCount - MAX_CHARS === 1 ? '' : 's'}.`, severity: "error" }));
       return;
     }
     
@@ -773,17 +785,44 @@ const ProposalFormWithStepper = ({
               name="projectBrief"
               control={control}
               defaultValue=""
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Project Brief (for AI Generation)"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder="E.g., I need to make a proposal for SQ Logistics' digital presence..."
-                  sx={inputStyle}
-                />
-              )}
+              rules={{
+                minLength: { value: 50, message: "Brief must be at least 50 characters" },
+                maxLength: { value: 2000, message: "Brief must not exceed 2,000 characters" },
+              }}
+              render={({ field, fieldState }) => {
+                const charCount = (field.value || "").length;
+                const MIN = 50;
+                const MAX = 2000;
+                const tooShort = charCount > 0 && charCount < MIN;
+                const tooLong = charCount > MAX;
+                const isValid = charCount >= MIN && charCount <= MAX;
+                return (
+                  <>
+                    <TextField
+                      {...field}
+                      label="Project Brief (for AI Generation)"
+                      fullWidth
+                      multiline
+                      rows={5}
+                      placeholder={`Describe the client's business, what they need, and goals for this proposal.\n\nInclude key details such as:\n• Services required (website, mobile app, branding, etc.)\n• Target audience or industry\n• Any specific requirements or deadlines\n• Budget range (if known)`}
+                      error={tooShort || tooLong || !!fieldState.error}
+                      sx={inputStyle}
+                    />
+                    {/* Live char counter + hint */}
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 0.5, px: 0.5 }}>
+                      <Box sx={{ fontSize: "11px", color: tooShort ? "#f3a833" : tooLong ? "#f43f5e" : isValid ? "#10b981" : "#64748b" }}>
+                        {charCount === 0 && "Minimum 50 characters required for quality AI output"}
+                        {charCount > 0 && charCount < MIN && `⚠ ${MIN - charCount} more character${MIN - charCount === 1 ? '' : 's'} needed`}
+                        {isValid && "✓ Good — AI ready to generate"}
+                        {tooLong && `✕ ${charCount - MAX} character${charCount - MAX === 1 ? '' : 's'} over limit`}
+                      </Box>
+                      <Box sx={{ fontSize: "11px", fontWeight: 600, color: tooLong ? "#f43f5e" : charCount >= MIN ? "#10b981" : "#64748b" }}>
+                        {charCount} / 2,000
+                      </Box>
+                    </Box>
+                  </>
+                );
+              }}
             />
             
             <Button
@@ -792,7 +831,7 @@ const ProposalFormWithStepper = ({
               onClick={handleGenerateAI}
               disabled={isGeneratingAI || !watch("projectBrief")}
               sx={{
-                mt: 1,
+                mt: 1.5,
                 borderRadius: 10,
                 borderColor: colorScheme.primary,
                 color: colorScheme.primary,
