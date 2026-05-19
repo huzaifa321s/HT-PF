@@ -403,7 +403,7 @@ export default function ProposalStudio() {
       <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <UnifiedPdfEditor
           pdfPages={formData?.pdfPages}
-          mode="edit-doc"
+          mode={id === "new" ? "doc" : "edit-doc"}
           clientName={formData?.clientName || "Client"}
           date={formData?.date || new Date().toISOString()}
           isStudioMode={isStudioMode}
