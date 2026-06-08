@@ -170,3 +170,12 @@ export function restoreOriginalImages(originals) {
   imgs.forEach(({ img, src }) => img.setAttribute("src", src));
   bgs.forEach(({ el, bg }) => { el.style.backgroundImage = bg; });
 }
+
+/**
+ * Checks if any <img> elements still have non-data URLs.
+ * Returns true if all images are data URLs, false otherwise.
+ */
+export function ensureAllImagesConverted(container) {
+  const imgs = Array.from(container.querySelectorAll("img"));
+  return imgs.every((img) => img.getAttribute("src")?.startsWith("data:"));
+}
