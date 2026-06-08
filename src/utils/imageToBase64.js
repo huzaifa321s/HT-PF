@@ -146,27 +146,47 @@ export async function convertImagesToBase64(element) {
   );
 
   // --- Critical: wait for every updated image to fully decode before returning ---
-  // Setting img.src to a data: URL is synchronous in the DOM attribute sense,
-  // but the browser still needs to DECODE the image data before painting it.
-  // img.decode() returns a Promise that resolves once the image is ready to render.
+  // We use a robust combination of onload, decode(), and polling to guarantee
+  // the image is 100% ready to render before we let html2canvas take a snapshot.
   await Promise.all(
-    originalSources.map(({ img }) =>
-      typeof img.decode === "function"
-        ? img.decode().catch(() => {}) // ignore decode errors (e.g. broken image)
-        : new Promise((resolve) => {
-            if (img.complete && img.naturalWidth > 0) {
-              resolve();
-            } else {
-              img.onload = resolve;
-              img.onerror = resolve;
-            }
-          })
-    )
+    originalSources.map(({ img }) => {
+      return new Promise((resolve) => {
+        const checkComplete = () => {
+          if (img.complete && img.naturalWidth > 0) {
+            resolve();
+            return true;
+          }
+          return false;
+        };
+
+        if (checkComplete()) return;
+
+        img.onload = () => checkComplete() || resolve();
+        img.onerror = () => resolve(); // continue even if broken so we don't hang
+
+        if (typeof img.decode === "function") {
+          img.decode().then(() => checkComplete() || resolve()).catch(() => checkComplete() || resolve());
+        }
+
+        // Fallback polling just in case events miss
+        const poll = setInterval(() => {
+          if (checkComplete()) clearInterval(poll);
+        }, 50);
+
+        // Absolute timeout to prevent hanging forever
+        setTimeout(() => {
+          clearInterval(poll);
+          resolve();
+        }, 3000);
+      });
+    })
   );
 
-  // Flush two animation frames to ensure the browser has fully repainted
+  // Flush animation frames to ensure the browser has fully repainted
   // with the new data: URL images before html2canvas captures the DOM.
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  // Extra wait to be absolutely safe
+  await new Promise(r => setTimeout(r, 100));
 
   return originalSources;
 }

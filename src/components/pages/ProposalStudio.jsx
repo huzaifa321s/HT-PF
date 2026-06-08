@@ -157,11 +157,12 @@ export default function ProposalStudio() {
       // Small wait for reflow
       await new Promise(r => setTimeout(r, 100));
 
-      // KEY APPROACH: Do NOT convert images in the original DOM.
-      // Instead, convert them INSIDE the async onclone callback so they are
-      // set directly on the CLONED document that html2canvas-pro actually renders.
-      // html2canvas-pro awaits the onclone Promise before proceeding with rendering,
-      // which guarantees all images are decoded and ready before capture starts.
+      // KEY APPROACH: Convert images in the original DOM.
+      // We must do this BEFORE html2canvas so img.decode() works reliably 
+      // (it often fails or hangs inside detached hidden iframes used by onclone).
+      const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
+      const originalSources = await convertImagesToBase64(container);
+
       let fullCanvas;
       try {
         fullCanvas = await html2canvas(container, {
@@ -177,8 +178,8 @@ export default function ProposalStudio() {
           windowWidth: PAGE_PX_WIDTH,
           windowHeight: container.scrollHeight,
           imageTimeout: 0,
-          onclone: async (clonedDoc) => {
-            // 1. Force the cloned document to behave like a desktop screen
+          onclone: (clonedDoc) => {
+            // Force the cloned document to behave like a desktop screen
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
@@ -188,19 +189,14 @@ export default function ProposalStudio() {
               clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
-
-              // 2. Convert all <img> src values to base64 data URLs INSIDE the clone.
-              //    This runs before html2canvas renders, so all images are guaranteed
-              //    to be decoded and painted when capture happens.
-              const { convertImagesToBase64 } = await import("../../utils/imageToBase64");
-              await convertImagesToBase64(clonedContainer);
             }
           }
         });
       } finally {
-        // Restore original container styles (images were only modified on the clone)
+        // Restore original container styles and images
         container.style.width = origWidth;
         container.style.maxWidth = origMaxWidth;
+        restoreOriginalImages(originalSources);
       }
 
       // 3. Slice canvas into exact A4 pages
