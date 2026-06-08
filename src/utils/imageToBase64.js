@@ -18,6 +18,7 @@ const STATIC_FILES = new Set([
   "header.png",
   "new.png",
   "about-HT.png",
+
   "proposal-contact.png",
   "ht-logo.png",
   "wesd.png",
