@@ -23,25 +23,8 @@ function generateModule() {
 
   const exports = [];
 
-  const MIME_MAP = {
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-  };
-
   for (const { varName, filename } of IMAGE_FILES) {
-    const filePath = path.join(__dirname, "..", "public", filename);
-    if (!fs.existsSync(filePath)) {
-      console.warn(`[WARNING] File not found: ${filePath}`);
-      continue;
-    }
-    
-    const buffer = fs.readFileSync(filePath);
-    const base64 = buffer.toString("base64");
-    const ext = path.extname(filename).slice(1).toLowerCase();
-    const mimeType = MIME_MAP[ext] || "application/octet-stream";
-    
-    exports.push(`export const ${varName} = "data:${mimeType};base64,${base64}";`);
+    exports.push(`export const ${varName} = "/${filename}";`);
   }
 
   const moduleContent = `/**
