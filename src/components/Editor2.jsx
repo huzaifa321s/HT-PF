@@ -49,6 +49,7 @@ import {
 import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
+import { uploadImageFile } from "../utils/uploadImage";
 
 const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
   const theme = useTheme();
@@ -108,7 +109,7 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
     );
   };
 
-  const handleImageUpload = (id, file) => {
+  const handleImageUpload = async (id, file) => {
     if (!file) return;
 
     // Validate file type
@@ -135,46 +136,41 @@ const PdfPage3Editor = ({ selectedFont = "'Poppins', sans-serif", mode }) => {
 
     setUploading(true);
 
-    // Convert image to base64 or create object URL
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const imagePath = e.target.result; // base64 string
+    try {
+      dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+      const imageUrl = await uploadImageFile(file);
 
       // Update element with new image path
       setData((prev) => ({
         ...prev,
         elements: prev.elements.map((el) =>
-          el.id === id ? { ...el, content: imagePath } : el
+          el.id === id ? { ...el, content: imageUrl } : el
         ),
       }));
 
       dispatch(
         editElementContent({
           id,
-          content: imagePath,
+          content: imageUrl,
           type: "image",
           dimensions: { width: "85%", height: "100%" },
         })
       );
       dispatch(
         showToast({
-          message: "Image uploaded successfully",
+          message: "Image uploaded to Google Drive successfully",
           severity: "success",
         })
       );
       autoSave();
-      setUploading(false);
-    };
-
-    reader.onerror = () => {
+    } catch (err) {
+      console.error(err);
       dispatch(
-        showToast({ message: "Image upload failed", severity: "error" })
+        showToast({ message: err.message || "Image upload failed", severity: "error" })
       );
+    } finally {
       setUploading(false);
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   const reset = async () => {

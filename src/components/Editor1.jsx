@@ -41,6 +41,7 @@ import { setBrandName, setBrandTagline, setClientLogo, resetPage1 } from "../src
 import { showToast } from "../src/utils/toastSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import debounce from "lodash.debounce";
+import { uploadImageFile } from "../utils/uploadImage";
 
 const PdfPage1Editor = ({ mode }) => {
   const dispatch = useDispatch();
@@ -91,7 +92,7 @@ const PdfPage1Editor = ({ mode }) => {
     debouncedSave(newData);
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
@@ -116,17 +117,22 @@ const PdfPage1Editor = ({ mode }) => {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleChange("clientLogo", reader.result);
+      try {
+        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+        const imageUrl = await uploadImageFile(file);
+        handleChange("clientLogo", imageUrl);
         dispatch(
           showToast({
-            message: "Logo uploaded successfully!",
+            message: "Logo uploaded to Google Drive successfully!",
             severity: "success",
           })
         );
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error(err);
+        dispatch(
+          showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" })
+        );
+      }
     }
   };
 

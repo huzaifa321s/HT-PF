@@ -59,6 +59,8 @@ import {
   reorderBlocks,
 } from "../../utils/blankPageSlice";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
+import { showToast } from "../../utils/toastSlice";
+import { uploadImageFile } from "../../utils/uploadImage";
 
 // === A4 Constants ===
 const A4_HEIGHT_PX = 1123;
@@ -538,11 +540,41 @@ const BlankContentPage = ({ mode = "dev", selectedFont = "Poppins", selectedLayo
     dispatch(reorderBlocks({ sectionId, activeId: active.id, overId: over.id }));
   };
 
-  const handleImageUpload = (e, sectionId) => {
+  const handleImageUpload = async (e, sectionId) => {
     const file = e.target.files?.[0];
     if (file && !isLimitExceeded) {
-      const url = URL.createObjectURL(file);
-      safeAddBlock(sectionId, "image", url);
+      if (file.size > 5 * 1024 * 1024) {
+        dispatch(showToast({ message: "Image size should be less than 5MB", severity: "error" }));
+        return;
+      }
+      try {
+        dispatch(showToast({ message: "Uploading image to Google Drive...", severity: "info" }));
+        const url = await uploadImageFile(file);
+        safeAddBlock(sectionId, "image", url);
+        dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+      } catch (err) {
+        console.error(err);
+        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+      }
+    }
+  };
+
+  const handleStandaloneImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (file && !isLimitExceeded) {
+      if (file.size > 5 * 1024 * 1024) {
+        dispatch(showToast({ message: "Image size should be less than 5MB", severity: "error" }));
+        return;
+      }
+      try {
+        dispatch(showToast({ message: "Uploading image to Google Drive...", severity: "info" }));
+        const url = await uploadImageFile(file);
+        safeAddElement("standaloneImage", url);
+        dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+      } catch (err) {
+        console.error(err);
+        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+      }
     }
   };
 
@@ -619,13 +651,7 @@ const BlankContentPage = ({ mode = "dev", selectedFont = "Poppins", selectedLayo
                   accept="image/*"
                   hidden
                   disabled={isLimitExceeded}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      safeAddElement("standaloneImage", url);
-                    }
-                  }}
+                  onChange={handleStandaloneImageUpload}
                 />
               </MenuItem>
             </Menu>

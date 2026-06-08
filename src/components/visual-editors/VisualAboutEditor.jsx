@@ -9,6 +9,7 @@ import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
+import { uploadImageFile } from "../../utils/uploadImage";
 
 const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) => {
   const [localWidth, setLocalWidth] = useState(parseInt(element.dimensions?.width || "90"));
@@ -182,14 +183,18 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
     dispatch(addElement({ type: "text", content: "Start typing new content here...", index: imageIndex !== -1 ? imageIndex : undefined }));
   };
 
-  const handleImageUpload = (id, e) => {
+  const handleImageUpload = async (id, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        dispatch(editElementContent({ id, content: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+        const imageUrl = await uploadImageFile(file);
+        dispatch(editElementContent({ id, content: imageUrl }));
+        dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+      } catch (err) {
+        console.error(err);
+        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+      }
     }
   };
 
@@ -365,14 +370,18 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
           {!hasImage && (
             <Button variant="outlined" component="label" startIcon={<ImageIcon />} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
               Add Image Block
-              <input type="file" hidden accept="image/*" onChange={(e) => {
+              <input type="file" hidden accept="image/*" onChange={async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    dispatch(addElement({ type: "image", content: reader.result }));
-                  };
-                  reader.readAsDataURL(file);
+                  try {
+                    dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+                    const imageUrl = await uploadImageFile(file);
+                    dispatch(addElement({ type: "image", content: imageUrl }));
+                    dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+                  } catch (err) {
+                    console.error(err);
+                    dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+                  }
                 }
               }} />
             </Button>

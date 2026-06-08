@@ -9,6 +9,7 @@ import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import { COVER_BG, LOGO } from "../../utils/pdfImageAssets";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
+import { uploadImageFile } from "../../utils/uploadImage";
 
 const VisualCoverEditor = ({ isStudioMode = true }) => {
   const dispatch = useDispatch();
@@ -113,20 +114,23 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
     debouncedSaveDate(e.currentTarget.textContent);
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         dispatch(showToast({ message: "Image size should be less than 5MB", severity: "error" }));
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        dispatch(setClientLogo(reader.result));
-        setLocalLogo(reader.result);
-        dispatch(showToast({ message: "Client Logo uploaded successfully!", severity: "success" }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+        const imageUrl = await uploadImageFile(file);
+        dispatch(setClientLogo(imageUrl));
+        setLocalLogo(imageUrl);
+        dispatch(showToast({ message: "Client Logo uploaded to Google Drive!", severity: "success" }));
+      } catch (err) {
+        console.error(err);
+        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+      }
     }
   };
 

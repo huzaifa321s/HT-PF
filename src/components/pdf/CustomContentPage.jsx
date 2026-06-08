@@ -63,6 +63,7 @@ import {
   reorderSectionItems,
 } from "../../utils/customContentSlice";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
+import { uploadImageFile } from "../../utils/uploadImage";
 
 // === A4 Constants ===
 const A4_HEIGHT_PX = 1123;
@@ -273,11 +274,18 @@ const SortableSection = ({
                 accept="image/*"
                 hidden
                 disabled={isLimitExceeded}
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    const url = URL.createObjectURL(file);
-                    onAddItemMenu(element.id, "image", url);
+                    try {
+                      dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+                      const imageUrl = await uploadImageFile(file);
+                      onAddItemMenu(element.id, "image", imageUrl);
+                      dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+                    } catch (err) {
+                      console.error(err);
+                      dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+                    }
                     setAddMenuAnchor(null);
                   }
                 }}
@@ -627,11 +635,18 @@ const CustomContentPage = ({ mode = "dev", selectedFont = "Poppins", selectedLay
                   accept="image/*"
                   hidden
                   disabled={isLimitExceeded}
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const url = URL.createObjectURL(file);
-                      safeAddMainElement("standaloneImage", url);
+                      try {
+                        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
+                        const imageUrl = await uploadImageFile(file);
+                        safeAddMainElement("standaloneImage", imageUrl);
+                        dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+                      } catch (err) {
+                        console.error(err);
+                        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+                      }
                     }
                   }}
                 />
