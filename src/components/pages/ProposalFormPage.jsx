@@ -5,7 +5,7 @@ import { Box, Grid, Paper, Button } from "@mui/material";
 import { showToast } from "../../utils/toastSlice";
 import axios from "axios";
 import { io } from "socket.io-client";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 
 // Import sections

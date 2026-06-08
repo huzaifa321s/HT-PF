@@ -69,7 +69,7 @@ import {
 } from "@mui/icons-material";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { io } from "socket.io-client";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 import BusinessInfoSection from "./BusinessInfoSection";
 import LiveSpeechToText from "./LiveSpeechToText";
