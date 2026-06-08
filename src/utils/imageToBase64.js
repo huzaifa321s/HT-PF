@@ -38,16 +38,38 @@ async function fetchAsDataUrl(src) {
   if (_cache.has(src)) return _cache.get(src);
 
   try {
-    // Extract filename from path or URL
-    let filename = src;
-    try {
-      const pathname = src.startsWith("http") ? new URL(src).pathname : src;
-      filename = pathname.split("/").pop().split("?")[0];
-    } catch (_) {
-      filename = src.split("/").pop();
+    // If the source is a full URL, try fetching it directly first (allows CORS if permitted)
+    if (src.startsWith('http')) {
+      try {
+        const res = await fetch(src, { mode: 'cors' });
+        if (res.ok) {
+          const blob = await res.blob();
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          if (dataUrl?.startsWith('data:')) {
+            _cache.set(src, dataUrl);
+            return dataUrl;
+          }
+        }
+      } catch (_) {
+        // Direct fetch failed, fallback to proxy handling based on filename
+      }
     }
 
-    // Try the server-side proxy first (reads directly from filesystem, no CORS)
+    // Extract filename for proxy fallback (handles local assets)
+    let filename = src;
+    try {
+      const pathname = src.startsWith('http') ? new URL(src).pathname : src;
+      filename = pathname.split('/').pop().split('?')[0];
+    } catch (_) {
+      filename = src.split('/').pop();
+    }
+
+    // Try the server-side proxy (reads directly from filesystem, no CORS)
     const proxyRes = await fetch(`/api/static-image?file=${encodeURIComponent(filename)}`);
     if (proxyRes.ok) {
       const json = await proxyRes.json();
@@ -57,8 +79,8 @@ async function fetchAsDataUrl(src) {
       }
     }
 
-    // Fallback: direct fetch (works for same-origin assets)
-    const absoluteUrl = src.startsWith("/")
+    // Final fallback: treat as relative URL
+    const absoluteUrl = src.startsWith('/')
       ? `${window.location.origin}${src}`
       : src;
     const res = await fetch(absoluteUrl);
@@ -70,13 +92,13 @@ async function fetchAsDataUrl(src) {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-      if (dataUrl?.startsWith("data:")) {
+      if (dataUrl?.startsWith('data:')) {
         _cache.set(src, dataUrl);
         return dataUrl;
       }
     }
   } catch (err) {
-    console.warn("[imageToBase64] fetch failed for:", src, err.message);
+    console.warn('[imageToBase64] fetch failed for:', src, err.message);
   }
 
   return null;
@@ -102,6 +124,9 @@ export async function convertImagesToBase64(element) {
     imgEls.map(async (img) => {
       const src = img.getAttribute("src");
       if (!src || src.startsWith("data:")) return;
+
+      // Ensure CORS is allowed for external images
+      img.crossOrigin = "anonymous";
 
       const dataUrl = await fetchAsDataUrl(src);
       if (dataUrl) {

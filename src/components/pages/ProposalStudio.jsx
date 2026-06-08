@@ -111,6 +111,28 @@ export default function ProposalStudio() {
     fetchProposal();
   }, [id]);
 
+  // Preload all <img> elements to ensure they are fully loaded before conversion
+  async function preloadAllImages(container) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    await Promise.all(
+      imgs.map((img) =>
+        new Promise((resolve) => {
+          if (img.complete && img.naturalWidth > 0) return resolve();
+          img.onload = resolve;
+          img.onerror = resolve;
+          // Force reload if src is remote
+          if (!img.src.startsWith('data:')) {
+            const temp = new Image();
+            temp.crossOrigin = 'anonymous';
+            temp.src = img.src;
+            temp.onload = resolve;
+            temp.onerror = resolve;
+          }
+        })
+      )
+    );
+  }
+
   const saveWithNewPdf = async () => {
     try {
       setSaving(true);
@@ -171,12 +193,16 @@ export default function ProposalStudio() {
         attempts++;
       }
 
+      // Ensure all images are fully painted before capture
+      await new Promise(r => setTimeout(r, 200));
       let fullCanvas;
       try {
+        // Ensure any remaining images are loaded before capture
+        await preloadAllImages(container);
         fullCanvas = await html2canvas(container, {
           scale: 2,
-          useCORS: false,
-          allowTaint: true,
+          useCORS: true,
+          allowTaint: false,
           logging: false,
           scrollX: 0,
           scrollY: 0,
@@ -185,7 +211,7 @@ export default function ProposalStudio() {
           height: container.scrollHeight,
           windowWidth: PAGE_PX_WIDTH,
           windowHeight: container.scrollHeight,
-          imageTimeout: 0,
+          imageTimeout: 15000,
           onclone: (clonedDoc) => {
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
