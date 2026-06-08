@@ -685,13 +685,9 @@ const Page2BrandedCover = ({
       ref={pageRef}
       className="pdf-page"
       sx={{
-        backgroundImage: "url(/newBg.png)",
         minHeight: `${A4_HEIGHT_PX}px`,
         maxHeight: `${A4_HEIGHT_PX}px`,
         width: "100%",
-        backgroundSize: "100% 100%",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
         backgroundColor: "#141414",
         pageBreakAfter: "always",
         position: "relative",
@@ -699,6 +695,20 @@ const Page2BrandedCover = ({
         fontFamily: selectedFont,
       }}
     >
+      <img
+        src="/newBg.png"
+        alt=""
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+          zIndex: 0,
+        }}
+      />
       {mode === "dev" && (
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Button size="small" onClick={handleReset} color="warning">
@@ -781,6 +791,7 @@ const Page2BrandedCover = ({
           display: "flex",
           flexDirection: "column",
           flexGrow: 1,
+          zIndex: 1,
           marginLeft: 4,
         }}
       >

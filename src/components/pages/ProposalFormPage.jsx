@@ -205,24 +205,33 @@ export default function ProposalFormPage() {
       const targetElement = pdfRef.current;
       const PAGE_PX_WIDTH = 800; // Expected desktop width
 
-      const canvas = await html2canvas(targetElement, {
-        scale: 2, // High resolution
-        useCORS: true,
-        scrollY: -window.scrollY,
-        backgroundColor: "#ffffff",
-        logging: false,
-        imageTimeout: 0, // Never timeout on images
-        onclone: (clonedDoc) => {
-          // Force the cloned document to behave like a desktop screen
-          const clonedBody = clonedDoc.body;
-          clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
-          clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
-          
-          // Try to find the cloned PDF preview container and force its width
-          // html2canvas clones the node, we can access it using its dataset or just relying on body width
-          // But it's safer to just set body width as we did above, which stops responsive breakages
-        }
-      });
+      // Convert all relative images inside targetElement to base64 data URLs to avoid CORS / cache issues
+      const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
+      const originalSources = await convertImagesToBase64(targetElement);
+
+      let canvas;
+      try {
+        canvas = await html2canvas(targetElement, {
+          scale: 2, // High resolution
+          useCORS: true,
+          scrollY: -window.scrollY,
+          backgroundColor: "#ffffff",
+          logging: false,
+          imageTimeout: 0, // Never timeout on images
+          onclone: (clonedDoc) => {
+            // Force the cloned document to behave like a desktop screen
+            const clonedBody = clonedDoc.body;
+            clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
+            clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
+            
+            // Try to find the cloned PDF preview container and force its width
+            // html2canvas clones the node, we can access it using its dataset or just relying on body width
+            // But it's safer to just set body width as we did above, which stops responsive breakages
+          }
+        });
+      } finally {
+        restoreOriginalImages(originalSources);
+      }
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");

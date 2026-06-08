@@ -155,38 +155,46 @@ export default function ProposalStudio() {
       // Small wait for reflow
       await new Promise(r => setTimeout(r, 100));
 
-      const fullCanvas = await html2canvas(container, {
-        scale: 2, // High resolution
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: "#ffffff", // Explicit white background instead of null
-        width: PAGE_PX_WIDTH,
-        height: container.scrollHeight,
-        windowWidth: PAGE_PX_WIDTH,
-        windowHeight: container.scrollHeight,
-        imageTimeout: 0, // Never timeout on images (helps slow devices)
-        onclone: (clonedDoc) => {
-          // Force the cloned document to behave like a desktop screen
-          // This prevents mobile responsive CSS from breaking the PDF layout
-          const clonedBody = clonedDoc.body;
-          clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
-          clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
-          
-          const clonedContainer = clonedDoc.getElementById("pdf-export-container");
-          if (clonedContainer) {
-            clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
-            clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
-            clonedContainer.style.transform = "none";
-          }
-        }
-      });
+      // Convert all relative images inside container to base64 data URLs to avoid CORS / cache issues
+      const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
+      const originalSources = await convertImagesToBase64(container);
 
-      // Restore original styles
-      container.style.width = origWidth;
-      container.style.maxWidth = origMaxWidth;
+      let fullCanvas;
+      try {
+        fullCanvas = await html2canvas(container, {
+          scale: 2, // High resolution
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: "#ffffff", // Explicit white background instead of null
+          width: PAGE_PX_WIDTH,
+          height: container.scrollHeight,
+          windowWidth: PAGE_PX_WIDTH,
+          windowHeight: container.scrollHeight,
+          imageTimeout: 0, // Never timeout on images (helps slow devices)
+          onclone: (clonedDoc) => {
+            // Force the cloned document to behave like a desktop screen
+            // This prevents mobile responsive CSS from breaking the PDF layout
+            const clonedBody = clonedDoc.body;
+            clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
+            clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
+            
+            const clonedContainer = clonedDoc.getElementById("pdf-export-container");
+            if (clonedContainer) {
+              clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
+              clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+              clonedContainer.style.transform = "none";
+            }
+          }
+        });
+      } finally {
+        // Restore original styles and relative image sources
+        container.style.width = origWidth;
+        container.style.maxWidth = origMaxWidth;
+        restoreOriginalImages(originalSources);
+      }
 
       // 3. Slice canvas into exact A4 pages
       const SCALE = 2; // matches html2canvas scale
