@@ -48,6 +48,7 @@ import {
 } from "../src/utils/page2Slice";
 import axiosInstance from "../src/utils/axiosInstance";
 import { showToast } from "../src/utils/toastSlice";
+import { LOGO } from "../utils/pdfImageAssets";
 
 // ====================== PDF STYLES ======================
 const styles = StyleSheet.create({
@@ -175,12 +176,12 @@ const PdfDocument2 = ({ sections }) => (
           <Polygon points="0,0 100,0 65,100 0,100" fill="#f3a833" />
           <Polygon points="85,0 100,0 100,100 70,100" fill="#1A1A1A" />
         </Svg>
-        <Image style={styles.headerLogo} src="/download.jpg" />
+        <Image style={styles.headerLogo} src={LOGO} />
       </View>
 
       {/* ====== Company Logo + Name (Only on first page - optional) ====== */}
       <View style={styles.logoContainer}>
-        <Image style={styles.logo} src="/download.jpg" />
+        <Image style={styles.logo} src={LOGO} />
         <View style={styles.logoTextContainer}>
           <Text style={styles.logoTitle}>HUMANTEK</Text>
           <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>

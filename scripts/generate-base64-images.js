@@ -34,6 +34,7 @@ const IMAGE_FILES = [
   { varName: "HEADER_IMG",      filename: "new-header.png" },
   { varName: "FOOTER_IMG",      filename: "footer.png" },
   { varName: "CONTACT_PAGE",    filename: "proposal-contact.png" },
+  { varName: "HT_LOGO",         filename: "ht-logo.png" },
 ];
 
 function generateModule() {

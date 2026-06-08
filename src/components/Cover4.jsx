@@ -10,6 +10,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
+import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
 
 // ======================== CONSTANTS ========================
 const PAGE_MARGIN_TOP = 100;
@@ -434,7 +435,7 @@ const PdfPricingPage = ({
             {pageIdx === 0 && <PdfTracker section="Pricing" />}
             {/* Fixed Header */}
             <View fixed style={styles.header}>
-              <Image src="/new-header.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Image src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </View>
 
             {/* First Page Only Content */}
@@ -475,7 +476,7 @@ const PdfPricingPage = ({
 
             {/* Fixed Footer */}
             < View fixed style={styles.footer} >
-              <Image src="/footer.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Image src={FOOTER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </View >
             {showLabels && (
               <View style={styles.labelContainer} fixed>

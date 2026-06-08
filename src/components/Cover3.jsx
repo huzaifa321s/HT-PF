@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
+import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
 import { parseMixedContent, parseSmartTable, parseInlineBold } from "../utils/pdfParsers";
 import { RichTextRenderer } from "../utils/RichTextRenderer";
 import { useDispatch, useSelector } from "react-redux";
@@ -303,7 +304,7 @@ const PdfPageDocument2 = ({
       <Page size="A4" style={styles.page} wrap>
         <View fixed style={styles.header}>
           <Image
-            src="/new-header.png"
+            src={HEADER_IMG}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </View>
@@ -321,7 +322,7 @@ const PdfPageDocument2 = ({
         )}
         <View fixed style={styles.footer}>
           <Image
-            src="/footer.png"
+            src={FOOTER_IMG}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </View>
@@ -340,7 +341,7 @@ const PdfPageDocument2 = ({
         <Page size="A4" style={styles.page} wrap>
           <View fixed style={styles.header}>
             <Image
-              src="/new-header.png"
+              src={HEADER_IMG}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </View>
@@ -351,7 +352,7 @@ const PdfPageDocument2 = ({
           </Text>
           <View fixed style={styles.footer}>
             <Image
-              src="/footer.png"
+              src={FOOTER_IMG}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </View>

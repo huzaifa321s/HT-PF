@@ -45,6 +45,7 @@ import {
 } from "../src/utils/paymentTermsPageSlice";
 import axiosInstance from "../src/utils/axiosInstance";
 import { showToast } from "../src/utils/toastSlice";
+import { LOGO } from "../utils/pdfImageAssets";
 
 // ====================== PDF STYLES ======================
 const styles = StyleSheet.create({
@@ -203,7 +204,7 @@ const PdfPaymentTermsDocument = ({ title, terms }) => {
                   borderWidth: 3,
                   borderColor: "#fff"
                 }}
-                src="/download.jpg"
+                src={LOGO}
               />
             </View>
 
@@ -230,7 +231,7 @@ const PdfPaymentTermsDocument = ({ title, terms }) => {
             {/* Logo + Company Name - Smart Placement */}
             {showLogoOnThisPage && (
               <View style={styles.logoContainer}>
-                <Image src="/download.jpg" />
+                <Image src={LOGO} />
                 {/* <View>
                   <Text style={styles.logoTitle}>HUMANTEK</Text>
                   <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>

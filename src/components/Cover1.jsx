@@ -13,6 +13,7 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
+import { COVER_BG, LOGO } from "../utils/pdfImageAssets";
 
 const styles = StyleSheet.create({
   page: { position: "relative", fontFamily: "Oswald" },
@@ -174,12 +175,12 @@ export const PdfCoverPage = ({
       <PdfTracker section="Cover Page" />
       {/* Background */}
       <View style={styles.backgroundImage}>
-        <Image src="/newBg.png" style={{ width: "100%", height: "100%" }} />
+        <Image src={COVER_BG} style={{ width: "100%", height: "100%" }} />
       </View>
 
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image style={styles.logo} src="/download.jpg" />
+        <Image style={styles.logo} src={LOGO} />
         <View>
           <Text style={styles.logoTitle}>HUMANTEK</Text>
           <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>

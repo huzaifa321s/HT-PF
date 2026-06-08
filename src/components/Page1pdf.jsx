@@ -43,6 +43,7 @@ import {
 } from "../src/utils/page1Slice";
 import axiosInstance from "../src/utils/axiosInstance";
 import { showToast } from "../src/utils/toastSlice";
+import { COVER_BG, LOGO } from "../utils/pdfImageAssets";
 
 // PDF Styles - Exact match to Page2BrandedCover
 const styles = StyleSheet.create({
@@ -134,12 +135,12 @@ const PdfDocument = ({ brandName, brandTagline }) => (
     <Page size="A4" style={styles.page}>
       {/* Background Image - Must be first */}
       <View style={styles.backgroundImage}>
-        <Image src="/newBg.png" style={{ width: "100%", height: "100%" }} />
+        <Image src={COVER_BG} style={{ width: "100%", height: "100%" }} />
       </View>
 
       {/* Logo - Top Left */}
       <View style={styles.logoContainer}>
-        <Image style={styles.logo} src="/download.jpg" />
+        <Image style={styles.logo} src={LOGO} />
         <View style={styles.logoTextContainer}>
           <Text style={styles.logoTitle}>HUMANTEK</Text>
           <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>

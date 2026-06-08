@@ -9,6 +9,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
+import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
 
 // ====================== PDF STYLES ======================
 const styles = StyleSheet.create({
@@ -177,7 +178,7 @@ const PdfPage3Document = ({
           <View fixed style={styles.header}>
             {/* Background Image */}
             <Image
-              src="/new-header.png"
+              src={HEADER_IMG}
               style={{
                 position: "absolute",
                 top: 0,
@@ -217,7 +218,7 @@ const PdfPage3Document = ({
           <View fixed style={styles.footer}>
             {/* Background Image */}
             <Image
-              src="/footer.png"
+              src={FOOTER_IMG}
               style={{
                 position: "absolute",
                 top: 0,
@@ -228,7 +229,6 @@ const PdfPage3Document = ({
                 zIndex: 0,
               }}
             />
-
           </View>
           {showLabels && (
             <View style={styles.labelContainer} fixed>

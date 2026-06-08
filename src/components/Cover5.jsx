@@ -12,6 +12,7 @@ import {
   Polygon,
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
+import { HEADER_IMG, FOOTER_IMG, HT_LOGO } from "../utils/pdfImageAssets";
 
 const styles = StyleSheet.create({
   page: {
@@ -213,7 +214,7 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms, showLabels =
             <View fixed style={styles.header}>
               {/* Background Image */}
               <Image
-                src="/new-header.png"
+                src={HEADER_IMG}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -259,7 +260,7 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms, showLabels =
             {/* Logo + Company Name - Smart Placement */}
             {showLogoOnThisPage && (
               <View style={styles.logoContainer}>
-                <Image style={styles.logo} src="/ht-logo.png" />
+                <Image style={styles.logo} src={HT_LOGO} />
                 {/* <View>
                   <Text style={styles.logoTitle}>HUMANTEK</Text>
                   <Text style={styles.logoSubtitle}>
@@ -273,7 +274,7 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms, showLabels =
             <View fixed style={styles.footer}>
               {/* Background Image */}
               <Image
-                src="/footer.png"
+                src={FOOTER_IMG}
                 style={{
                   position: "absolute",
                   top: 0,
