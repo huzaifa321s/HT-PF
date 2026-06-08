@@ -9,17 +9,66 @@
 /** Per-export in-memory cache so we don't refetch the same image multiple times */
 const _cache = new Map();
 
+// Whitelist of allowed public image files (must match route.js)
+const STATIC_FILES = new Set([
+  "newBg.png",
+  "download.jpg",
+  "new-header.png",
+  "footer.png",
+  "header.png",
+  "new.png",
+  "about-HT.png",
+  "proposal-contact.png",
+  "ht-logo.png",
+  "wesd.png",
+  "sdf.png",
+  "2ndborder-layout.png",
+  "border-layout.png",
+]);
+
 /**
- * Fetches any image URL and converts it to a base64 data URL.
+ * Fetches static assets via server-side API or dynamic assets directly.
  *
- * @param {string} url - The absolute image URL to fetch
+ * @param {string} url - The image URL or path to fetch
  * @returns {Promise<string|null>} base64 data URL or null on failure
  */
 async function fetchImageAsBase64(url) {
   if (_cache.has(url)) return _cache.get(url);
 
   try {
-    const res = await fetch(url, {
+    // 1. Check if it's a whitelisted static asset
+    let filename = "";
+    try {
+      const urlPath = url.startsWith("http") ? new URL(url).pathname : url;
+      filename = urlPath.substring(urlPath.lastIndexOf("/") + 1);
+    } catch (e) {
+      filename = url.substring(url.lastIndexOf("/") + 1);
+    }
+
+    if (filename.includes("?")) {
+      filename = filename.split("?")[0];
+    }
+
+    if (STATIC_FILES.has(filename)) {
+      const res = await fetch(`/api/static-image?file=${filename}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.dataUrl) {
+          _cache.set(url, json.dataUrl);
+          return json.dataUrl;
+        }
+      }
+      console.warn(`[imageToBase64] Failed to fetch static image via proxy: ${filename}`);
+    }
+
+    // 2. Fallback to direct fetch
+    const absoluteUrl = url.startsWith("/")
+      ? `${window.location.origin}${url}`
+      : url;
+
+    const res = await fetch(absoluteUrl, {
       cache: "no-store",
     });
 
