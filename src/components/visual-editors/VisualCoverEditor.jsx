@@ -149,18 +149,16 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         fontFamily: "'Oswald', 'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}
     >
-      {/* Background Image — use <img> instead of CSS backgroundImage for reliable html2canvas rendering */}
-      <img
-        src={COVER_BG}
-        alt=""
+      <div
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
-          objectPosition: "center",
+          backgroundImage: `url(${COVER_BG})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           zIndex: 1,
         }}
       />

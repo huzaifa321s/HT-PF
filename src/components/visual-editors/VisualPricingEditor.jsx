@@ -357,7 +357,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
           <Box key={i} sx={{ position: "absolute", top: i * (1131 + gap), left: 0, right: 0, height: 1131, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             {/* Header */}
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1 }}>
-              <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ width: "100%", height: "100%", backgroundImage: `url(${HEADER_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             </Box>
             {/* Footer */}
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1 }}>

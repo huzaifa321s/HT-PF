@@ -92,12 +92,12 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
             {/* Header Overlay */}
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none" }}>
-              <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <div style={{ width: "100%", height: "100%", backgroundImage: `url(${HEADER_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             </Box>
 
             {/* Footer Overlay */}
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none" }}>
-              <img src={FOOTER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <div style={{ width: "100%", height: "100%", backgroundImage: `url(${FOOTER_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             </Box>
 
             {/* Content Layer (positive stacking context) */}

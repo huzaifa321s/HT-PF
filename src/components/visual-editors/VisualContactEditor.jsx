@@ -5,14 +5,13 @@ import { CONTACT_PAGE } from "../../utils/pdfImageAssets";
 const VisualContactEditor = () => {
   return (
     <Box
-      component="img"
-      src={CONTACT_PAGE}
-      alt="Contact Page"
       sx={{
         width: "100%",
         maxWidth: "800px",
         height: "1131px",
-        objectFit: "cover",
+        backgroundImage: `url(${CONTACT_PAGE})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
         margin: "0 auto",
         display: "block"

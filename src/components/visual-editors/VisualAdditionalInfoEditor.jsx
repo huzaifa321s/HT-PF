@@ -1157,10 +1157,10 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
           <Box key={i} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${i}` : undefined}
             sx={{ position: "absolute", top: i * CYCLE, left: 0, right: 0, height: PAGE_HEIGHT, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1 }}>
-              <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ width: "100%", height: "100%", backgroundImage: `url(${HEADER_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             </Box>
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1 }}>
-              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ display: "block", width: "100%", height: "100%", backgroundImage: `url(${FOOTER_IMG})`, backgroundSize: "cover", backgroundPosition: "center" }} />
             </Box>
           </Box>
         ))}
