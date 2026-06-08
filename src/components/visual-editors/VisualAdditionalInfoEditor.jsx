@@ -1156,10 +1156,10 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
         {Array.from({ length: totalPages }).map((_, i) => (
           <Box key={i} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${i}` : undefined}
             sx={{ position: "absolute", top: i * CYCLE, left: 0, right: 0, height: PAGE_HEIGHT, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
-            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px" }}>
+            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1 }}>
               <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
-            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px" }}>
+            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1 }}>
               <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
           </Box>
@@ -1167,7 +1167,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
       </Box>
 
       {/* Foreground Content — position:relative so absolute children use this as origin */}
-      <Box ref={foregroundRef} sx={{ position: "relative", zIndex: 1 }}>
+      <Box ref={foregroundRef} sx={{ position: "relative", zIndex: 2 }}>
         {/* Floating Format Toolbar */}
         {isStudioMode && <FloatingToolbar containerRef={foregroundRef} />}
         {/* Sections — each absolutely positioned at its exact Y */}

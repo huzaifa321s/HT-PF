@@ -21,6 +21,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   // Sync brand name from the proposal form field
   const proposalBrandName = formDataRT?.brandName || "";
 
+
   const [localName, setLocalName] = useState(page1.brandName || "Your Brand");
   const [localTagline, setLocalTagline] = useState(page1.brandTagline || "Your Tagline Here");
   const [localLogo, setLocalLogo] = useState(page1.clientLogo || null);
@@ -147,7 +148,6 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       <img
         src={COVER_BG}
         alt=""
-        crossOrigin="anonymous"
         style={{
           position: "absolute",
           top: 0,
@@ -156,7 +156,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
-          zIndex: 0,
+          zIndex: 1,
         }}
       />
       {/* Visual Indicator of Edit Mode */}
@@ -170,7 +170,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       )}
 
       {/* Top Left Logo Area (HT Logo) */}
-      <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 1 }}>
+      <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 2 }}>
         <img src={LOGO} alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
         <Box>
           <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
@@ -179,7 +179,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       </Box>
 
       {/* Main Content Area */}
-      <Box sx={{ position: "absolute", top: "470px", left: "67px", right: "27px", zIndex: 1 }}>
+      <Box sx={{ position: "absolute", top: "470px", left: "67px", right: "27px", zIndex: 2 }}>
 
         {/* Brand Name + Decorative Line + Form Field badge */}
         <Box sx={{ position: "relative", mb: 0 }}>
@@ -317,10 +317,10 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
             {/* Client Logo */}
             <Box sx={{ position: "relative", "&:hover .logo-overlay": { opacity: 1 }, "&:hover .logo-controls": { opacity: 1 } }}>
-              <Box sx={{ 
-                width: "94px", height: "94px", borderRadius: "47px", 
-                backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", 
-                border: clientLogoFit === "fill" ? "none" : "5px solid #FFFFFF", overflow: "hidden" 
+              <Box sx={{
+                width: "94px", height: "94px", borderRadius: "47px",
+                backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
+                border: clientLogoFit === "fill" ? "none" : "5px solid #FFFFFF", overflow: "hidden"
               }}>
                 {localLogo ? (
                   <img src={localLogo} alt="Client Logo" style={{ width: "100%", height: "100%", objectFit: clientLogoFit === "fill" ? "cover" : "contain" }} />
@@ -336,14 +336,14 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
               )}
               {isStudioMode && localLogo && (
                 <Box className="logo-controls" sx={{ position: "absolute", bottom: -24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, opacity: 0, transition: "opacity 0.2s" }}>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     onClick={() => dispatch(setClientLogoFit("fit"))}
                     variant={clientLogoFit === "fit" ? "contained" : "outlined"}
                     sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fit" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fit" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
                   >Fit</Button>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     onClick={() => dispatch(setClientLogoFit("fill"))}
                     variant={clientLogoFit === "fill" ? "contained" : "outlined"}
                     sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fill" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fill" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
