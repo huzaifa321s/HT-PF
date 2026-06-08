@@ -157,48 +157,19 @@ export default function ProposalStudio() {
       // Small wait for reflow
       await new Promise(r => setTimeout(r, 100));
 
-      // STEP 1: Convert all <img> tags to base64 so html2canvas gets inline data.
+      // Convert ALL images (both <img> tags AND CSS background-image divs) to base64 data URLs
+      // in the LIVE DOM before html2canvas captures. This guarantees zero network requests
+      // during capture, fixing the blank image issue caused by html2canvas's hidden iframe
+      // racing against network fetches.
       const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(container);
-
-      // STEP 2: Pre-fetch ALL Cloudinary URLs as base64 data URLs BEFORE html2canvas runs.
-      // html2canvas clones the DOM into a hidden iframe and independently re-fetches every
-      // CSS background-image from the network. Since that refetch races against rendering,
-      // images appear blank. By converting to data URLs HERE, we replace every background-image
-      // url(https://...) with url(data:image/...) in the onclone callback so html2canvas
-      // never makes any network request and renders instantly.
-      const pdfImageAssets = await import("../../utils/pdfImageAssets");
-      const cloudinaryUrls = Object.values(pdfImageAssets).filter(
-        val => typeof val === "string" && val.startsWith("http")
-      );
-
-      // Fetch each image as a base64 data URL (CORS-safe with Cloudinary)
-      const urlToDataUrl = {};
-      await Promise.all(
-        cloudinaryUrls.map(async (src) => {
-          try {
-            const res = await fetch(src, { cache: "force-cache" });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const blob = await res.blob();
-            const dataUrl = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-            urlToDataUrl[src] = dataUrl;
-          } catch (e) {
-            console.warn("[PDF] Failed to pre-fetch image as base64:", src, e.message);
-          }
-        })
-      );
 
       let fullCanvas;
       try {
         fullCanvas = await html2canvas(container, {
           scale: 2,
-          useCORS: true,
-          allowTaint: false,
+          useCORS: false,
+          allowTaint: true,
           logging: false,
           scrollX: 0,
           scrollY: 0,
@@ -209,7 +180,6 @@ export default function ProposalStudio() {
           windowHeight: container.scrollHeight,
           imageTimeout: 0,
           onclone: (clonedDoc) => {
-            // Force desktop width
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
@@ -219,24 +189,6 @@ export default function ProposalStudio() {
               clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
-            }
-
-            // CRITICAL: Replace every CSS background-image that uses a Cloudinary URL
-            // with a data URL so html2canvas never makes a network request.
-            if (Object.keys(urlToDataUrl).length > 0) {
-              const allEls = clonedDoc.querySelectorAll("*");
-              allEls.forEach((el) => {
-                const bg = el.style.backgroundImage;
-                if (bg && bg.includes("res.cloudinary.com")) {
-                  let newBg = bg;
-                  Object.entries(urlToDataUrl).forEach(([cloudUrl, dataUrl]) => {
-                    if (newBg.includes(cloudUrl)) {
-                      newBg = newBg.replace(cloudUrl, dataUrl);
-                    }
-                  });
-                  el.style.backgroundImage = newBg;
-                }
-              });
             }
           }
         });
