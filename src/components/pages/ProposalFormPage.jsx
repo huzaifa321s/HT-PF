@@ -209,6 +209,18 @@ export default function ProposalFormPage() {
       const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(targetElement);
 
+      // CRITICAL FIX: Preload all Cloudinary background images to ensure they are 100% downloaded
+      // before html2canvas takes the snapshot. This fixes the issue where fast generation causes blank backgrounds.
+      const pdfImageAssets = await import("../../utils/pdfImageAssets");
+      const cloudImgs = Object.values(pdfImageAssets).filter(val => typeof val === "string" && val.startsWith("http"));
+      await Promise.all(cloudImgs.map(src => new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = src;
+      })));
+
       let canvas;
       try {
         canvas = await html2canvas(targetElement, {

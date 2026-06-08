@@ -174,7 +174,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
       {/* Top Left Logo Area (HT Logo) */}
       <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 2 }}>
-        <img src={LOGO} alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
+        <div style={{ width: "67px", height: "67px", borderRadius: "34px", backgroundImage: `url(${LOGO})`, backgroundSize: "cover", backgroundPosition: "center" }} />
         <Box>
           <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
           <Typography sx={{ color: "white", fontSize: 13, letterSpacing: 3, mt: 0, lineHeight: 1 }}>IT SERVICES & SOLUTIONS</Typography>
