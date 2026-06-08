@@ -83,12 +83,17 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
 
   // Edit mode mein DB data load karo
   useEffect(() => {
+    // If there are unsaved edits (e.g. user just completed Edit/Create form and redirected here),
+    // we should NOT overwrite the Redux slices with the old DB data.
+    if (formDataRT?.isUnsavedEdit) {
+      return;
+    }
     if (isEditMode && pdfPages?.page1) dispatch(setDBData(pdfPages.page1));
     if (isEditMode && pdfPages?.page3) dispatch(setDBDataP2(pdfPages.page3));
     if (isEditMode && pdfPages?.page2) dispatch(setDBDataP3(pdfPages.page2));
     if (isEditMode && pdfPages?.pricingPage) dispatch(setDBDataPricing(pdfPages.pricingPage));
     if (isEditMode && pdfPages?.paymentTerms) dispatch(setDBTerms(pdfPages.paymentTerms));
-  }, [isEditMode, pdfPages, dispatch]);
+  }, [isEditMode, pdfPages, dispatch, formDataRT?.isUnsavedEdit]);
 
   useEffect(() => {
     if (mode === "edit-doc") {

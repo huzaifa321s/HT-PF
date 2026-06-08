@@ -51,7 +51,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { replacePage2Content, setOriginalAiResponse } from "../../utils/page2Slice";
+import { replacePage2Content, setOriginalAiResponse, setDBDataP2, setMode } from "../../utils/page2Slice";
+import { setDBDataP3, setMode2 } from "../../utils/page3Slice";
+import { setDBDataPricing, setMode3 } from "../../utils/pricingReducer";
+import { setDBTerms, setMode4 } from "../../utils/paymentTermsPageSlice";
+import { setDBData, setMode1 } from "../../utils/page1Slice";
 import { showToast } from "../../utils/toastSlice";
 import { setFullFormData } from "../../utils/proposalSlice";
 
@@ -233,6 +237,15 @@ const EditProposal = () => {
         setBaseCost(updatedData.additionalCosts || "");
         reset(updatedData);
 
+        // Seed Redux slices with fetched database pages
+        if (data?.pdfPages) {
+          if (data.pdfPages.page1) dispatch(setDBData(data.pdfPages.page1));
+          if (data.pdfPages.page3) dispatch(setDBDataP2(data.pdfPages.page3));
+          if (data.pdfPages.page2) dispatch(setDBDataP3(data.pdfPages.page2));
+          if (data.pdfPages.pricingPage) dispatch(setDBDataPricing(data.pdfPages.pricingPage));
+          if (data.pdfPages.paymentTerms) dispatch(setDBTerms(data.pdfPages.paymentTerms));
+        }
+
         setTimeout(() => {
           pdfDetector.takeSnapshot(store);
         }, 100);
@@ -245,7 +258,16 @@ const EditProposal = () => {
     };
 
     fetchProposal();
-  }, [id, reset]);
+  }, [id, reset, dispatch]);
+
+  // Set all slices to edit mode on mount
+  useEffect(() => {
+    dispatch(setMode("edit"));
+    dispatch(setMode1("edit"));
+    dispatch(setMode2("edit"));
+    dispatch(setMode3("edit"));
+    dispatch(setMode4("edit"));
+  }, [dispatch]);
 
   const colorScheme = {
     primary: "#f3a833",

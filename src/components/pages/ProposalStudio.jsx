@@ -28,15 +28,16 @@ export default function ProposalStudio() {
   // Toast notifications handled globally via Redux showToast
 
   // Redux Data to compile PDF
-  const page1 = useSelector((s) => s.page1Slice.edit);
-  const page2 = useSelector((s) => s.page3.edit);
-  const page3 = useSelector((s) => s.page2.edit);
-  const pricingPage = useSelector((s) => s.pricing.edit);
-  const paymentTerms = useSelector((s) => s.paymentTerms.edit);
+  const isNew = id === "new";
+  const page1 = useSelector((s) => isNew ? s.page1Slice.create : s.page1Slice.edit);
+  const page2 = useSelector((s) => isNew ? s.page3.create : s.page3.edit);
+  const page3 = useSelector((s) => isNew ? s.page2.create : s.page2.edit);
+  const pricingPage = useSelector((s) => isNew ? s.pricing.create : s.pricing.edit);
+  const paymentTerms = useSelector((s) => isNew ? s.paymentTerms.create : s.paymentTerms.edit);
   const contactPage = useSelector((s) => s.contact);
 
   // AI Response from either create or edit mode
-  const originalAiResponse = useSelector((s) => s.page2?.edit?.originalAiResponse || s.page2?.create?.originalAiResponse);
+  const originalAiResponse = useSelector((s) => isNew ? s.page2?.create?.originalAiResponse : s.page2?.edit?.originalAiResponse);
 
   // Live-edited client info from Redux (updated by VisualCoverEditor)
   const reduxProposal = useSelector((s) => s.proposal);
