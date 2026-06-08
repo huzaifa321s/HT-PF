@@ -1,60 +1,26 @@
 /**
- * Utility to convert public/ images to Base64 data URLs before html2canvas capture.
+ * Utility to convert public/ and backend/Google Drive images to Base64 data URLs before html2canvas capture.
  *
- * APPROACH: Uses the /api/static-image server-side route to read images from
- * the filesystem and return them as base64. This is the ONLY approach that works
- * reliably on Vercel because:
- *
- *   - Vercel's CDN serves public/ files and may not include CORS headers needed
- *     for canvas-safe image operations.
- *   - Direct fetch() of static assets can return opaque/cached responses that
- *     cannot be converted to base64 in some browser/CDN configurations.
- *   - The server-side API route reads files from the Node.js filesystem directly,
- *     so there are zero CORS/CDN/caching issues.
- *
- * HOW IT WORKS:
- *   1. Find all <img> elements in the target container
- *   2. For each image with a relative /path src, ask our API for base64
- *   3. Swap img.src to the returned data: URL
- *   4. html2canvas captures the DOM with embedded images — no external fetches needed
- *   5. After capture, restore original src values
+ * APPROACH: Fetches images directly from the frontend or Express backend and converts them
+ * to base64. Since the Express server allows CORS (*), this works 100% of the time and prevents
+ * html2canvas from failing to render cross-origin assets.
  */
 
 /** Per-export in-memory cache so we don't refetch the same image multiple times */
 const _cache = new Map();
 
 /**
- * Fetches an image as a base64 data URL via our server-side API proxy.
- * Falls back to direct fetch if the API fails.
+ * Fetches any image URL and converts it to a base64 data URL.
  *
- * @param {string} filename - Just the filename, e.g. "newBg.png"
+ * @param {string} url - The absolute image URL to fetch
  * @returns {Promise<string|null>} base64 data URL or null on failure
  */
-async function getImageAsBase64(filename) {
-  if (_cache.has(filename)) return _cache.get(filename);
+async function fetchImageAsBase64(url) {
+  if (_cache.has(url)) return _cache.get(url);
 
-  // Primary: server-side API route (bypasses all CDN/CORS issues)
   try {
-    const apiUrl = `/api/static-image?file=${encodeURIComponent(filename)}`;
-    const res = await fetch(apiUrl, { cache: "no-store" });
-
-    if (res.ok) {
-      const { dataUrl } = await res.json();
-      if (dataUrl && dataUrl.startsWith("data:")) {
-        _cache.set(filename, dataUrl);
-        return dataUrl;
-      }
-    }
-  } catch (apiErr) {
-    console.warn(`[imageToBase64] API route failed for "${filename}":`, apiErr.message);
-  }
-
-  // Fallback: direct same-origin fetch (works locally / simple deployments)
-  try {
-    const absoluteUrl = `${window.location.origin}/${filename}`;
-    const res = await fetch(absoluteUrl, {
+    const res = await fetch(url, {
       cache: "no-store",
-      credentials: "same-origin",
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -68,35 +34,20 @@ async function getImageAsBase64(filename) {
     });
 
     if (dataUrl && dataUrl.startsWith("data:")) {
-      _cache.set(filename, dataUrl);
+      _cache.set(url, dataUrl);
       return dataUrl;
     }
-  } catch (fetchErr) {
-    console.warn(`[imageToBase64] Direct fetch fallback failed for "${filename}":`, fetchErr.message);
+  } catch (err) {
+    console.warn(`[imageToBase64] Failed to fetch and convert image: ${url}`, err.message);
   }
 
   return null;
 }
 
 /**
- * Extracts just the filename from a src path.
- * e.g. "/newBg.png" → "newBg.png"
- *      "https://example.com/newBg.png?t=123" → "newBg.png"
- */
-function extractFilename(src) {
-  try {
-    // Remove query string and hash
-    const clean = src.split("?")[0].split("#")[0];
-    return clean.split("/").pop();
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Converts all <img> src attributes inside `element` to base64 data URLs.
  *
- * Only processes relative paths (starting with /) or same-origin absolute URLs.
+ * Processes relative paths, same-origin URLs, and Express backend URLs.
  * Already-embedded data: URLs are skipped.
  *
  * @param {HTMLElement} element - The DOM element to scan for images
@@ -111,25 +62,31 @@ export async function convertImagesToBase64(element) {
   const imgs = Array.from(element.querySelectorAll("img"));
   const originalSources = [];
 
+  const baseURL = process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000";
+  const cleanBaseURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
+
   // Process all images in parallel for speed
   await Promise.all(
     imgs.map(async (img) => {
       const src = img.getAttribute("src");
 
-      // Skip: no src, already base64, external URLs
+      // Skip: no src, already base64
       if (!src || src.startsWith("data:")) return;
 
-      // Only process same-origin images (relative paths or matching origin)
-      const isSameOrigin =
+      // Process same-origin or Express backend images
+      const isProcessable =
         src.startsWith("/") ||
-        src.startsWith(window.location.origin);
+        src.startsWith(window.location.origin) ||
+        src.startsWith(cleanBaseURL);
 
-      if (!isSameOrigin) return;
+      if (!isProcessable) return;
 
-      const filename = extractFilename(src);
-      if (!filename) return;
+      // Construct absolute URL for fetching
+      const absoluteUrl = src.startsWith("/")
+        ? `${window.location.origin}${src}`
+        : src;
 
-      const dataUrl = await getImageAsBase64(filename);
+      const dataUrl = await fetchImageAsBase64(absoluteUrl);
 
       if (dataUrl) {
         originalSources.push({ img, src });
