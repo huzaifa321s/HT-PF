@@ -7,6 +7,7 @@ const VisualContactEditor = () => {
       component="img"
       src="/proposal-contact.png"
       alt="Contact Page"
+      crossOrigin="anonymous"
       sx={{
         width: "100%",
         maxWidth: "800px",
