@@ -157,12 +157,11 @@ export default function ProposalStudio() {
       // Small wait for reflow
       await new Promise(r => setTimeout(r, 100));
 
-      // Convert all relative images inside container to base64 data URLs to avoid CORS / cache issues.
-      // convertImagesToBase64 now waits for all images to decode + two rAF flushes before returning,
-      // ensuring the browser has fully repainted before html2canvas captures.
-      const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
-      const originalSources = await convertImagesToBase64(container);
-
+      // KEY APPROACH: Do NOT convert images in the original DOM.
+      // Instead, convert them INSIDE the async onclone callback so they are
+      // set directly on the CLONED document that html2canvas-pro actually renders.
+      // html2canvas-pro awaits the onclone Promise before proceeding with rendering,
+      // which guarantees all images are decoded and ready before capture starts.
       let fullCanvas;
       try {
         fullCanvas = await html2canvas(container, {
@@ -172,15 +171,14 @@ export default function ProposalStudio() {
           logging: false,
           scrollX: 0,
           scrollY: 0,
-          backgroundColor: "#ffffff", // Explicit white background instead of null
+          backgroundColor: "#ffffff",
           width: PAGE_PX_WIDTH,
           height: container.scrollHeight,
           windowWidth: PAGE_PX_WIDTH,
           windowHeight: container.scrollHeight,
-          imageTimeout: 0, // Never timeout on images (helps slow devices)
-          onclone: (clonedDoc) => {
-            // Force the cloned document to behave like a desktop screen
-            // This prevents mobile responsive CSS from breaking the PDF layout
+          imageTimeout: 0,
+          onclone: async (clonedDoc) => {
+            // 1. Force the cloned document to behave like a desktop screen
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
@@ -190,18 +188,19 @@ export default function ProposalStudio() {
               clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
+
+              // 2. Convert all <img> src values to base64 data URLs INSIDE the clone.
+              //    This runs before html2canvas renders, so all images are guaranteed
+              //    to be decoded and painted when capture happens.
+              const { convertImagesToBase64 } = await import("../../utils/imageToBase64");
+              await convertImagesToBase64(clonedContainer);
             }
-            // NOTE: Do NOT modify img src values here.
-            // All images have already been converted to base64 data URLs
-            // by convertImagesToBase64() above. The cloned document inherits
-            // those data: URLs, so no further manipulation is needed or safe.
           }
         });
       } finally {
-        // Restore original styles and relative image sources
+        // Restore original container styles (images were only modified on the clone)
         container.style.width = origWidth;
         container.style.maxWidth = origMaxWidth;
-        restoreOriginalImages(originalSources);
       }
 
       // 3. Slice canvas into exact A4 pages
