@@ -1,6 +1,6 @@
 /**
  * Detects if a URL is a Google Drive asset and rewrites it to use our
- * server-side caching proxy API route (/api/drive-image?id=FILE_ID).
+ * server-side caching proxy API route on the Express backend (/api/drive/image?id=FILE_ID).
  * 
  * This ensures CORS-compliant and CDN-cached loading of images in
  * both standard <img> elements, html2canvas, and @react-pdf/renderer.
@@ -9,6 +9,9 @@ export function resolveImageUrl(urlOrPath) {
   if (!urlOrPath || typeof urlOrPath !== "string") {
     return urlOrPath;
   }
+
+  const baseURL = process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000";
+  const cleanBaseURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
 
   // Check if it looks like a Google Drive or googleusercontent URL
   if (
@@ -47,16 +50,25 @@ export function resolveImageUrl(urlOrPath) {
       }
 
       if (fileId && /^[a-zA-Z0-9_-]{28,45}$/.test(fileId)) {
-        return `/api/drive-image?id=${fileId}`;
+        return `${cleanBaseURL}/api/drive/image?id=${fileId}`;
       }
     } catch (e) {
       // If URL parsing fails, check if the string contains a typical /d/FILE_ID pattern
       const driveMatch = urlOrPath.match(/\/d\/([a-zA-Z0-9_-]{28,45})/);
       if (driveMatch && driveMatch[1]) {
-        return `/api/drive-image?id=${driveMatch[1]}`;
+        return `${cleanBaseURL}/api/drive/image?id=${driveMatch[1]}`;
       }
+    }
+  }
+
+  // Handle relative drive image paths (e.g. from an old DB migration or local reference)
+  if (urlOrPath.startsWith("/api/drive-image") || urlOrPath.startsWith("/api/drive/image")) {
+    const fileId = urlOrPath.split("id=")[1];
+    if (fileId) {
+      return `${cleanBaseURL}/api/drive/image?id=${fileId}`;
     }
   }
 
   return urlOrPath;
 }
+
