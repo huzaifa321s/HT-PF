@@ -16,8 +16,27 @@ export async function convertImagesToBase64(element) {
     // and ignore already base64 data URLs.
     if (src && (src.startsWith("/") || src.startsWith(window.location.origin)) && !src.startsWith("data:")) {
       try {
+        // Method 1: If the image is already loaded on the page, convert it using canvas immediately.
+        // This is 100% safe, offline-friendly, and bypasses Vercel Deployment Protection.
+        if (img.complete && img.naturalWidth > 0) {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL("image/png");
+            
+            originalSources.push({ img, src });
+            img.src = dataUrl;
+            continue; // Successfully converted, proceed to next image
+          } catch (canvasErr) {
+            console.warn("Canvas-based base64 conversion failed, falling back to fetch:", canvasErr);
+          }
+        }
+
+        // Method 2: Fallback to same-origin fetch if image is not loaded yet
         const absoluteUrl = src.startsWith("/") ? window.location.origin + src : src;
-        // Fetch same-origin image without triggering CORS anonymous cache issue
         const response = await fetch(absoluteUrl);
         if (!response.ok) throw new Error(`HTTP status ${response.status}`);
         const blob = await response.blob();
