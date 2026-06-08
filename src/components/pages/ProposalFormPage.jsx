@@ -205,40 +205,71 @@ export default function ProposalFormPage() {
       const targetElement = pdfRef.current;
       const PAGE_PX_WIDTH = 800; // Expected desktop width
 
-      // Convert all relative images inside targetElement to base64 data URLs to avoid CORS / cache issues
+      // STEP 1: Convert all <img> tags to base64 so html2canvas gets inline data.
       const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(targetElement);
 
-      // CRITICAL FIX: Preload all Cloudinary background images to ensure they are 100% downloaded
-      // before html2canvas takes the snapshot. This fixes the issue where fast generation causes blank backgrounds.
+      // STEP 2: Pre-fetch ALL Cloudinary URLs as base64 data URLs BEFORE html2canvas runs.
+      // html2canvas clones the DOM into a hidden iframe and independently re-fetches every
+      // CSS background-image from the network. That refetch races against rendering, causing blank images.
+      // By converting to data URLs here, we swap every background-image url(https://...) with url(data:...)
+      // in onclone so html2canvas never makes a network request.
       const pdfImageAssets = await import("../../utils/pdfImageAssets");
-      const cloudImgs = Object.values(pdfImageAssets).filter(val => typeof val === "string" && val.startsWith("http"));
-      await Promise.all(cloudImgs.map(src => new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = resolve;
-        img.onerror = resolve;
-        img.src = src;
-      })));
+      const cloudinaryUrls = Object.values(pdfImageAssets).filter(
+        val => typeof val === "string" && val.startsWith("http")
+      );
+      const urlToDataUrl = {};
+      await Promise.all(
+        cloudinaryUrls.map(async (src) => {
+          try {
+            const res = await fetch(src, { cache: "force-cache" });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const blob = await res.blob();
+            const dataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            urlToDataUrl[src] = dataUrl;
+          } catch (e) {
+            console.warn("[PDF] Failed to pre-fetch image as base64:", src, e.message);
+          }
+        })
+      );
 
       let canvas;
       try {
         canvas = await html2canvas(targetElement, {
-          scale: 2, // High resolution
+          scale: 2,
           useCORS: true,
+          allowTaint: false,
           scrollY: -window.scrollY,
           backgroundColor: "#ffffff",
           logging: false,
-          imageTimeout: 0, // Never timeout on images
+          imageTimeout: 0,
           onclone: (clonedDoc) => {
-            // Force the cloned document to behave like a desktop screen
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
-            // NOTE: Do NOT modify img src values here.
-            // All images have already been converted to base64 data URLs
-            // by convertImagesToBase64() above. The cloned document inherits
-            // those data: URLs automatically.
+
+            // CRITICAL: Replace every CSS background-image Cloudinary URL with a data URL
+            // so html2canvas never makes a network request inside the iframe.
+            if (Object.keys(urlToDataUrl).length > 0) {
+              const allEls = clonedDoc.querySelectorAll("*");
+              allEls.forEach((el) => {
+                const bg = el.style.backgroundImage;
+                if (bg && bg.includes("res.cloudinary.com")) {
+                  let newBg = bg;
+                  Object.entries(urlToDataUrl).forEach(([cloudUrl, dataUrl]) => {
+                    if (newBg.includes(cloudUrl)) {
+                      newBg = newBg.replace(cloudUrl, dataUrl);
+                    }
+                  });
+                  el.style.backgroundImage = newBg;
+                }
+              });
+            }
           }
         });
       } finally {
