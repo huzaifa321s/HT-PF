@@ -157,12 +157,11 @@ export default function ProposalStudio() {
       // Small wait for reflow
       await new Promise(r => setTimeout(r, 100));
 
-      // Convert all relative images inside container to base64 data URLs to avoid CORS / cache issues
+      // Convert all relative images inside container to base64 data URLs to avoid CORS / cache issues.
+      // convertImagesToBase64 now waits for all images to decode + two rAF flushes before returning,
+      // ensuring the browser has fully repainted before html2canvas captures.
       const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(container);
-
-      // Give the browser a moment to apply the new data: src values and re-paint
-      await new Promise(r => setTimeout(r, 200));
 
       let fullCanvas;
       try {

@@ -145,6 +145,29 @@ export async function convertImagesToBase64(element) {
     })
   );
 
+  // --- Critical: wait for every updated image to fully decode before returning ---
+  // Setting img.src to a data: URL is synchronous in the DOM attribute sense,
+  // but the browser still needs to DECODE the image data before painting it.
+  // img.decode() returns a Promise that resolves once the image is ready to render.
+  await Promise.all(
+    originalSources.map(({ img }) =>
+      typeof img.decode === "function"
+        ? img.decode().catch(() => {}) // ignore decode errors (e.g. broken image)
+        : new Promise((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve();
+            } else {
+              img.onload = resolve;
+              img.onerror = resolve;
+            }
+          })
+    )
+  );
+
+  // Flush two animation frames to ensure the browser has fully repainted
+  // with the new data: URL images before html2canvas captures the DOM.
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
   return originalSources;
 }
 
