@@ -30,6 +30,7 @@ import {
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
+import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 
 const COLORS = ["#FFD700", "#FFA500", "#FF6347", "#FF4500", "#DC143C", "#32CD32", "#1E90FF", "#9932CC", "#00CED1", "#FF69B4", "#000000"];
 
@@ -356,11 +357,11 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
           <Box key={i} sx={{ position: "absolute", top: i * (1131 + gap), left: 0, right: 0, height: 1131, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             {/* Header */}
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px" }}>
-              <img src="/new-header.png" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
             {/* Footer */}
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px" }}>
-              <img src="/footer.png" crossOrigin="anonymous" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
           </Box>
         ))}

@@ -7,6 +7,7 @@ import { updateTitle, updateSubtitle, editElementContent, addElement, deleteElem
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
+import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 
 const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) => {
   const [localWidth, setLocalWidth] = useState(parseInt(element.dimensions?.width || "90"));
@@ -214,12 +215,12 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
       >
         {/* Header Overlay */}
         <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 0, pointerEvents: "none" }}>
-          <img src="/new-header.png" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </Box>
 
         {/* Footer Overlay */}
         <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 0, pointerEvents: "none" }}>
-          <img src="/footer.png" crossOrigin="anonymous" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
         </Box>
         {isStudioMode && (
           <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>

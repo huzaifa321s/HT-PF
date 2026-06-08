@@ -20,6 +20,7 @@ import {
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
+import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 
 const PAGE_HEIGHT = 1131;
 const TOP_PADDING = 100;   // 50px header + 50px breathing room
@@ -1156,10 +1157,10 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
           <Box key={i} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${i}` : undefined}
             sx={{ position: "absolute", top: i * CYCLE, left: 0, right: 0, height: PAGE_HEIGHT, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px" }}>
-              <img src="/new-header.png" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px" }}>
-              <img src="/footer.png" crossOrigin="anonymous" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
           </Box>
         ))}

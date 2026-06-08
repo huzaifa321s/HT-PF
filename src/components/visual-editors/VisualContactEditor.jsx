@@ -1,13 +1,13 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import { CONTACT_PAGE } from "../../utils/pdfImageAssets";
 
 const VisualContactEditor = () => {
   return (
     <Box
       component="img"
-      src="/proposal-contact.png"
+      src={CONTACT_PAGE}
       alt="Contact Page"
-      crossOrigin="anonymous"
       sx={{
         width: "100%",
         maxWidth: "800px",
