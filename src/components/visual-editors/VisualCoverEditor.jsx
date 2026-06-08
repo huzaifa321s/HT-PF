@@ -149,16 +149,16 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         fontFamily: "'Oswald', 'Helvetica Neue', Helvetica, Arial, sans-serif",
       }}
     >
-      <div
+      <img
+        src={COVER_BG}
+        alt=""
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
+          top: 0, left: 0,
           width: "100%",
           height: "100%",
-          backgroundImage: `url(${COVER_BG})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          objectFit: "cover",
+          objectPosition: "center",
           zIndex: 1,
         }}
       />
@@ -174,7 +174,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
       {/* Top Left Logo Area (HT Logo) */}
       <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 2 }}>
-        <div style={{ width: "67px", height: "67px", borderRadius: "34px", backgroundImage: `url(${LOGO})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <img src={LOGO} alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
         <Box>
           <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
           <Typography sx={{ color: "white", fontSize: 13, letterSpacing: 3, mt: 0, lineHeight: 1 }}>IT SERVICES & SOLUTIONS</Typography>

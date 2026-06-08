@@ -1,141 +1,172 @@
 /**
- * Utility to convert images to Base64 data URLs before html2canvas capture.
+ * Converts images to base64 data URLs before html2canvas capture.
  *
- * Handles both <img> src attributes AND CSS background-image properties.
- * Directly mutates the live DOM before capture, then restores after.
+ * Handles BOTH <img> src attributes AND CSS background-image inline styles.
+ * Routes everything through the server-side /api/static-image proxy so there
+ * are zero CORS issues — the proxy reads directly from the filesystem.
+ *
+ * Flow:
+ *  1. Find all <img> tags → fetch via /api/static-image → replace src with data URL
+ *  2. Find all elements with inline background-image → fetch via proxy → replace with data URL
+ *  3. Wait for 2 animation frames so the browser has repainted
+ *  4. html2canvas runs — every image is already a data: URL, zero network requests needed
+ *  5. Call restoreOriginalImages() to put everything back
  */
 
-/** Per-export in-memory cache so we don't refetch the same image multiple times */
+/** Per-export in-memory cache to avoid re-fetching the same image */
 const _cache = new Map();
 
 /**
- * Fetches any image URL (local or cross-origin Cloudinary) as a base64 data URL.
- * @param {string} url
- * @returns {Promise<string|null>}
+ * Extracts the URL from a CSS background-image value.
+ * Handles: url("https://..."), url('https://...'), url(https://...)
  */
-async function fetchImageAsBase64(url) {
-  if (_cache.has(url)) return _cache.get(url);
+function extractBgUrl(bgImage) {
+  const m = bgImage.match(/url\(["']?([^"')]+)["']?\)/);
+  return m ? m[1] : null;
+}
+
+/**
+ * Fetches an image (by its /public path like "/newBg.png") via the
+ * /api/static-image server-side proxy and returns a base64 data URL.
+ *
+ * The proxy reads from disk — no CORS, no CDN, 100% reliable.
+ *
+ * @param {string} src  - The image src, e.g. "/newBg.png" or full URL
+ * @returns {Promise<string|null>}  data URL or null on failure
+ */
+async function fetchAsDataUrl(src) {
+  if (_cache.has(src)) return _cache.get(src);
 
   try {
-    const res = await fetch(url, { cache: "force-cache", mode: "cors" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // Extract filename from path or URL
+    let filename = src;
+    try {
+      const pathname = src.startsWith("http") ? new URL(src).pathname : src;
+      filename = pathname.split("/").pop().split("?")[0];
+    } catch (_) {
+      filename = src.split("/").pop();
+    }
 
-    const blob = await res.blob();
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    // Try the server-side proxy first (reads directly from filesystem, no CORS)
+    const proxyRes = await fetch(`/api/static-image?file=${encodeURIComponent(filename)}`);
+    if (proxyRes.ok) {
+      const json = await proxyRes.json();
+      if (json.dataUrl) {
+        _cache.set(src, json.dataUrl);
+        return json.dataUrl;
+      }
+    }
 
-    if (dataUrl && dataUrl.startsWith("data:")) {
-      _cache.set(url, dataUrl);
-      return dataUrl;
+    // Fallback: direct fetch (works for same-origin assets)
+    const absoluteUrl = src.startsWith("/")
+      ? `${window.location.origin}${src}`
+      : src;
+    const res = await fetch(absoluteUrl);
+    if (res.ok) {
+      const blob = await res.blob();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      if (dataUrl?.startsWith("data:")) {
+        _cache.set(src, dataUrl);
+        return dataUrl;
+      }
     }
   } catch (err) {
-    console.warn(`[imageToBase64] Failed to fetch: ${url}`, err.message);
+    console.warn("[imageToBase64] fetch failed for:", src, err.message);
   }
+
   return null;
 }
 
 /**
- * Extracts the first URL from a CSS background-image value.
- * e.g. 'url("https://example.com/img.png")' → 'https://example.com/img.png'
- */
-function extractUrlFromBgImage(bgImage) {
-  const match = bgImage.match(/url\(["']?(.*?)["']?\)/);
-  return match ? match[1] : null;
-}
-
-/**
- * Converts ALL <img> src attributes AND CSS background-image style properties
- * inside `element` to base64 data URLs so html2canvas can render them without
- * making any network requests (which race against rendering and cause blank images).
+ * Converts all <img> src attributes AND CSS background-image properties
+ * inside `element` to base64 data URLs.
  *
  * @param {HTMLElement} element
- * @returns {Promise<{imgs: Array, bgs: Array}>} originals for restore
+ * @returns {Promise<{imgs: Array, bgs: Array}>}
  */
 export async function convertImagesToBase64(element) {
   if (!element) return { imgs: [], bgs: [] };
 
   _cache.clear();
 
-  // ── Part 1: <img> tags ────────────────────────────────────────────────────
+  // ── 1. <img> tags ─────────────────────────────────────────────────────────
   const imgEls = Array.from(element.querySelectorAll("img"));
-  const originalImgs = [];
+  const imgs = [];
 
   await Promise.all(
     imgEls.map(async (img) => {
       const src = img.getAttribute("src");
       if (!src || src.startsWith("data:")) return;
 
-      // Build absolute URL
-      const absoluteUrl = src.startsWith("/")
-        ? `${window.location.origin}${src}`
-        : src;
-
-      const dataUrl = await fetchImageAsBase64(absoluteUrl);
+      const dataUrl = await fetchAsDataUrl(src);
       if (dataUrl) {
-        originalImgs.push({ img, src });
+        imgs.push({ img, src });
         img.setAttribute("src", dataUrl);
       }
     })
   );
 
-  // Wait for every updated <img> to fully decode
+  // Wait for all <img> to fully decode
   await Promise.all(
-    originalImgs.map(({ img }) =>
+    imgs.map(({ img }) =>
       new Promise((resolve) => {
         if (img.complete && img.naturalWidth > 0) return resolve();
         img.onload = resolve;
         img.onerror = resolve;
-        if (typeof img.decode === "function") {
-          img.decode().then(resolve).catch(resolve);
-        }
+        if (typeof img.decode === "function") img.decode().then(resolve).catch(resolve);
         setTimeout(resolve, 5000);
       })
     )
   );
 
-  // ── Part 2: CSS background-image ─────────────────────────────────────────
+  // ── 2. CSS background-image ───────────────────────────────────────────────
   const allEls = Array.from(element.querySelectorAll("*"));
-  const originalBgs = [];
+  const bgs = [];
 
   await Promise.all(
     allEls.map(async (el) => {
       const bg = el.style.backgroundImage;
-      if (!bg || bg === "none" || bg.startsWith("url(\"data:") || bg.startsWith("url('data:")) return;
+      // Skip: empty, none, or already a data URL
+      if (!bg || bg === "none") return;
+      if (bg.includes("data:")) return;
 
-      const imgUrl = extractUrlFromBgImage(bg);
-      if (!imgUrl) return;
+      const url = extractBgUrl(bg);
+      if (!url) return;
 
-      const dataUrl = await fetchImageAsBase64(imgUrl);
+      const dataUrl = await fetchAsDataUrl(url);
       if (dataUrl) {
-        originalBgs.push({ el, bg });
+        bgs.push({ el, bg });
         el.style.backgroundImage = `url("${dataUrl}")`;
       }
     })
   );
 
-  // Flush two animation frames so the browser fully repaints with data URLs
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  await new Promise((r) => setTimeout(r, 200));
+  // Flush browser paint so the data URLs are fully rendered before capture
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise((r) => setTimeout(r, 300));
 
-  return { imgs: originalImgs, bgs: originalBgs };
+  return { imgs, bgs };
 }
 
 /**
- * Restores the original src and background-image values after html2canvas capture.
- * @param {{ imgs: Array, bgs: Array }} originals
+ * Restores original image sources after html2canvas capture.
+ * Accepts both the new { imgs, bgs } object and the old array format.
  */
 export function restoreOriginalImages(originals) {
   if (!originals) return;
-  // Support old call style (array) as well as new object style
+
   if (Array.isArray(originals)) {
+    // Legacy array format
     originals.forEach(({ img, src }) => img.setAttribute("src", src));
     return;
   }
+
   const { imgs = [], bgs = [] } = originals;
   imgs.forEach(({ img, src }) => img.setAttribute("src", src));
-  bgs.forEach(({ el, bg }) => (el.style.backgroundImage = bg));
+  bgs.forEach(({ el, bg }) => { el.style.backgroundImage = bg; });
 }
