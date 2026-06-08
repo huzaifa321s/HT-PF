@@ -146,6 +146,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       <img
         src="/newBg.png"
         alt=""
+        crossOrigin="anonymous"
         style={{
           position: "absolute",
           top: 0,
@@ -169,7 +170,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
       {/* Top Left Logo Area (HT Logo) */}
       <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 1 }}>
-        <img src="/download.jpg" alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
+        <img src="/download.jpg" alt="Logo" crossOrigin="anonymous" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
         <Box>
           <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
           <Typography sx={{ color: "white", fontSize: 13, letterSpacing: 3, mt: 0, lineHeight: 1 }}>IT SERVICES & SOLUTIONS</Typography>

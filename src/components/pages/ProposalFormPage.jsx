@@ -223,21 +223,10 @@ export default function ProposalFormPage() {
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
-            
-            // Try to find the cloned PDF preview container and force its width
-            // html2canvas clones the node, we can access it using its dataset or just relying on body width
-            // But it's safer to just set body width as we did above, which stops responsive breakages
-
-            // Append cache buster to relative images in the cloned document
-            // to bypass browser caching conflicts under useCORS: true
-            const clonedImgs = clonedDoc.querySelectorAll("img");
-            clonedImgs.forEach(img => {
-              const src = img.getAttribute("src");
-              if (src && (src.startsWith("/") || src.startsWith(window.location.origin)) && !src.startsWith("data:")) {
-                const buster = `t=${Date.now()}`;
-                img.src = src.includes("?") ? `${src}&${buster}` : `${src}?${buster}`;
-              }
-            });
+            // NOTE: Do NOT modify img src values here.
+            // All images have already been converted to base64 data URLs
+            // by convertImagesToBase64() above. The cloned document inherits
+            // those data: URLs automatically.
           }
         });
       } finally {

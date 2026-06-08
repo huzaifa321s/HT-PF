@@ -90,12 +90,12 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
             {/* Header Overlay */}
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 0, pointerEvents: "none" }}>
-              <img src="/new-header.png" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src="/new-header.png" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </Box>
 
             {/* Footer Overlay */}
             <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 0, pointerEvents: "none" }}>
-              <img src="/footer.png" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src="/footer.png" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </Box>
 
             <Box sx={{ height: 50 }} />

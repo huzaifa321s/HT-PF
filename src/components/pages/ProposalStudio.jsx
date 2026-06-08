@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
@@ -33,7 +34,7 @@ export default function ProposalStudio() {
   const pricingPage = useSelector((s) => s.pricing.edit);
   const paymentTerms = useSelector((s) => s.paymentTerms.edit);
   const contactPage = useSelector((s) => s.contact);
-  
+
   // AI Response from either create or edit mode
   const originalAiResponse = useSelector((s) => s.page2?.edit?.originalAiResponse || s.page2?.create?.originalAiResponse);
 
@@ -74,7 +75,7 @@ export default function ProposalStudio() {
   useEffect(() => {
     const fetchProposal = async () => {
       if (!id) return;
-      
+
       if (id === "new") {
         setFormData(reduxProposal);
         setLoading(false);
@@ -85,7 +86,7 @@ export default function ProposalStudio() {
         setLoading(true);
         const res = await axiosInstance.get(`/api/proposals/get-single-proposal/${id}`);
         const data = res.data.data;
-        
+
         if (reduxProposal?.isUnsavedEdit) {
           // Merge Redux edited data over the database data for the UI
           setFormData({ ...data, ...reduxProposal });
@@ -159,6 +160,9 @@ export default function ProposalStudio() {
       const { convertImagesToBase64, restoreOriginalImages } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(container);
 
+      // Give the browser a moment to apply the new data: src values and re-paint
+      await new Promise(r => setTimeout(r, 200));
+
       let fullCanvas;
       try {
         fullCanvas = await html2canvas(container, {
@@ -180,24 +184,17 @@ export default function ProposalStudio() {
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
-            
+
             const clonedContainer = clonedDoc.getElementById("pdf-export-container");
             if (clonedContainer) {
               clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
             }
-
-            // Append cache buster to relative images in the cloned document
-            // to bypass browser caching conflicts under useCORS: true
-            const clonedImgs = clonedDoc.querySelectorAll("img");
-            clonedImgs.forEach(img => {
-              const src = img.getAttribute("src");
-              if (src && (src.startsWith("/") || src.startsWith(window.location.origin)) && !src.startsWith("data:")) {
-                const buster = `t=${Date.now()}`;
-                img.src = src.includes("?") ? `${src}&${buster}` : `${src}?${buster}`;
-              }
-            });
+            // NOTE: Do NOT modify img src values here.
+            // All images have already been converted to base64 data URLs
+            // by convertImagesToBase64() above. The cloned document inherits
+            // those data: URLs, so no further manipulation is needed or safe.
           }
         });
       } finally {
@@ -336,11 +333,11 @@ export default function ProposalStudio() {
   return (
     <Box sx={{ height: "100vh", bgcolor: "#0a0a0a", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Top Action Bar */}
-      <Box 
-        sx={{ 
-          p: 2, 
-          display: "flex", 
-          alignItems: "center", 
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
           justifyContent: "space-between",
           borderBottom: "1px solid rgba(243, 168, 51, 0.2)",
           background: "rgba(20, 20, 20, 0.8)",
@@ -548,11 +545,11 @@ export default function ProposalStudio() {
               let dynamicTotal = 0;
               if (pricingPage?.gridPackages?.length > 0) {
                 pricingPage.gridPackages.forEach(pkg => {
-                   const cost = parseFloat(String(pkg.price).replace(/[^0-9.]/g, ""));
-                   if (!isNaN(cost)) dynamicTotal += cost;
+                  const cost = parseFloat(String(pkg.price).replace(/[^0-9.]/g, ""));
+                  if (!isNaN(cost)) dynamicTotal += cost;
                 });
               }
-              
+
               // Respect true value from the database ONLY
               let rawTotal = "";
               if (dynamicTotal > 0) {
@@ -562,9 +559,9 @@ export default function ProposalStudio() {
               } else if (formData?.chargeAmount !== undefined && formData?.chargeAmount !== null && formData?.chargeAmount !== "") {
                 rawTotal = formData.chargeAmount;
               }
-              
+
               if (rawTotal === "" || rawTotal === null) return null;
-              
+
               return (
                 <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Box>
@@ -588,9 +585,9 @@ export default function ProposalStudio() {
               if (formData?.advancePercent !== undefined && formData?.advancePercent !== null && formData?.advancePercent !== "") {
                 advPct = parseFloat(formData.advancePercent);
               }
-              
+
               if (isNaN(advPct)) advPct = 0;
-              
+
               return (
                 <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(243,168,51,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Box>
@@ -690,7 +687,7 @@ export default function ProposalStudio() {
                         </Typography>
                       )}
                     </Box>
-                    <IconButton 
+                    <IconButton
                       onClick={async () => {
                         try {
                           const htmlBlob = new Blob([sec.content || ""], { type: "text/html" });
@@ -703,7 +700,7 @@ export default function ProposalStudio() {
                           navigator.clipboard.writeText(sec.content || "");
                           dispatch(showToast({ message: "Content copied!", severity: "success" }));
                         }
-                      }} 
+                      }}
                       sx={{ color: "#94a3b8", "&:hover": { color: "#c084fc", bgcolor: "rgba(192,132,252,0.1)" } }}
                       title="Copy HTML Content"
                     >
@@ -712,17 +709,17 @@ export default function ProposalStudio() {
                   </Box>
                   <Divider sx={{ borderColor: "rgba(255,255,255,0.05)", mb: 2 }} />
                   {sec.content ? (
-                    <Box 
-                      className="ai-response-content" 
-                      dangerouslySetInnerHTML={{ __html: sec.content }} 
-                      sx={{ 
-                        color: "#cbd5e1", 
-                        fontSize: "14px", 
+                    <Box
+                      className="ai-response-content"
+                      dangerouslySetInnerHTML={{ __html: sec.content }}
+                      sx={{
+                        color: "#cbd5e1",
+                        fontSize: "14px",
                         lineHeight: 1.6,
                         "& p": { m: 0, mb: 1 },
                         "& ul, & ol": { pl: 3, mt: 0, mb: 1 },
                         "& li": { mb: 0.5 }
-                      }} 
+                      }}
                     />
                   ) : (
                     <Typography variant="body2" sx={{ color: "#64748b", fontStyle: "italic" }}>
