@@ -187,6 +187,17 @@ export default function ProposalStudio() {
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
             }
+
+            // Append cache buster to relative images in the cloned document
+            // to bypass browser caching conflicts under useCORS: true
+            const clonedImgs = clonedDoc.querySelectorAll("img");
+            clonedImgs.forEach(img => {
+              const src = img.getAttribute("src");
+              if (src && (src.startsWith("/") || src.startsWith(window.location.origin)) && !src.startsWith("data:")) {
+                const buster = `t=${Date.now()}`;
+                img.src = src.includes("?") ? `${src}&${buster}` : `${src}?${buster}`;
+              }
+            });
           }
         });
       } finally {
