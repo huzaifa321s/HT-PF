@@ -53,6 +53,7 @@ import {
   setBrandTagline,
   setProjectBrief,
 } from "../../utils/page1Slice";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 import axiosInstance from "../../utils/axiosInstance";
 import { showToast } from "../../utils/toastSlice";
 
@@ -230,7 +231,7 @@ const SortableStandaloneImage = ({ element, mode, onEdit, onDelete }) => {
 
         <Box sx={{ textAlign: "center", flex: 1 }}>
           <img
-            src={element.content}
+            src={resolveImageUrl(element.content)}
             alt="Standalone"
             style={{
               width: element.dimensions?.width || "500px",

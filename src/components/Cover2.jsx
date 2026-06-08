@@ -10,6 +10,7 @@ import {
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
+import { resolveImageUrl } from "../utils/resolveImageUrl";
 
 // ====================== PDF STYLES ======================
 const styles = StyleSheet.create({
@@ -201,7 +202,7 @@ const PdfPage3Document = ({
                   )}
                   {element.type === "image" && (
                     <View style={styles.imageContainer}>
-                      <Image style={[styles.image, { width: element.dimensions?.width || "100%", height: element.dimensions?.height || "auto" }]} src={element.content} />
+                      <Image style={[styles.image, { width: element.dimensions?.width || "100%", height: element.dimensions?.height || "auto" }]} src={resolveImageUrl(element.content)} />
                     </View>
                   )}
                 </View>

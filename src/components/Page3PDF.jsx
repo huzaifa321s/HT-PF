@@ -45,6 +45,7 @@ import {
 } from "../src/utils/page3Slice";
 import axiosInstance from "../src/utils/axiosInstance";
 import { showToast } from "../src/utils/toastSlice";
+import { resolveImageUrl } from "../utils/resolveImageUrl";
 
 // ====================== PDF STYLES ======================
 const styles = StyleSheet.create({
@@ -234,7 +235,7 @@ const PdfDocument3 = ({ title, subtitle, elements }) => {
                   )}
                   {element.type === "image" && (
                     <View style={styles.imageContainer}>
-                      <Image style={styles.image} src={element.content} />
+                      <Image style={styles.image} src={resolveImageUrl(element.content)} />
                     </View>
                   )}
                 </View>

@@ -8,6 +8,7 @@ import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 
 const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) => {
   const [localWidth, setLocalWidth] = useState(parseInt(element.dimensions?.width || "90"));
@@ -61,7 +62,7 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
       <Box ref={containerRef} sx={{ position: "relative", width: `${localWidth}%`, mx: "auto" }}>
         
         {element.content ? (
-          <img src={element.content} alt="Block" style={{ width: "100%", height: localHeight, display: "block", objectFit: "fill" }} />
+          <img src={resolveImageUrl(element.content)} alt="Block" style={{ width: "100%", height: localHeight, display: "block", objectFit: "fill" }} />
         ) : (
           <Box sx={{ width: "100%", minHeight: 350, bgcolor: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", border: "2px dashed #ccc" }}>
             <Typography color="text.secondary">No Image Uploaded</Typography>

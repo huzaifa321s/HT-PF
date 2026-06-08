@@ -8,6 +8,7 @@ import { updateField } from "../../utils/proposalSlice";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import { COVER_BG, LOGO } from "../../utils/pdfImageAssets";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 
 const VisualCoverEditor = ({ isStudioMode = true }) => {
   const dispatch = useDispatch();
@@ -323,7 +324,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                 border: clientLogoFit === "fill" ? "none" : "5px solid #FFFFFF", overflow: "hidden"
               }}>
                 {localLogo ? (
-                  <img src={localLogo} alt="Client Logo" style={{ width: "100%", height: "100%", objectFit: clientLogoFit === "fill" ? "cover" : "contain" }} />
+                  <img src={resolveImageUrl(localLogo)} alt="Client Logo" style={{ width: "100%", height: "100%", objectFit: clientLogoFit === "fill" ? "cover" : "contain" }} />
                 ) : (
                   <Typography sx={{ fontSize: 10, color: "#ccc", textAlign: "center" }}>No Client<br />Logo</Typography>
                 )}

@@ -62,6 +62,7 @@ import {
   deleteSectionItem,
   reorderSectionItems,
 } from "../../utils/customContentSlice";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 
 // === A4 Constants ===
 const A4_HEIGHT_PX = 1123;
@@ -137,7 +138,7 @@ const SortableStandaloneImage = ({ element, mode, onEdit, onDelete }) => {
         )}
         <Box sx={{ textAlign: "center", flex: 1 }}>
           <img
-            src={element.content}
+            src={resolveImageUrl(element.content)}
             alt="Standalone"
             style={{
               width: element.dimensions?.width || "500px",
@@ -334,7 +335,7 @@ const SortableItem = ({ id, item, sectionId, itemIndex, mode, selectedFont, list
         {item.type === "image" ? (
           <Box sx={{ flex: 1, textAlign: "center" }}>
             <img
-              src={item.content}
+              src={resolveImageUrl(item.content)}
               alt="Section visual"
               style={{
                 width: item.dimensions?.width || "400px",

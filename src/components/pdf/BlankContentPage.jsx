@@ -58,6 +58,7 @@ import {
   deleteBlock,
   reorderBlocks,
 } from "../../utils/blankPageSlice";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 
 // === A4 Constants ===
 const A4_HEIGHT_PX = 1123;
@@ -133,7 +134,7 @@ const SortableStandaloneImage = ({ element, mode, onEdit, onDelete }) => {
         )}
         <Box sx={{ textAlign: "center", flex: 1 }}>
           <img
-            src={element.content}
+            src={resolveImageUrl(element.content)}
             alt="Standalone"
             style={{
               width: element.dimensions?.width || "500px",
@@ -338,7 +339,7 @@ const SortableItem = ({ id, content, type, dimensions, onEdit, onDelete }) => {
       {type === "image" && (
         <Box sx={{ mt: 1, textAlign: "center" }}>
           <img
-            src={content}
+            src={resolveImageUrl(content)}
             alt="Section visual"
             style={{
               width: dimensions?.width || "100%",

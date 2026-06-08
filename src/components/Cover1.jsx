@@ -14,6 +14,7 @@ import {
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { COVER_BG, LOGO } from "../utils/pdfImageAssets";
+import { resolveImageUrl } from "../utils/resolveImageUrl";
 
 const styles = StyleSheet.create({
   page: { position: "relative", fontFamily: "Oswald" },
@@ -243,7 +244,7 @@ export const PdfCoverPage = ({
           <View style={styles.clientSection}>
             {clientLogo && (
               <View style={[styles.clientLogoContainer, clientLogoFit === "fill" ? { border: "none" } : {}]}>
-                <Image src={clientLogo} style={[styles.clientLogo, { objectFit: clientLogoFit === "fill" ? "cover" : "contain" }]} />
+                <Image src={resolveImageUrl(clientLogo)} style={[styles.clientLogo, { objectFit: clientLogoFit === "fill" ? "cover" : "contain" }]} />
               </View>
             )}
 

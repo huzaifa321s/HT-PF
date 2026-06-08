@@ -33,6 +33,7 @@ import EditImageDialog from "../EditImageDialog";
 import CustomHeaderFooter from "../CustomHeaderFooter";
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../utils/toastSlice";
+import { resolveImageUrl } from "../../utils/resolveImageUrl";
 import {
   updateTitle,
   updateSubtitle,
@@ -208,7 +209,7 @@ const SortableImage = ({ element, mode, onEdit, onDelete }) => {
             maxWidth: "100%",
           }}
         >
-          <img src={element.content} alt="Content" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={resolveImageUrl(element.content)} alt="Content" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           {mode === "dev" && (
             <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1, backgroundColor: "rgba(20, 20, 20, 0.8)", borderRadius: 1, padding: 0.5 }}>
               <IconButton size="small" onClick={() => onEdit(element)}>
