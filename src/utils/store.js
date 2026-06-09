@@ -4,7 +4,6 @@ import { persistStore, persistReducer } from "redux-persist";
 import { combineReducers } from "redux";
 import { debouncedPushToHistory, historyManager } from "./historyManager";
 import toastReducer from "./toastSlice";
-import appReducer from "./appSlice";
 import page1SliceReducer from "./page1Slice";
 import page2Reducer from "./page2Slice";
 import page3Reducer from "./page3Slice";
@@ -16,7 +15,6 @@ import pdfNavigationReducer from "./pdfNavigationSlice";
 
 const mainReducer = combineReducers({
   toast: toastReducer,
-  app: appReducer,
   page1Slice: page1SliceReducer,
   page2: page2Reducer,
   page3: page3Reducer,
