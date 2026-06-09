@@ -339,7 +339,7 @@ const ProposalDetails = () => {
                     {/* Dashboard Grid */}
                     <Grid container spacing={4} sx={{ mb: 4 }}>
                         {/* Client Info */}
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12}>
                             <motion.div variants={itemVariants} style={{ height: "100%" }}>
                                 <SectionCard title="Client Information" icon={<Business />}>
                                     <Stack spacing={1}>
@@ -349,60 +349,6 @@ const ProposalDetails = () => {
                                         <Divider sx={{ borderColor: "rgba(255,255,255,0.05)", my: 1 }} />
                                         <InfoRow label="Proposal Date" value={proposal?.date} icon={<CalendarToday />} />
                                     </Stack>
-                                </SectionCard>
-                            </motion.div>
-                        </Grid>
-
-                        {/* Financial Info */}
-                        <Grid item xs={12} md={6}>
-                            <motion.div variants={itemVariants} style={{ height: "100%" }}>
-                                <SectionCard title="Financial Details" icon={<AttachMoney />}>
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} sm={6}>
-                                            <Box
-                                                sx={{
-                                                    p: 3,
-                                                    background: alpha("#141414", 0.6),
-                                                    borderRadius: 3,
-                                                    textAlign: "center",
-                                                    border: "1px solid rgba(255,255,255,0.05)",
-                                                    height: "100%",
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <Typography variant="overline" sx={{ color: "#f3a833", fontWeight: 700, letterSpacing: 1 }}>
-                                                    Advance Payment
-                                                </Typography>
-                                                <Typography variant="h3" fontWeight={800} sx={{ color: "#fff", mt: 1 }}>
-                                                    {proposal?.advancePercent || 0}%
-                                                </Typography>
-                                            </Box>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Box
-                                                sx={{
-                                                    p: 3,
-                                                    background: alpha("#141414", 0.6),
-                                                    borderRadius: 3,
-                                                    textAlign: "center",
-                                                    border: "1px solid rgba(255,255,255,0.05)",
-                                                    height: "100%",
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <Typography variant="overline" sx={{ color: "#f3a833", fontWeight: 700, letterSpacing: 1 }}>
-                                                    Total Cost
-                                                </Typography>
-                                                <Typography variant="h4" fontWeight={800} sx={{ color: "#fff", mt: 1 }}>
-                                                    {formatCurrency(proposal?.additionalCosts)}
-                                                </Typography>
-                                            </Box>
-                                        </Grid>
-                                    </Grid>
                                 </SectionCard>
                             </motion.div>
                         </Grid>
