@@ -20,19 +20,12 @@ import {
   StepLabel,
   StepContent,
   FormHelperText,
-  ToggleButtonGroup,
-  ToggleButton,
-  InputAdornment,
-  Switch,
-  FormControlLabel,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 import {
   Person,
   Business,
   Description,
-  AttachMoney,
-  Info,
   CheckCircle,
   ArrowBack,
   ArrowForward,
@@ -40,16 +33,9 @@ import {
   EditDocument,
   ArrowBackIos,
 } from "@mui/icons-material";
-import UnifiedPdfEditor from "../UnifiedPDFEditor";
 import { pdfDetector } from "../../utils/PdfChangeDetector";
 import { store } from "../../utils/store";
-import { pdf } from "@react-pdf/renderer";
-import CombinedPdfDocument from "../CombinedPdf";
-import { useDispatch, useSelector, Provider } from "react-redux";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { replacePage2Content, setOriginalAiResponse, setDBDataP2, setMode } from "../../utils/page2Slice";
 import { setDBDataP3, setMode2 } from "../../utils/page3Slice";

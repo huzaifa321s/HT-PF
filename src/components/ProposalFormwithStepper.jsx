@@ -14,76 +14,37 @@ import {
   MenuItem,
   FormHelperText,
   LinearProgress,
-  ToggleButtonGroup,
-  ToggleButton,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
   IconButton,
   Stepper,
   Step,
   StepLabel,
   StepContent,
-  Switch,
   Card,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   InputAdornment,
   useMediaQuery,
 } from "@mui/material";
 import {
-  Info,
-  DeblurOutlined,
   Timeline,
   CheckCircle,
   Send,
-  CalendarMonth,
-  ExpandMore,
-  Add,
   ArrowBack,
   ArrowForward,
   Person,
   Business,
-  Code,
-  AttachMoney,
   Description,
   Preview,
-  Download,
-  Delete,
-  Money,
-  Payment,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
-import { pdf } from "@react-pdf/renderer";
-import ProposalDocument from "./pdf/ProposalDocument";
-import dayjs from "dayjs";
-import UnifiedPdfEditor from "./UnifiedPDFEditor";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addCustomPlatform,
-  addService,
-  removeService,
-  updateCharges,
-  updateField,
-  updateServices,
   setFullFormData,
 } from "../utils/proposalSlice";
 import axiosInstance from "../utils/axiosInstance";
-import { addSection, updateSection, replacePage2Content, setOriginalAiResponse } from "../utils/page2Slice";
+import { replacePage2Content, setOriginalAiResponse } from "../utils/page2Slice";
 import { setBrandName } from "../utils/page1Slice";
 import { updateTitle } from "../utils/page3Slice";
 import { useDebounce } from "use-debounce";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { store } from "../utils/store";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
@@ -101,8 +62,6 @@ const ProposalFormWithStepper = ({
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [creds, setCreds] = useState({ yourName: "", yourEmail: "" });
-  const [baseCost, setBaseCost] = useState(watch("additionalCosts") || "");
-  const [autoApplyAdvance, setAutoApplyAdvance] = useState(false);
   const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check

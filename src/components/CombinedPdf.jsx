@@ -9,7 +9,7 @@ import PdfPricingPage from "./Cover4";
 import { PdfPaymentTermsCoverPage } from "./Cover5";
 import FixedImagePdfPage from "./FixedImagePdf";
 import PdfTracker from "../utils/PdfTracker";
-import { useSelector } from "react-redux";
+
 
 // ✅ Re-introduced memo for performance optimization
 const MemoizedCoverPage = memo(PdfCoverPage);
