@@ -292,7 +292,13 @@ const ProposalFormWithStepper = ({
       }
     } catch (error) {
       console.error("AI Generation Error:", error);
-      dispatch(showToast({ message: "Failed to generate proposal using AI.", severity: "error" }));
+      let errorMsg = "Failed to generate proposal using AI.";
+      if (error.response?.status === 429 || error.response?.data?.errorType === "quota_exceeded") {
+        errorMsg = "AI usage limit has been reached. Please contact your administrator or try again later.";
+      } else if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      }
+      dispatch(showToast({ message: errorMsg, severity: "error" }));
     } finally {
       setIsGeneratingAI(false);
     }
