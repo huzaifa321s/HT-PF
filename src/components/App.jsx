@@ -35,7 +35,7 @@ export default function App() {
     reValidateMode: "onChange",
     defaultValues: {
       clientName: "abc",
-      clientEmail: "client@gmail.com",
+      clientEmail: "",
       projectTitle: "Word Press E-commerce Website",
       developmentPlatforms: [],
       projectDuration: "",

@@ -908,7 +908,7 @@ const ProposalPage = () => {
 
                             <TableCell>
                               <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                                {proposal.clientEmail}
+                                {proposal.clientEmail || "N/A"}
                               </Typography>
                             </TableCell>
 

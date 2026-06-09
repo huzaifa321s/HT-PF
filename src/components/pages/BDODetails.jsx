@@ -542,7 +542,7 @@ const BDODetails = () => {
                                   <Typography fontWeight={600}>{proposal.projectTitle}</Typography>
                                 </TableCell>
                                 <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientName}</TableCell>
-                                <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientEmail}</TableCell>
+                                <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{proposal.clientEmail || "N/A"}</TableCell>
                                 <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                                   {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
                                 </TableCell>

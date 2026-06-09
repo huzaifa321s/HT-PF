@@ -86,7 +86,7 @@ const ProposalFormWithStepper = ({
   };
   // ✅ Step-wise required fields
   const stepFields = {
-    0: ["clientName", "clientEmail"],
+    0: ["clientName"],
     1: ["brandName", "projectTitle"],
   };
 
@@ -434,12 +434,13 @@ const ProposalFormWithStepper = ({
               name="clientEmail"
               control={control}
               rules={{
-                required: "Client email is required", // Made required
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                  message: "Please enter a valid email address",
-                },
+                required: false,
                 validate: {
+                  isValidEmail: (value) => {
+                    if (!value) return true;
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    return emailRegex.test(value) || "Please enter a valid email address";
+                  },
                   checkUniqueness: async (value) => {
                     if (!value) return true;
                     try {
@@ -512,7 +513,7 @@ const ProposalFormWithStepper = ({
                 <Box>
                   <TextField
                     {...field}
-                    label="Client Email *"
+                    label="Client Email"
                     fullWidth
                     type="email"
                     error={!!errors.clientEmail || limitExceeded}

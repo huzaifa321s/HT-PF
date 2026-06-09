@@ -352,7 +352,7 @@ const EditProposal = () => {
   };
 
   const stepFields = {
-    0: ["clientName", "clientEmail"], // Added clientEmail as required
+    0: ["clientName"],
     1: ["projectTitle"],
   };
 
@@ -567,9 +567,9 @@ const EditProposal = () => {
             name="clientEmail"
             control={control}
             rules={{
-              required: "Client email is required",
+              required: false,
               validate: {
-                isValid: (value) => getEmailErrorMessage(value) === null || getEmailErrorMessage(value),
+                isValid: (value) => !value || getEmailErrorMessage(value) === null || getEmailErrorMessage(value),
                 checkUniqueness: async (value) => {
                   if (!value) return true;
                   try {
@@ -602,7 +602,7 @@ const EditProposal = () => {
               <Box>
                 <TextField
                   {...field}
-                  label="Client Email *"
+                  label="Client Email"
                   type="email"
                   fullWidth
                   inputRef={fieldRefs.clientEmail}
