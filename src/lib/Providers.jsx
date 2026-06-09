@@ -22,7 +22,7 @@ const darkTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
   },
   components: {
     MuiButton: {
