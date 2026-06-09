@@ -515,6 +515,7 @@ const EditProposal = () => {
         dispatch(replacePage2Content(data));
         dispatch(setOriginalAiResponse(data.sections));
         dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
+        await handleSubmit();
       } else {
         throw new Error("Invalid format received from AI.");
       }
@@ -1205,20 +1206,6 @@ const EditProposal = () => {
           </>
         )}
       </Box>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

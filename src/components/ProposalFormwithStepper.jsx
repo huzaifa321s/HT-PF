@@ -328,7 +328,7 @@ const ProposalFormWithStepper = ({
         dispatch(replacePage2Content(data));
         dispatch(setOriginalAiResponse(data.sections));
         dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
-        handleNext(); // Move to the next step
+        handleSubmit(handleSubmitData, onInvalid)();
       } else {
         throw new Error("Invalid format received from AI.");
       }
