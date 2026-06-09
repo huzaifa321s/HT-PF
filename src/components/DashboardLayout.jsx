@@ -20,7 +20,8 @@ import {
   useMediaQuery,
   Chip,
   alpha,
-  Button
+  Button,
+  Badge
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -35,7 +36,9 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { usePathname, useRouter } from "next/navigation";
+import axiosInstance from "../utils/axiosInstance";
 
 const expandedDrawerWidth = 280;
 const collapsedDrawerWidth = 88;
@@ -55,6 +58,29 @@ export default function DashboardLayout({ children }) {
   
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const storedUser = JSON.parse(sessionStorage.getItem("user") || "null");
+      if (storedUser?.role === "admin") {
+        const res = await axiosInstance.get("/api/notifications/unread-count");
+        if (res.data?.success) {
+          setUnreadCount(res.data.unreadCount || 0);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching unread count:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (mounted && user?.role === "admin") {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [mounted, user, pathname]);
 
   useEffect(() => {
     setMounted(true);
@@ -109,6 +135,15 @@ export default function DashboardLayout({ children }) {
             label: "BDOs Management",
             path: "/admin/bdms",
             icon: <AssessmentIcon />,
+          },
+          {
+            label: "Notifications",
+            path: "/admin/notifications",
+            icon: (
+              <Badge badgeContent={unreadCount} color="error" variant="dot">
+                <NotificationsIcon />
+              </Badge>
+            ),
           },
         ]
       : []),
@@ -319,6 +354,30 @@ export default function DashboardLayout({ children }) {
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {role === "admin" && (
+                <Tooltip title="Notifications" arrow>
+                  <IconButton
+                    onClick={() => handleNav("/admin/notifications")}
+                    sx={{
+                      color: "#f8fafc",
+                      bgcolor: "#141414",
+                      borderRadius: 3,
+                      p: 1,
+                      border: "1px solid rgba(243, 168, 51, 0.2)",
+                      boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                      "&:hover": {
+                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                        borderColor: "#f3a833"
+                      }
+                    }}
+                  >
+                    <Badge badgeContent={unreadCount} color="error">
+                      <NotificationsIcon sx={{ fontSize: 20, color: unreadCount > 0 ? "#f3a833" : "#f8fafc" }} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
+
               <Tooltip title="Account" arrow>
                 <Button
                   onClick={handleProfileOpen}
