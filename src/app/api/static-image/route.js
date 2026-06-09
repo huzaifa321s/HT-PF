@@ -21,14 +21,9 @@ const ALLOWED_FILES = new Set([
   "new-header.png",
   "footer.png",
   "header.png",
-  "new.png",
   "about-HT.png",
   "proposal-contact.png",
   "ht-logo.png",
-  "wesd.png",
-  "sdf.png",
-  "2ndborder-layout.png",
-  "border-layout.png",
 ]);
 
 const MIME_MAP = {
