@@ -10,6 +10,7 @@ import {
   InfoOutlined,
   Close,
 } from "@mui/icons-material";
+import { usePathname } from "next/navigation";
 import { hideToast, clearUndoAction } from "../utils/toastSlice";
 
 const SEVERITY_CONFIG = {
@@ -55,6 +56,7 @@ export default function GlobalToast() {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const pathname = usePathname();
 
   const {
     open,
@@ -81,6 +83,10 @@ export default function GlobalToast() {
     }
   };
 
+  const isProposalStudio = pathname?.includes("/proposal-studio");
+  const topOffsetXs = isProposalStudio ? "80px !important" : "16px !important";
+  const topOffsetSm = isProposalStudio ? "90px !important" : "24px !important";
+
   return (
     <Snackbar
       open={open}
@@ -92,7 +98,7 @@ export default function GlobalToast() {
           : { vertical: "top", horizontal: "right" }
       }
       sx={{
-        top: { xs: "16px !important", sm: "24px !important" },
+        top: { xs: topOffsetXs, sm: topOffsetSm },
         right: { xs: "auto", sm: "24px !important" },
         left: isMobile ? "50% !important" : "auto",
         transform: isMobile ? "translateX(-50%) !important" : "none",
