@@ -56,6 +56,7 @@
     "html2pdf.js": "^0.12.1",
     "jspdf": "^3.0.3",
     "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "markdown-it": "^14.1.0",
     "markdown-list": "^0.1.0",
     "next": "16.2.6",
