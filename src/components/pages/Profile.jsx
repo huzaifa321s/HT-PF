@@ -10,17 +10,36 @@ import {
   Chip,
   Stack,
   Container,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { format } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../utils/toastSlice";
+import { Edit, Save, Cancel, Lock, Person, Email, CalendarMonth } from "@mui/icons-material";
 
 const Profile = () => {
+  const dispatch = useDispatch();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "Loading...",
     email: "loading@inhouse.com",
     updatedAt: null,
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Styles from ProposalFormwithStepper
   const colorScheme = {
@@ -31,15 +50,30 @@ const Profile = () => {
     lightBg: "linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%)",
   };
 
+  const inputStyle = {
+    mb: 3,
+    "& .MuiOutlinedInput-root": {
+      color: "#fff",
+      bgcolor: "rgba(255, 255, 255, 0.03)",
+      borderRadius: 2.5,
+      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.1)", borderWidth: 1, transition: "all 0.2s" },
+      "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
+      "&.Mui-focused fieldset": { borderColor: "#f3a833", borderWidth: 2 },
+    },
+    "& .MuiInputLabel-root": {
+      color: "#a0a0a0",
+      "&.Mui-focused": { color: "#f3a833" },
+    },
+  };
+
   // Fetch profile data role-wise
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const user = JSON.parse(sessionStorage.getItem("user") || "null");
-        const role = user?.role || "agent";
+        const userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+        setIsAdmin(userSession?.role === "admin");
 
         const endpoint = "/api/get-creds";
-
         const res = await axiosInstance.get(endpoint);
 
         if (res.data && res.data.success && res.data.data) {
@@ -61,6 +95,85 @@ const Profile = () => {
 
     fetchProfile();
   }, []);
+
+  const handleStartEdit = () => {
+    setEditForm({
+      name: profileData.name,
+      email: profileData.email,
+      password: "",
+      confirmPassword: "",
+    });
+    setFormError("");
+    setIsEditing(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    // Validate name and email
+    if (!editForm.name.trim()) {
+      setFormError("Name is required.");
+      return;
+    }
+    if (!editForm.email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editForm.email.trim())) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
+    // Validate password if supplied
+    if (editForm.password) {
+      if (editForm.password.length < 6) {
+        setFormError("Password must be at least 6 characters long.");
+        return;
+      }
+      if (editForm.password !== editForm.confirmPassword) {
+        setFormError("Passwords do not match.");
+        return;
+      }
+    }
+
+    setSaving(true);
+    try {
+      const res = await axiosInstance.put("/api/update-profile", {
+        name: editForm.name,
+        email: editForm.email,
+        password: editForm.password || undefined,
+      });
+
+      if (res.data && res.data.success) {
+        // Update local state
+        setProfileData({
+          name: res.data.data.name,
+          email: res.data.data.email,
+          updatedAt: res.data.data.updatedAt,
+        });
+
+        // Sync local storage user details (header updates dynamically)
+        const userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+        if (userSession) {
+          userSession.name = res.data.data.name;
+          userSession.email = res.data.data.email;
+          sessionStorage.setItem("user", JSON.stringify(userSession));
+        }
+
+        dispatch(showToast({ message: "Profile updated successfully!", severity: "success" }));
+        setIsEditing(false);
+      } else {
+        setFormError(res.data?.message || "Failed to update profile.");
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setFormError(err.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const formattedDate = profileData.updatedAt
     ? format(new Date(profileData.updatedAt), "dd MMMM yyyy, h:mm a")
@@ -114,156 +227,352 @@ const Profile = () => {
             },
           }}
         >
-          {/* Avatar */}
-          <Box
-            sx={{
-              position: "relative",
-              display: "inline-block",
-              mb: 3,
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                inset: -4,
-                borderRadius: "50%",
-                background: colorScheme.gradient,
-                opacity: 0.5,
-                filter: "blur(8px)",
-              }}
-            />
-            <Avatar
-              sx={{
-                width: 120,
-                height: 120,
-                position: "relative",
-                bgcolor: "#141414",
-                color: colorScheme.primary,
-                fontSize: 48,
-                fontWeight: 800,
-                border: "4px solid #fff",
-                boxShadow: "0 10px 30px rgba(243, 168, 51,0.2)",
-              }}
-            >
-              {profileData.name[0]?.toUpperCase() || "U"}
-            </Avatar>
-          </Box>
-
-          {/* Name */}
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 800,
-              background: colorScheme.gradient,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              letterSpacing: "-0.5px",
-              mb: 1,
-            }}
-          >
-            {profileData.name}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" fontWeight={500}>
-            Account Details
-          </Typography>
-
-          <Divider sx={{ my: 4, borderColor: "#e0e7ff" }} />
-
-          {/* Profile Info Cards */}
-          <Stack spacing={3} sx={{ mb: 4 }}>
-            {/* Email */}
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                background: "rgba(243, 168, 51,0.05)",
-                border: "1px solid rgba(243, 168, 51,0.1)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: "rgba(243, 168, 51,0.1)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
+          {isEditing ? (
+            /* ================= EDIT MODE ================= */
+            <Box component="form" onSubmit={handleSave} noValidate>
               <Typography
-                variant="body2"
+                variant="h4"
                 sx={{
-                  color: colorScheme.primary,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.5px",
-                  mb: 0.5,
+                  fontWeight: 800,
+                  background: colorScheme.gradient,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-0.5px",
+                  mb: 1,
                 }}
               >
-                Email Address
+                Edit Profile
               </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: "#f8fafc",
-                  wordBreak: "break-all",
+              <Typography variant="body1" color="text.secondary" fontWeight={500} sx={{ mb: 4 }}>
+                Update your administrative details below
+              </Typography>
+
+              <Divider sx={{ mb: 4, borderColor: "rgba(243,168,51,0.15)" }} />
+
+              {formError && (
+                <Alert
+                  severity="error"
+                  variant="outlined"
+                  sx={{
+                    mb: 3,
+                    borderRadius: 2.5,
+                    bgcolor: "rgba(244, 67, 54, 0.05)",
+                    borderColor: "rgba(244, 67, 54, 0.2)",
+                    color: "#f87171",
+                    textAlign: "left",
+                    "& .MuiAlert-icon": { color: "#f87171" },
+                  }}
+                >
+                  {formError}
+                </Alert>
+              )}
+
+              {/* Name Input */}
+              <TextField
+                label="Full Name"
+                fullWidth
+                required
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                InputProps={{
+                  startAdornment: <Person sx={{ color: "#a0a0a0", mr: 1.5 }} />,
                 }}
-              >
-                {profileData.email}
-              </Typography>
+                sx={inputStyle}
+              />
+
+              {/* Email Input */}
+              <TextField
+                label="Email Address"
+                fullWidth
+                required
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                InputProps={{
+                  startAdornment: <Email sx={{ color: "#a0a0a0", mr: 1.5 }} />,
+                }}
+                sx={inputStyle}
+              />
+
+              {/* New Password Input */}
+              <TextField
+                label="New Password"
+                fullWidth
+                type="password"
+                placeholder="Leave blank to keep current"
+                value={editForm.password}
+                onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                InputProps={{
+                  startAdornment: <Lock sx={{ color: "#a0a0a0", mr: 1.5 }} />,
+                }}
+                sx={inputStyle}
+                helperText="Password must be at least 6 characters"
+                FormHelperTextProps={{ sx: { color: "text.secondary", ml: 1 } }}
+              />
+
+              {/* Confirm Password Input */}
+              {editForm.password && (
+                <TextField
+                  label="Confirm New Password"
+                  fullWidth
+                  required
+                  type="password"
+                  value={editForm.confirmPassword}
+                  onChange={(e) => setEditForm({ ...editForm, confirmPassword: e.target.value })}
+                  InputProps={{
+                    startAdornment: <Lock sx={{ color: "#a0a0a0", mr: 1.5 }} />,
+                  }}
+                  sx={inputStyle}
+                />
+              )}
+
+              {/* Buttons Stack */}
+              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<Cancel />}
+                  onClick={() => setIsEditing(false)}
+                  disabled={saving}
+                  sx={{
+                    borderRadius: 3,
+                    px: 4,
+                    py: 1.2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    color: "#fff",
+                    borderColor: "rgba(255, 255, 255, 0.2)",
+                    "&:hover": {
+                      borderColor: "rgba(255, 255, 255, 0.4)",
+                      bgcolor: "rgba(255, 255, 255, 0.05)",
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={saving}
+                  startIcon={saving ? <CircularProgress size={18} sx={{ color: "#000" }} /> : <Save />}
+                  sx={{
+                    borderRadius: 3,
+                    px: 4,
+                    py: 1.2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    background: colorScheme.gradient,
+                    color: "#000",
+                    boxShadow: "0 8px 20px rgba(243, 168, 51, 0.2)",
+                    "&:hover": {
+                      background: colorScheme.hoverGradient,
+                      boxShadow: "0 12px 28px rgba(243, 168, 51, 0.3)",
+                    },
+                  }}
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </Stack>
             </Box>
-
-            {/* Last Updated */}
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                background: "rgba(76,175,80,0.05)",
-                border: "1px solid rgba(76,175,80,0.1)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: "rgba(76,175,80,0.1)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              <Typography
-                variant="body2"
+          ) : (
+            /* ================= VIEW MODE ================= */
+            <>
+              {/* Avatar */}
+              <Box
                 sx={{
-                  color: "#2e7d32",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.5px",
-                  mb: 0.5,
+                  position: "relative",
+                  display: "inline-block",
+                  mb: 3,
                 }}
               >
-                Last Updated
-              </Typography>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: -4,
+                    borderRadius: "50%",
+                    background: colorScheme.gradient,
+                    opacity: 0.5,
+                    filter: "blur(8px)",
+                  }}
+                />
+                <Avatar
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    position: "relative",
+                    bgcolor: "#141414",
+                    color: colorScheme.primary,
+                    fontSize: 48,
+                    fontWeight: 800,
+                    border: "4px solid #fff",
+                    boxShadow: "0 10px 30px rgba(243, 168, 51, 0.2)",
+                  }}
+                >
+                  {profileData.name[0]?.toUpperCase() || "U"}
+                </Avatar>
+              </Box>
+
+              {/* Name */}
               <Typography
-                variant="h6"
+                variant="h4"
                 sx={{
-                  fontWeight: 600,
-                  color: "#f8fafc",
+                  fontWeight: 800,
+                  background: colorScheme.gradient,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-0.5px",
+                  mb: 1,
                 }}
               >
-                {formattedDate}
+                {profileData.name}
               </Typography>
-            </Box>
-          </Stack>
+              <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                {isAdmin ? "Administrator Account" : "Account Details"}
+              </Typography>
 
-          {/* Status Chip */}
-          <Chip
-            label="Active User"
-            size="medium"
-            sx={{
-              fontWeight: 700,
-              px: 2,
-              py: 2.5,
-              borderRadius: 3,
-              background: "linear-gradient(135deg, #4caf50 0%, #388e3c 100%)",
-              color: "#fff",
-              boxShadow: "0 8px 20px rgba(76,175,80,0.3)",
-              fontSize: "0.9rem",
-            }}
-          />
+              <Divider sx={{ my: 4, borderColor: "rgba(243,168,51,0.15)" }} />
+
+              {/* Profile Info Cards */}
+              <Stack spacing={3} sx={{ mb: 4 }}>
+                {/* Email */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: "rgba(243, 168, 51,0.05)",
+                    border: "1px solid rgba(243, 168, 51,0.1)",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 3,
+                    textAlign: "left",
+                    "&:hover": {
+                      background: "rgba(243, 168, 51,0.1)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: "rgba(243, 168, 51,0.1)", color: colorScheme.primary, width: 48, height: 48 }}>
+                    <Email />
+                  </Avatar>
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: colorScheme.primary,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        fontSize: "0.75rem",
+                        letterSpacing: "0.5px",
+                        mb: 0.5,
+                      }}
+                    >
+                      Email Address
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#f8fafc",
+                        wordBreak: "break-all",
+                        fontSize: "1.1rem",
+                      }}
+                    >
+                      {profileData.email}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Last Updated */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: "rgba(76,175,80,0.05)",
+                    border: "1px solid rgba(76,175,80,0.1)",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 3,
+                    textAlign: "left",
+                    "&:hover": {
+                      background: "rgba(76,175,80,0.1)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: "rgba(76,175,80,0.1)", color: "#4caf50", width: 48, height: 48 }}>
+                    <CalendarMonth />
+                  </Avatar>
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#4caf50",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        fontSize: "0.75rem",
+                        letterSpacing: "0.5px",
+                        mb: 0.5,
+                      }}
+                    >
+                      Last Updated
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#f8fafc",
+                        fontSize: "1.1rem",
+                      }}
+                    >
+                      {formattedDate}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Stack>
+
+              {/* Status & Actions Stack */}
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center" alignItems="center" sx={{ mt: 2 }}>
+                <Chip
+                  label={isAdmin ? "System Admin" : "Active Agent"}
+                  size="medium"
+                  sx={{
+                    fontWeight: 700,
+                    px: 2,
+                    py: 2.5,
+                    borderRadius: 3,
+                    background: "linear-gradient(135deg, #4caf50 0%, #388e3c 100%)",
+                    color: "#fff",
+                    boxShadow: "0 8px 20px rgba(76,175,80,0.3)",
+                    fontSize: "0.9rem",
+                  }}
+                />
+                {isAdmin && (
+                  <Button
+                    variant="contained"
+                    startIcon={<Edit />}
+                    onClick={handleStartEdit}
+                    sx={{
+                      fontWeight: 700,
+                      borderRadius: 3,
+                      px: 4,
+                      py: 1.2,
+                      textTransform: "none",
+                      background: colorScheme.gradient,
+                      color: "#000",
+                      boxShadow: "0 8px 20px rgba(243, 168, 51,0.2)",
+                      "&:hover": {
+                        background: colorScheme.hoverGradient,
+                        boxShadow: "0 12px 28px rgba(243, 168, 51, 0.3)",
+                      },
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
+              </Stack>
+            </>
+          )}
         </Paper>
       </Container>
     </Box>
