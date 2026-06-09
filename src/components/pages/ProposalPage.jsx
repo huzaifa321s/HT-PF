@@ -306,6 +306,9 @@ const ProposalPage = () => {
           `/api/proposals/update-proposal/${id}`,
           {
             pdfPath: uploadRes.data.filePath,
+            data: {
+              selectedCurrency: proposalData.selectedCurrency || "USD",
+            }
           }
         );
       }
