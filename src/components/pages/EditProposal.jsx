@@ -372,8 +372,6 @@ const EditProposal = () => {
   const stepFields = {
     0: ["clientName", "clientEmail"], // Added clientEmail as required
     1: ["projectTitle"],
-    2: [],
-    3: [],
   };
 
   const sectionHeader = (icon, title) => (
@@ -518,7 +516,6 @@ const EditProposal = () => {
         dispatch(replacePage2Content(data));
         dispatch(setOriginalAiResponse(data.sections));
         dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
-        setActiveStep(2);
       } else {
         throw new Error("Invalid format received from AI.");
       }
@@ -914,18 +911,6 @@ const EditProposal = () => {
       ),
     },
 
-    {
-      label: "Review & Continue",
-      icon: <EditDocument />,
-      content: (
-        <Box sx={{ mx: { xs: -1, sm: 0 }, px: { xs: 0, sm: 0 } }}>
-          {sectionHeader(<EditDocument />, "Review & Continue")}
-          <Typography variant="h6" sx={{ color: "#f8fafc", mt: 2, mb: 1 }}>
-            You have reached the final step! Click below to save your changes and open the Proposal Studio to visually edit and generate your PDF.
-          </Typography>
-        </Box>
-      ),
-    },
   ];
 
   return (
@@ -1133,35 +1118,13 @@ const EditProposal = () => {
                           </Button>
                         )}
                         <Box>
-                          {index === 1 && (
-                            <Button
-                              component={motion.button}
-                              variants={secondaryButtonVariants}
-                              whileHover="hover"
-                              whileTap="tap"
-                              onClick={() => handleNext(2)}
-                              variant="outlined"
-                              sx={{
-                                borderRadius: 10,
-                                mr: 2,
-                                borderColor: colorScheme.primary,
-                                color: colorScheme.primary,
-                                "&:hover": {
-                                  borderColor: colorScheme.secondary,
-                                  background: "rgba(243, 168, 51, 0.1)",
-                                },
-                              }}
-                            >
-                              Additional Details
-                            </Button>
-                          )}
                           {index < steps.length - 1 && (
                             <Button
                               component={motion.button}
                               variants={primaryButtonVariants}
                               whileHover="hover"
                               whileTap="tap"
-                              onClick={() => handleNext(index === 1 ? 3 : index + 1)}
+                              onClick={() => handleNext()}
                               endIcon={<ArrowForward />}
                               variant="contained"
                               sx={{
@@ -1169,7 +1132,31 @@ const EditProposal = () => {
                                 borderRadius: 10,
                               }}
                             >
-                              {index === 1 ? "Review & Continue" : "Next"}
+                              Next
+                            </Button>
+                          )}
+                          {index === steps.length - 1 && (
+                            <Button
+                              component={motion.button}
+                              variants={primaryButtonVariants}
+                              whileHover="hover"
+                              whileTap="tap"
+                              variant="contained"
+                              startIcon={<Save />}
+                              onClick={handleSubmit}
+                              disabled={loading}
+                              sx={{
+                                background: colorScheme.gradient,
+                                borderRadius: 10,
+                                px: 4,
+                                fontWeight: 700,
+                                "&:hover": {
+                                  background: colorScheme.hoverGradient,
+                                  boxShadow: "0 12px 32px rgba(243, 168, 51, 0.4)",
+                                },
+                              }}
+                            >
+                              {loading ? "Saving & Redirecting..." : "Save & Continue to Studio"}
                             </Button>
                           )}
                         </Box>

@@ -129,9 +129,6 @@ const ProposalFormWithStepper = ({
   const stepFields = {
     0: ["clientName", "clientEmail"],
     1: ["brandName", "projectTitle"],
-    2: [],
-    3: [],
-    4: [],
   };
 
   // ✅ Scroll to first error field
@@ -849,58 +846,6 @@ const ProposalFormWithStepper = ({
         </>
       ),
     },
-
-    {
-      label: "Review & Continue",
-      icon: <Send />,
-      content: (
-        <>
-          {/* PDF ACTIONS */}
-          <Box
-            sx={{
-              textAlign: "center",
-              mt: 4,
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "#f8fafc", mb: 3 }}>
-              You have reached the final step! Click below to save your draft and open the Proposal Studio to visually edit and generate your PDF.
-            </Typography>
-            <Grid item xs={12} md={6} component={motion.div} variants={fieldVariants}>
-              <Button
-                onClick={() => handleSubmit(handleSubmitData, onInvalid)()}
-                variant="contained"
-                size="large"
-                startIcon={isLoading ? <Timeline /> : <Send />}
-                disabled={isLoading}
-                sx={{
-                  px: { xs: 3, sm: 6 },
-                  py: { xs: 1.5, sm: 2 },
-                  borderRadius: 10,
-                  fontSize: { xs: "0.85rem", sm: "1.1rem" },
-                  fontWeight: 700,
-                  boxShadow: 6,
-                  background: colorScheme.gradient,
-                  width: { xs: "100%", sm: "auto" },
-                  maxWidth: { xs: "100%", sm: "none" },
-                  "&:hover": {
-                    background: colorScheme.hoverGradient,
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(243, 168, 51, 0.5)",
-                  },
-                }}
-              >
-                {isLoading
-                  ? "Saving & Redirecting..."
-                  : "Save & Continue to Studio"}
-              </Button>
-            </Grid>
-          </Box>
-        </>
-      ),
-    },
   ];
 
   const steps = allSteps.filter(step => step.label !== "Additional Details" || showAdditionalDetails);
@@ -1121,6 +1066,31 @@ const ProposalFormWithStepper = ({
                               }}
                             >
                               Next
+                            </Button>
+                          )}
+                          {index === steps.length - 1 && (
+                            <Button
+                              component={motion.button}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleSubmit(handleSubmitData, onInvalid)()}
+                              variant="contained"
+                              disabled={isLoading}
+                              startIcon={isLoading ? <Timeline /> : <Send />}
+                              sx={{
+                                background: colorScheme.gradient,
+                                borderRadius: 10,
+                                px: { xs: 3, sm: 6 },
+                                py: { xs: 1.5, sm: 2 },
+                                fontWeight: 700,
+                                width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                "&:hover": {
+                                  background: colorScheme.hoverGradient,
+                                  boxShadow: "0 12px 32px rgba(243, 168, 51, 0.4)",
+                                },
+                              }}
+                            >
+                              {isLoading ? "Saving & Redirecting..." : "Save & Continue to Studio"}
                             </Button>
                           )}
                         </Box>
