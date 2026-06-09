@@ -271,9 +271,69 @@ export default function ProposalStudio() {
       const blob = pdfDoc.output("blob");
       pdfDoc.save(fileName);
 
-      const pdfPages = {
-        page1,
-        page2,
+      // 2. Scan and upload base64 images to Google Drive before saving to DB
+      let updatedPage1 = page1 ? JSON.parse(JSON.stringify(page1)) : null;
+      let updatedPage2 = page2 ? JSON.parse(JSON.stringify(page2)) : null;
+
+      // Helper to convert base64 to File
+      const base64ToFile = (base64String, filename) => {
+        const arr = base64String.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+      };
+
+      const { uploadImageFile } = await import("../../utils/uploadImage");
+
+      // Check page 1 logo
+      if (updatedPage1?.clientLogo && updatedPage1.clientLogo.startsWith("data:image/")) {
+        try {
+          dispatch(showToast({ message: "Uploading client logo to Google Drive...", severity: "info" }));
+          const file = base64ToFile(updatedPage1.clientLogo, "client-logo");
+          const url = await uploadImageFile(file);
+          updatedPage1.clientLogo = url;
+          // Sync with Redux for future edit sessions
+          const { setClientLogo } = await import("../../utils/page1Slice");
+          dispatch(setClientLogo(url));
+        } catch (err) {
+          console.error("Failed to upload client logo:", err);
+          dispatch(showToast({ message: "Failed to upload logo to Google Drive", severity: "error" }));
+        }
+      }
+
+      // Check page 2 (About Page) image elements
+      if (updatedPage2?.elements?.length > 0) {
+        const updatedElements = [];
+        for (const el of updatedPage2.elements) {
+          if (el.type === "image" && el.content && el.content.startsWith("data:image/")) {
+            try {
+              dispatch(showToast({ message: "Uploading block image to Google Drive...", severity: "info" }));
+              const file = base64ToFile(el.content, `about-image-${el.id}`);
+              const url = await uploadImageFile(file);
+              updatedElements.push({ ...el, content: url });
+              // Sync with Redux for future edit sessions
+              const { editElementContent } = await import("../../utils/page3Slice");
+              dispatch(editElementContent({ id: el.id, content: url }));
+            } catch (err) {
+              console.error(`Failed to upload element ${el.id} image:`, err);
+              dispatch(showToast({ message: "Failed to upload image block to Google Drive", severity: "error" }));
+              updatedElements.push(el);
+            }
+          } else {
+            updatedElements.push(el);
+          }
+        }
+        updatedPage2.elements = updatedElements;
+      }
+
+      const finalPdfPages = {
+        page1: updatedPage1,
+        page2: updatedPage2,
         page3,
         pricingPage,
         paymentTerms,
@@ -287,7 +347,7 @@ export default function ProposalStudio() {
       if (id === "new") {
         const createRes = await axiosInstance.post("/api/proposals/create-proposal", {
           data: finalData,
-          pdfPages
+          pdfPages: finalPdfPages
         });
         if (!createRes.data.success) throw new Error("Failed to create proposal record");
         currentId = createRes.data.data._id;
@@ -313,7 +373,7 @@ export default function ProposalStudio() {
           `/api/proposals/update-proposal/${currentId}`,
           {
             data: finalData, // persist live edits
-            pdfPages,
+            pdfPages: finalPdfPages,
             pdfPath: uploadRes.data.filePath,
           }
         );

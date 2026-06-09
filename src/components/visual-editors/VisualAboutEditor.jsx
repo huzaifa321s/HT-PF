@@ -187,13 +187,20 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
-        const imageUrl = await uploadImageFile(file);
-        dispatch(editElementContent({ id, content: imageUrl }));
-        dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64Url = reader.result;
+          dispatch(editElementContent({ id, content: base64Url }));
+          dispatch(showToast({ message: "Image added to UI successfully!", severity: "success" }));
+        };
+        reader.onerror = (err) => {
+          console.error(err);
+          dispatch(showToast({ message: "Failed to read image file", severity: "error" }));
+        };
       } catch (err) {
         console.error(err);
-        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+        dispatch(showToast({ message: "Failed to load image", severity: "error" }));
       }
     }
   };
@@ -370,17 +377,24 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
           {!hasImage && (
             <Button variant="outlined" component="label" startIcon={<ImageIcon />} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
               Add Image Block
-              <input type="file" hidden accept="image/*" onChange={async (e) => {
+              <input type="file" hidden accept="image/*" onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) {
                   try {
-                    dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
-                    const imageUrl = await uploadImageFile(file);
-                    dispatch(addElement({ type: "image", content: imageUrl }));
-                    dispatch(showToast({ message: "Image uploaded to Google Drive!", severity: "success" }));
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                      const base64Url = reader.result;
+                      dispatch(addElement({ type: "image", content: base64Url }));
+                      dispatch(showToast({ message: "Image block added successfully!", severity: "success" }));
+                    };
+                    reader.onerror = (err) => {
+                      console.error(err);
+                      dispatch(showToast({ message: "Failed to read image file", severity: "error" }));
+                    };
                   } catch (err) {
                     console.error(err);
-                    dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+                    dispatch(showToast({ message: "Failed to load image", severity: "error" }));
                   }
                 }
               }} />

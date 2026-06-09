@@ -122,14 +122,21 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         return;
       }
       try {
-        dispatch(showToast({ message: "Uploading to Google Drive...", severity: "info" }));
-        const imageUrl = await uploadImageFile(file);
-        dispatch(setClientLogo(imageUrl));
-        setLocalLogo(imageUrl);
-        dispatch(showToast({ message: "Client Logo uploaded to Google Drive!", severity: "success" }));
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64Url = reader.result;
+          dispatch(setClientLogo(base64Url));
+          setLocalLogo(base64Url);
+          dispatch(showToast({ message: "Logo added to UI successfully!", severity: "success" }));
+        };
+        reader.onerror = (err) => {
+          console.error(err);
+          dispatch(showToast({ message: "Failed to read logo file", severity: "error" }));
+        };
       } catch (err) {
         console.error(err);
-        dispatch(showToast({ message: err.message || "Failed to upload to Google Drive", severity: "error" }));
+        dispatch(showToast({ message: "Failed to load logo", severity: "error" }));
       }
     }
   };
