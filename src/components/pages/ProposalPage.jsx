@@ -130,6 +130,23 @@ const ProposalPage = () => {
       if (!proposalData) {
         throw new Error("Proposal data not found");
       }
+
+      // If PDF already exists, download it instantly and skip generation!
+      if (proposalData.pdfPath) {
+        const downloadUrl = proposalData.pdfPath.includes("?") 
+          ? `${proposalData.pdfPath}&download=1` 
+          : `${proposalData.pdfPath}?download=1`;
+        
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.setAttribute("download", "");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setPdfGeneratingId(null);
+        return;
+      }
       
       // 2. Seed Redux store with proposal metadata and page details
       dispatch(updateField({ field: "clientName", value: proposalData.clientName }));
