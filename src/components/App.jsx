@@ -93,7 +93,7 @@ export default function App() {
     }
   }, [errors]);
 
-  const generatePdfActual = async (data, currency) => {
+  const generatePdfActual = async (data) => {
     setLoading(true);
 
     try {

@@ -146,7 +146,6 @@ const EditProposal = () => {
     yourName: "Your Name",
     yourEmail: "your@email.com",
     date: new Date().toISOString().split("T")[0],
-    selectedCurrency: "",
     projectCategory: "",
     customProjectCategory: "",
     projectBrief: "",
@@ -208,7 +207,6 @@ const EditProposal = () => {
           yourName: "Your Name",
           yourEmail: "your@email.com",
           pdfPages: data.pdfPages,
-          selectedCurrency: data.selectedCurrency,
           projectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? (data.projectCategory || "") : "Other",
           customProjectCategory: (!data.projectCategory || PREDEFINED_CATEGORIES.includes(data.projectCategory)) ? "" : data.projectCategory,
         };
@@ -217,7 +215,6 @@ const EditProposal = () => {
           updatedData = { ...updatedData, ...proposalState };
         }
 
-        setSelectedCurrency(updatedData.selectedCurrency || data.selectedCurrency);
         setFormData(updatedData);
         setBaseCost(updatedData.additionalCosts || "");
         reset(updatedData);
@@ -398,47 +395,20 @@ const EditProposal = () => {
     </Box>
   );
 
-  const [selectedCurrency, setSelectedCurrency] = useState();
-  console.log("formData.selectedCurrency", selectedCurrency);
-  const handleCurrencyChange = (event, newCurrency) => {
-    if (newCurrency !== null) {
-      setSelectedCurrency(newCurrency);
-      // Agar form data ko update karna hai:
-      formData.selectedCurrency = newCurrency;
-    }
-  };
-
-  // Format number in words function for currency display
-  const formatNumberInWords = (value, currency) => {
+  // Format number in words function
+  const formatNumberInWords = (value) => {
     if (!value) return "";
 
     const number = parseInt(value.toString().replace(/[^0-9]/g, ""), 10);
     if (isNaN(number) || number === 0) return "";
 
-    // Common formatting for USD, GBP, EUR, AED
-    if (["USD", "GBP", "EUR", "AED"].includes(currency)) {
-      if (number >= 1000000000) {
-        return `${(number / 1000000000).toFixed(2)}B`;
-      } else if (number >= 1000000) {
-        return `${(number / 1000000).toFixed(2)}M`;
-      } else if (number >= 1000) {
-        return `${(number / 1000).toFixed(2)}K`;
-      }
-      return number.toLocaleString();
+    if (number >= 1000000000) {
+      return `${(number / 1000000000).toFixed(2)}B`;
+    } else if (number >= 1000000) {
+      return `${(number / 1000000).toFixed(2)}M`;
+    } else if (number >= 1000) {
+      return `${(number / 1000).toFixed(2)}K`;
     }
-
-    // PKR - Lakh & Crore
-    if (currency === "PKR") {
-      if (number >= 10000000) {
-        return `${(number / 10000000).toFixed(2)} Crore`;
-      } else if (number >= 100000) {
-        return `${(number / 100000).toFixed(2)} Lakh`;
-      } else if (number >= 1000) {
-        return `${(number / 1000).toFixed(2)}K`;
-      }
-      return number.toLocaleString();
-    }
-
     return number.toLocaleString();
   };
 
@@ -521,7 +491,6 @@ const EditProposal = () => {
       setLoading(true);
       const dataToSend = {
         ...formDataToSave, 
-        selectedCurrency,
         _id: id,
         isUnsavedEdit: true // Flag to tell Proposal Studio to prefer this data over the DB
       };

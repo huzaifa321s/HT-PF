@@ -250,10 +250,9 @@ const ProposalFormWithStepper = ({
     // Fields businessDescription and proposedSolution have been removed from backend schema
 
     console.log("Form data submitted:", submitData);
-    console.log("selected", selectedCurrency);
-    dispatch(setFullFormData({ ...submitData, selectedCurrency, isUnsavedEdit: true }));
+    dispatch(setFullFormData({ ...submitData, isUnsavedEdit: true }));
 
-    await handleSubmitForm(submitData, selectedCurrency);
+    await handleSubmitForm(submitData);
   };
 
   const handleGenerateAI = async () => {
@@ -341,47 +340,20 @@ const ProposalFormWithStepper = ({
     return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
   // Updated formatNumberInWords function jo teeno currencies ko handle kare
-  const formatNumberInWords = (value, currency) => {
+  const formatNumberInWords = (value) => {
     if (!value) return "";
 
     const number = parseInt(value.toString().replace(/[^0-9]/g, ""), 10);
     if (isNaN(number) || number === 0) return "";
 
-    // Common formatting for USD, GBP, EUR, AED
-    if (["USD", "GBP", "EUR", "AED"].includes(currency)) {
-      if (number >= 1000000000) {
-        return `${(number / 1000000000).toFixed(2)}B`;
-      } else if (number >= 1000000) {
-        return `${(number / 1000000).toFixed(2)}M`;
-      } else if (number >= 1000) {
-        return `${(number / 1000).toFixed(2)}K`;
-      }
-      return number.toLocaleString();
+    if (number >= 1000000000) {
+      return `${(number / 1000000000).toFixed(2)}B`;
+    } else if (number >= 1000000) {
+      return `${(number / 1000000).toFixed(2)}M`;
+    } else if (number >= 1000) {
+      return `${(number / 1000).toFixed(2)}K`;
     }
-
-    // PKR - Lakh & Crore
-    if (currency === "PKR") {
-      if (number >= 10000000) {
-        return `${(number / 10000000).toFixed(2)} Crore`;
-      } else if (number >= 100000) {
-        return `${(number / 100000).toFixed(2)} Lakh`;
-      } else if (number >= 1000) {
-        return `${(number / 1000).toFixed(2)}K`;
-      }
-      return number.toLocaleString();
-    }
-
     return number.toLocaleString();
-  };
-
-  // Add this state at the top of your component
-  const [selectedCurrency, setSelectedCurrency] = useState("USD");
-
-  // Add this handler function
-  const handleCurrencyChange = (event, newCurrency) => {
-    if (newCurrency !== null) {
-      setSelectedCurrency(newCurrency);
-    }
   };
   const allSteps = [
     {

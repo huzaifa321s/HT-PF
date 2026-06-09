@@ -99,7 +99,6 @@ export default function ProposalStudio() {
           if (data?.additionalCosts) dispatch(updateField({ field: "additionalCosts", value: data.additionalCosts }));
           if (data?.chargeAmount) dispatch(updateField({ field: "chargeAmount", value: data.chargeAmount }));
           if (data?.advancePercent != null) dispatch(updateField({ field: "advancePercent", value: data.advancePercent }));
-          if (data?.selectedCurrency) dispatch(updateField({ field: "selectedCurrency", value: data.selectedCurrency }));
           if (data?.brandName) dispatch(updateField({ field: "brandName", value: data.brandName }));
         }
       } catch (err) {
@@ -288,7 +287,6 @@ export default function ProposalStudio() {
       if (id === "new") {
         const createRes = await axiosInstance.post("/api/proposals/create-proposal", {
           data: finalData,
-          selectedCurrency: reduxProposal?.selectedCurrency || "USD",
           pdfPages
         });
         if (!createRes.data.success) throw new Error("Failed to create proposal record");
@@ -564,12 +562,9 @@ export default function ProposalStudio() {
                       Total Cost
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#10b981", mt: 0.5 }}>
-                      {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) === "USD" ? "$" : "₨ "}{rawTotal.toLocaleString ? rawTotal.toLocaleString() : rawTotal}
+                      ${rawTotal.toLocaleString ? rawTotal.toLocaleString() : rawTotal}
                     </Typography>
                   </Box>
-                  {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) && (
-                    <Chip size="small" label={formData?.selectedCurrency || reduxProposal?.selectedCurrency} sx={{ bgcolor: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontWeight: "bold" }} />
-                  )}
                 </Box>
               );
             })()}

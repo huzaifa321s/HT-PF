@@ -87,11 +87,11 @@ const ProposalDetails = () => {
         visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
     };
 
-    const formatCurrency = (amount, currencyCode) => {
+    const formatCurrency = (amount) => {
         try {
             return new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: currencyCode || "USD",
+                currency: "USD",
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
             }).format(amount || 0);
@@ -398,7 +398,7 @@ const ProposalDetails = () => {
                                                     Total Cost
                                                 </Typography>
                                                 <Typography variant="h4" fontWeight={800} sx={{ color: "#fff", mt: 1 }}>
-                                                    {formatCurrency(proposal?.additionalCosts, proposal?.selectedCurrency)}
+                                                    {formatCurrency(proposal?.additionalCosts)}
                                                 </Typography>
                                             </Box>
                                         </Grid>

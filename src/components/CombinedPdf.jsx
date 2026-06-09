@@ -29,7 +29,6 @@ const CombinedPdfDocument = ({
   showLabels = false,
   clientName = "",
   date = "",
-  selectedCurrency = "$",
 }) => {
 
   return (
@@ -74,7 +73,7 @@ const CombinedPdfDocument = ({
           elements={pricingPage?.elements}
           gridPackages={pricingPage?.gridPackages}
           showLabels={showLabels}
-          globalCurrency={selectedCurrency}
+          globalCurrency="$"
         />
       )}
 

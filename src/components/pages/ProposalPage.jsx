@@ -137,7 +137,6 @@ const ProposalPage = () => {
       dispatch(updateField({ field: "additionalCosts", value: proposalData.additionalCosts }));
       dispatch(updateField({ field: "chargeAmount", value: proposalData.chargeAmount }));
       dispatch(updateField({ field: "advancePercent", value: proposalData.advancePercent }));
-      dispatch(updateField({ field: "selectedCurrency", value: proposalData.selectedCurrency }));
       dispatch(updateField({ field: "brandName", value: proposalData.brandName }));
 
       if (proposalData.pdfPages?.page1) dispatch(setDBData(proposalData.pdfPages.page1));
@@ -306,9 +305,6 @@ const ProposalPage = () => {
           `/api/proposals/update-proposal/${id}`,
           {
             pdfPath: uploadRes.data.filePath,
-            data: {
-              selectedCurrency: proposalData.selectedCurrency || "USD",
-            }
           }
         );
       }

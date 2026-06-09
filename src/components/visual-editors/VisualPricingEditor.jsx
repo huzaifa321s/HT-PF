@@ -251,7 +251,7 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
           />
 
           <EditableText
-            value={pkg.price ? `${pkg.currency || "PKR"} ${pkg.price}` : ""}
+            value={pkg.price ? `${pkg.currency || "$"} ${pkg.price}` : ""}
             fallback="0 / Month"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("price", e)}
