@@ -14,6 +14,7 @@ import {
   Button,
   Alert,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
 import { format } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
@@ -40,6 +41,59 @@ const Profile = () => {
   });
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const [emailExists, setEmailExists] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [debouncedEmail, setDebouncedEmail] = useState("");
+
+  // Debounce email input
+  useEffect(() => {
+    if (!isEditing) {
+      setDebouncedEmail("");
+      setEmailExists(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDebouncedEmail(editForm.email.trim());
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [editForm.email, isEditing]);
+
+  // Check email uniqueness on debounced email change
+  useEffect(() => {
+    const checkEmail = async () => {
+      const email = debouncedEmail.toLowerCase();
+      if (!email) {
+        setEmailExists(false);
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailExists(false);
+        return;
+      }
+
+      setCheckingEmail(true);
+      try {
+        const userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+        const res = await axiosInstance.get("/api/check-user-email", {
+          params: { email, excludeId: userSession?.id },
+        });
+        if (res.data?.success && res.data.exists) {
+          setEmailExists(true);
+        } else {
+          setEmailExists(false);
+        }
+      } catch (err) {
+        console.error("Error checking user email:", err);
+      } finally {
+        setCheckingEmail(false);
+      }
+    };
+
+    checkEmail();
+  }, [debouncedEmail]);
 
   // Styles from ProposalFormwithStepper
   const colorScheme = {
@@ -290,7 +344,14 @@ const Profile = () => {
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                 InputProps={{
                   startAdornment: <Email sx={{ color: "#a0a0a0", mr: 1.5 }} />,
+                  endAdornment: checkingEmail && (
+                    <InputAdornment position="end">
+                      <CircularProgress size={20} sx={{ color: "#f3a833" }} />
+                    </InputAdornment>
+                  )
                 }}
+                error={emailExists}
+                helperText={emailExists ? "This email address is already in use by another account." : ""}
                 sx={inputStyle}
               />
 
@@ -352,7 +413,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={saving}
+                  disabled={saving || emailExists}
                   startIcon={saving ? <CircularProgress size={18} sx={{ color: "#000" }} /> : <Save />}
                   sx={{
                     borderRadius: 3,

@@ -28,6 +28,7 @@ import {
     Grid,
     Card,
     CardContent,
+    InputAdornment,
   } from "@mui/material";
 import { motion } from "framer-motion";
 import EditIcon from "@mui/icons-material/Edit";
@@ -61,6 +62,53 @@ const BDMRegisterPage = () => {
   const [pages, setPages] = useState(1);
   const [limit] = useState(10); // you can adjust default page size
   const [sortBy, setSortBy] = useState("latest"); // latest, oldest, most-proposals
+
+  const [emailExists, setEmailExists] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [debouncedEmail, setDebouncedEmail] = useState("");
+
+  // Debounce email input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedEmail(formData.email.trim());
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.email]);
+
+  // Check email uniqueness on debounced email change
+  useEffect(() => {
+    const checkEmail = async () => {
+      const email = debouncedEmail.toLowerCase();
+      if (!email) {
+        setEmailExists(false);
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailExists(false);
+        return;
+      }
+
+      setCheckingEmail(true);
+      try {
+        const res = await axiosInstance.get("/api/check-user-email", {
+          params: { email, excludeId: editId || undefined },
+        });
+        if (res.data?.success && res.data.exists) {
+          setEmailExists(true);
+        } else {
+          setEmailExists(false);
+        }
+      } catch (err) {
+        console.error("Error checking user email:", err);
+      } finally {
+        setCheckingEmail(false);
+      }
+    };
+
+    checkEmail();
+  }, [debouncedEmail, editId]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 24 },
@@ -241,7 +289,7 @@ const BDMRegisterPage = () => {
     ? formData.name !== selectedBdo.name || formData.email !== selectedBdo.email || formData.password !== ""
     : true;
   const isFormValid = editId ? (formData.name && formData.email && hasChanges) : (formData.name && formData.email && formData.password);
-  const isSubmitDisabled = !isFormValid;
+  const isSubmitDisabled = !isFormValid || emailExists || checkingEmail;
 
   return (
     <Box
@@ -385,6 +433,15 @@ const BDMRegisterPage = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     variant="outlined"
+                    error={emailExists}
+                    helperText={emailExists ? "This email address is already in use by another account." : ""}
+                    InputProps={{
+                      endAdornment: checkingEmail && (
+                        <InputAdornment position="end">
+                          <CircularProgress size={20} sx={{ color: "#f3a833" }} />
+                        </InputAdornment>
+                      )
+                    }}
                     sx={{
                       mb: 2,
                       "& .MuiOutlinedInput-root": {
@@ -399,6 +456,9 @@ const BDMRegisterPage = () => {
                         },
                         "&.Mui-focused fieldset": {
                           borderColor: "#f3a833",
+                        },
+                        "&.Mui-error fieldset": {
+                          borderColor: "#d32f2f",
                         },
                       },
                     }}
