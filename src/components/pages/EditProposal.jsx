@@ -171,7 +171,6 @@ const EditProposal = () => {
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const [existingProposalsCount, setExistingProposalsCount] = useState(0); // Added for multiple proposals limit
   const [limitExceeded, setLimitExceeded] = useState(false); // Added for multiple proposals limit
-  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
   const formDataToSave = {
     clientName: formData.clientName,
