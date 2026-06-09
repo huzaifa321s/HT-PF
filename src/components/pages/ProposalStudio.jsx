@@ -532,42 +532,6 @@ export default function ProposalStudio() {
               )}
             </Box>
 
-            {/* Total Cost */}
-            {(() => {
-              // Calculate dynamic total from gridPackages if they exist
-              let dynamicTotal = 0;
-              if (pricingPage?.gridPackages?.length > 0) {
-                pricingPage.gridPackages.forEach(pkg => {
-                  const cost = parseFloat(String(pkg.price).replace(/[^0-9.]/g, ""));
-                  if (!isNaN(cost)) dynamicTotal += cost;
-                });
-              }
-
-              // Respect true value from the database ONLY
-              let rawTotal = "";
-              if (dynamicTotal > 0) {
-                rawTotal = dynamicTotal;
-              } else if (formData?.additionalCosts !== undefined && formData?.additionalCosts !== null && formData?.additionalCosts !== "") {
-                rawTotal = formData.additionalCosts;
-              } else if (formData?.chargeAmount !== undefined && formData?.chargeAmount !== null && formData?.chargeAmount !== "") {
-                rawTotal = formData.chargeAmount;
-              }
-
-              if (rawTotal === "" || rawTotal === null) return null;
-
-              return (
-                <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                      Total Cost
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#10b981", mt: 0.5 }}>
-                      ${rawTotal.toLocaleString ? rawTotal.toLocaleString() : rawTotal}
-                    </Typography>
-                  </Box>
-                </Box>
-              );
-            })()}
 
             {/* Date */}
             <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
