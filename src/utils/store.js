@@ -5,15 +5,11 @@ import { combineReducers } from "redux";
 import { debouncedPushToHistory, historyManager } from "./historyManager";
 import toastReducer from "./toastSlice";
 import appReducer from "./appSlice";
-import formReducer from "./formDataSlice";
 import page1SliceReducer from "./page1Slice";
 import page2Reducer from "./page2Slice";
 import page3Reducer from "./page3Slice";
 import pricingReducer from "./pricingReducer";
 import paymentTermsReducer from "./paymentTermsPageSlice";
-import blankContentReducer from "./blankPageSlice";
-import customContentReducer from "./customContentSlice";
-import pagesReducer from "./pagesSlice";
 import axiosInstance from "./axiosInstance";
 import proposalReducer from "./proposalSlice";
 import pdfNavigationReducer from "./pdfNavigationSlice";
@@ -21,15 +17,11 @@ import pdfNavigationReducer from "./pdfNavigationSlice";
 const mainReducer = combineReducers({
   toast: toastReducer,
   app: appReducer,
-  form: formReducer,
   page1Slice: page1SliceReducer,
   page2: page2Reducer,
   page3: page3Reducer,
   pricing: pricingReducer,
   paymentTerms: paymentTermsReducer,
-  blankContent: blankContentReducer,
-  customContent: customContentReducer,
-  pages: pagesReducer,
   proposal: proposalReducer,
   pdfNavigation: pdfNavigationReducer,
 });
@@ -83,12 +75,8 @@ const makeStore = () => {
       key: persistKey,
       storage: storageSession,
       whitelist: [
-        "form",
-        "pages",
         "pricing",
         "paymentTerms",
-        "blankContent",
-        "customContent",
         "page1Slice",
         "page2",
         "page3",
@@ -131,10 +119,6 @@ export const loadStoreFromBackend = async (userId, dispatch) => {
     const data = res.data;
     if (!data) return;
 
-    if (data.form)
-      dispatch({ type: "form/setForm", payload: data.form });
-    if (data.pages)
-      dispatch({ type: "pages/setPages", payload: data.pages });
     if (data.page1Slice)
       dispatch({ type: "page1Slice/setPage1", payload: data.page1Slice });
     if (data.page2)
@@ -145,10 +129,6 @@ export const loadStoreFromBackend = async (userId, dispatch) => {
       dispatch({ type: "pricing/setPricing", payload: data.pricing });
     if (data.paymentTerms)
       dispatch({ type: "paymentTerms/setPaymentTerms", payload: data.paymentTerms });
-    if (data.blankContent)
-      dispatch({ type: "blankContent/setBlankContent", payload: data.blankContent });
-    if (data.customContent)
-      dispatch({ type: "customContent/setCustomContent", payload: data.customContent });
     if (data.proposal)
       dispatch({ type: "proposal/setProposal", payload: data.proposal });
 
@@ -163,16 +143,12 @@ export const saveStoreToBackend = async (userId) => {
   try {
     const reduxStore = store.getState();
     const payload = {
-      form: reduxStore.form,
       proposal: reduxStore.proposal,
       page1Slice: reduxStore.page1Slice,
       page2: reduxStore.page2,
       page3: reduxStore.page3,
       pricing: reduxStore.pricing,
       paymentTerms: reduxStore.paymentTerms,
-      blankContent: reduxStore.blankContent,
-      customContent: reduxStore.customContent,
-      pages: reduxStore.pages,
     };
 
     await axiosInstance.post(

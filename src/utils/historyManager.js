@@ -104,9 +104,6 @@ export const debouncedPushToHistory = debounce((state) => {
     page3: state.page3,
     pricing: state.pricing,
     paymentTerms: state.paymentTerms,
-    blankContent: state.blankContent,
-    customContent: state.customContent,
-    pages: state.pages,
   };
   historyManager.push(trackableState);
 }, 1000); // 1-second debounce
