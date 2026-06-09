@@ -367,7 +367,7 @@ const PackageBox = ({ pkg }) => (
     {pkg.items?.map((item, i) => (
       <View key={i} style={styles.featureItem}>
         <Text style={styles.bullet}>•</Text>
-        <Text style={{ textAlign: pkg.itemAligns?.[i] || "left", flex: 1 }}>{item}</Text>
+        <Text style={{ textAlign: "left", flex: 1 }}>{item}</Text>
       </View>
     ))}
 

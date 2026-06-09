@@ -2,7 +2,7 @@
 import React, { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, Button, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
-import { Add, Delete, Edit, ColorLens, FormatAlignLeft, FormatAlignCenter, FormatAlignRight } from "@mui/icons-material";
+import { Add, Delete, Edit, ColorLens } from "@mui/icons-material";
 import {
   updatePageTitle,
   updateHeading,
@@ -266,10 +266,6 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
 
       {pkg.items?.map((item, localI) => {
         const i = localI + itemOffset;
-        const align = pkg.itemAligns?.[localI] || "left";
-        let toolbarPositionStyles = { left: 0 };
-        if (align === "center") toolbarPositionStyles = { left: "50%", transform: "translateX(-50%)" };
-        if (align === "right") toolbarPositionStyles = { right: 0, left: "auto" };
 
         return (
           <Box key={i} sx={{ display: "flex", mb: 1, position: "relative", "&:hover .item-actions": { opacity: 1 } }}>
@@ -279,20 +275,16 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
               fallback="Feature"
               isStudioMode={isStudioMode}
               onInput={(e) => onUpdateItem(i, e.currentTarget.textContent)}
-              sx={{ flexGrow: 1, fontSize: 11, textAlign: align, outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+              sx={{ flexGrow: 1, fontSize: 11, textAlign: "left", outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
             />
             {isStudioMode && (
-              <Box className="item-actions" sx={{ position: "absolute", top: -30, ...toolbarPositionStyles, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: '10px', display: "flex", gap: 0.5, p: 0.5 }}>
-                <IconButton size="small" onClick={() => onAlignChange(i, "left")} sx={{ p: 0.5, bgcolor: align === "left" ? "#FF8C00" : "transparent" }}><FormatAlignLeft sx={{ fontSize: 12, color: align === "left" ? "#fff" : "inherit" }} /></IconButton>
-                <IconButton size="small" onClick={() => onAlignChange(i, "center")} sx={{ p: 0.5, bgcolor: align === "center" ? "#FF8C00" : "transparent" }}><FormatAlignCenter sx={{ fontSize: 12, color: align === "center" ? "#fff" : "inherit" }} /></IconButton>
-                <IconButton size="small" onClick={() => onAlignChange(i, "right")} sx={{ p: 0.5, bgcolor: align === "right" ? "#FF8C00" : "transparent" }}><FormatAlignRight sx={{ fontSize: 12, color: align === "right" ? "#fff" : "inherit" }} /></IconButton>
+              <Box className="item-actions" sx={{ position: "absolute", top: -30, left: 0, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: '10px', display: "flex", gap: 0.5, p: 0.5 }}>
                 <IconButton size="small" color="error" onClick={() => {
                   onDeleteItem(i);
-                  const align = pkg.itemAligns?.[localI] || "left";
                   dispatch(showToast({
                     message: "Feature deleted",
                     severity: "info",
-                    undoAction: isGrid ? restoreGridPackageItem({ pkgId: pkg.id, item, align, index: i }) : restoreStandalonePackageItem({ elementId: pkg.id, item, align, index: i })
+                    undoAction: isGrid ? restoreGridPackageItem({ pkgId: pkg.id, item, align: "left", index: i }) : restoreStandalonePackageItem({ elementId: pkg.id, item, align: "left", index: i })
                   }));
                 }} sx={{ p: 0.5 }}><Delete sx={{ fontSize: 12 }} /></IconButton>
               </Box>
