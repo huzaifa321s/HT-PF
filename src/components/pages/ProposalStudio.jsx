@@ -534,38 +534,6 @@ export default function ProposalStudio() {
               )}
             </Box>
 
-            {/* Services & Charges */}
-            {(formData?.recommended_services?.length > 0 || formData?.chargeAmount) ? (
-              <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
-                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", mb: 1, display: "block" }}>
-                  Services & Charges
-                </Typography>
-                {formData?.recommended_services?.length > 0 ? (
-                  <Stack spacing={1}>
-                    {formData.recommended_services.map((service, idx) => (
-                      <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Typography variant="body2" sx={{ color: "#f8fafc", fontWeight: 500 }}>
-                          {service}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#10b981", fontWeight: 700 }}>
-                          {formData.selectedCurrency === "USD" ? "$" : "₨"}{formData.serviceCharges?.[idx] || "0"}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Typography variant="body2" sx={{ color: "#f8fafc", fontWeight: 500 }}>
-                      Service Charge
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#10b981", fontWeight: 700 }}>
-                      {formData.selectedCurrency === "USD" ? "$" : "₨"}{formData.chargeAmount || "0"}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            ) : null}
-
             {/* Total Cost */}
             {(() => {
               // Calculate dynamic total from gridPackages if they exist
@@ -602,34 +570,6 @@ export default function ProposalStudio() {
                   {(formData?.selectedCurrency || reduxProposal?.selectedCurrency) && (
                     <Chip size="small" label={formData?.selectedCurrency || reduxProposal?.selectedCurrency} sx={{ bgcolor: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontWeight: "bold" }} />
                   )}
-                </Box>
-              );
-            })()}
-
-            {/* Advance Percentage */}
-            {(() => {
-              let advPct = 0;
-              if (formData?.advancePercent !== undefined && formData?.advancePercent !== null && formData?.advancePercent !== "") {
-                advPct = parseFloat(formData.advancePercent);
-              }
-
-              if (isNaN(advPct)) advPct = 0;
-
-              return (
-                <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(243,168,51,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                      Advance Payment
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#f3a833", mt: 0.5 }}>
-                      {advPct}%
-                    </Typography>
-                  </Box>
-                  <Chip
-                    size="small"
-                    label="Upfront"
-                    sx={{ bgcolor: "rgba(243,168,51,0.12)", color: "#f3a833", border: "1px solid rgba(243,168,51,0.3)", fontWeight: 700 }}
-                  />
                 </Box>
               );
             })()}
