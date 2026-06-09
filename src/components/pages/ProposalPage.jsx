@@ -46,7 +46,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import axiosInstance from "@/utils/axiosInstance";
 import { useDebounce } from "use-debounce";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -60,6 +60,7 @@ const ProposalPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
@@ -67,7 +68,7 @@ const ProposalPage = () => {
   const isAdmin = user.role === "admin";
 
   const [proposals, setProposals] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(parseInt(searchParams.get("page")) || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -75,11 +76,12 @@ const ProposalPage = () => {
   const [length, setLength] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Filters
+  // Filters local states
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-  const [dateFilter, setDateFilter] = useState("");
-  const [ownershipFilter, setOwnershipFilter] = useState(""); // Only for admin
+  const [dateFilter, setDateFilter] = useState(searchParams.get("date") || "");
+  const [ownershipFilter, setOwnershipFilter] = useState(searchParams.get("view") || "");
+
   const hasActiveFilters = Boolean(searchTerm.trim() || dateFilter || (isAdmin && ownershipFilter));
 
   const handleView = (id) => {
@@ -87,6 +89,23 @@ const ProposalPage = () => {
   };
 
   const handleEdit = (id) => router.push(`/edit-proposal/${id}`);
+
+  // Helper to dynamically update the URL Search Params
+  const updateUrlParams = useCallback((paramsUpdate) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    
+    Object.entries(paramsUpdate).forEach(([key, value]) => {
+      if (value) {
+        current.set(key, value);
+      } else {
+        current.delete(key);
+      }
+    });
+    
+    const search = current.toString();
+    const query = search ? `?${search}` : "";
+    router.replace(`${pathname}${query}`, { scroll: false });
+  }, [router, pathname, searchParams]);
 
   const handleDownload = async (id) => {
     try {
@@ -119,18 +138,23 @@ const ProposalPage = () => {
     setProposalID(id);
   };
 
-  const fetchProposals = useCallback(async (pageNumber = 1, filtersOverride) => {
+  // Main fetch proposals which pulls parameters directly from URL Search Params
+  const fetchProposals = useCallback(async () => {
     try {
       setLoading(true);
+      const urlPage = parseInt(searchParams.get("page")) || 1;
+      const urlSearch = searchParams.get("search") || "";
+      const urlDate = searchParams.get("date") || "";
+      const urlView = searchParams.get("view") || "";
+
       const params = {
-        page: pageNumber,
+        page: urlPage,
         limit: 5,
-        search: filtersOverride?.search ?? debouncedSearchTerm,
-        date: filtersOverride?.date ?? dateFilter,
+        search: urlSearch,
+        date: urlDate,
       };
 
-      const activeOwnership = filtersOverride?.ownership ?? ownershipFilter;
-      if (isAdmin && activeOwnership === "mine") {
+      if (isAdmin && urlView === "mine") {
         params.createdBy = user.id;
       }
 
@@ -143,6 +167,12 @@ const ProposalPage = () => {
       setTotalPages(res.data.totalPages || 1);
       setLength(res.data.proposals?.length || 0);
       setTotalCount(res.data.totalCount || 0);
+
+      // Sync local UI states with the loaded URL parameters (handles initial load or history navigation)
+      setPage(urlPage);
+      if (urlSearch !== searchTerm) setSearchTerm(urlSearch);
+      if (urlDate !== dateFilter) setDateFilter(urlDate);
+      if (urlView !== ownershipFilter) setOwnershipFilter(urlView);
     } catch (error) {
       console.error("Error fetching proposals:", error);
       setProposals([]);
@@ -150,22 +180,41 @@ const ProposalPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, dateFilter, ownershipFilter, isAdmin, user.id]);
+  }, [searchParams, isAdmin, user.id]);
 
   useEffect(() => {
-    fetchProposals(page);
-  }, [page, fetchProposals]);
+    fetchProposals();
+  }, [fetchProposals]);
+
+  // Sync debounced search to URL
+  useEffect(() => {
+    const currentSearch = searchParams.get("search") || "";
+    if (debouncedSearchTerm !== currentSearch) {
+      updateUrlParams({ search: debouncedSearchTerm, page: "" });
+    }
+  }, [debouncedSearchTerm, searchParams, updateUrlParams]);
+
+  const handleDateChange = (newValue) => {
+    const formatted = newValue ? newValue.format("YYYY-MM-DD") : "";
+    setDateFilter(formatted);
+    updateUrlParams({ date: formatted, page: "" });
+  };
+
+  const handleOwnershipChange = (e) => {
+    const val = e.target.value;
+    setOwnershipFilter(val);
+    updateUrlParams({ view: val, page: "" });
+  };
 
   const handleClearFilters = () => {
-    setPage(1);
     setSearchTerm("");
     setDateFilter("");
     setOwnershipFilter("");
-    fetchProposals(1, { search: "", date: "", ownership: "" });
+    updateUrlParams({ search: "", date: "", view: "", page: "" });
   };
 
   const handlePageChange = (event, value) => {
-    setPage(value);
+    updateUrlParams({ page: value === 1 ? "" : value.toString() });
   };
 
   // Animation Variants
@@ -225,7 +274,7 @@ const ProposalPage = () => {
         id={proposalID}
         setProposals={setProposals}
         length={length}
-        fetchProposals={() => fetchProposals(page)}
+        fetchProposals={fetchProposals}
       />
 
       <Box sx={{ maxWidth: 1400, mx: "auto" }}>
@@ -435,10 +484,7 @@ const ProposalPage = () => {
                   size="small"
                   fullWidth={isMobile}
                   value={searchTerm}
-                  onChange={(e) => {
-                    setPage(1);
-                    setSearchTerm(e.target.value);
-                  }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   sx={{
                     flex: { xs: "1 1 100%", md: 2 },
                     minWidth: 260,
@@ -479,10 +525,7 @@ const ProposalPage = () => {
                     <Select
                       value={ownershipFilter}
                       label="View"
-                      onChange={(e) => {
-                        setPage(1);
-                        setOwnershipFilter(e.target.value);
-                      }}
+                      onChange={handleOwnershipChange}
                     >
                       <MenuItem value="">All Proposals</MenuItem>
                       <MenuItem value="mine">My Proposals</MenuItem>
@@ -494,12 +537,7 @@ const ProposalPage = () => {
                   <DatePicker
                     label="Date"
                     value={dateFilter ? dayjs(dateFilter) : null}
-                    onChange={(newValue) => {
-                      setPage(1);
-                      setDateFilter(
-                        newValue ? newValue.format("YYYY-MM-DD") : ""
-                      );
-                    }}
+                    onChange={handleDateChange}
                     slotProps={{
                       textField: {
                         size: "small",
