@@ -6,7 +6,7 @@ const ProposalPage = dynamic(() => import("@/components/pages/ProposalPage"), { 
 
 export default function AdminProposals() {
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
+    <ProtectedRoute allowedRoles={["admin", "agent"]}>
       <ProposalPage />
     </ProtectedRoute>
   );
