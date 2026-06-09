@@ -34,6 +34,7 @@ import {
   InputLabel,
   FormControl,
   InputAdornment,
+  Backdrop,
 } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
@@ -55,6 +56,15 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/utils/toastSlice";
 import dayjs from "dayjs";
+import dynamic from "next/dynamic";
+import { updateField } from "@/utils/proposalSlice";
+import { setDBData, setMode1 } from "@/utils/page1Slice";
+import { setDBDataP2, setMode } from "@/utils/page2Slice";
+import { setDBDataP3, setMode2 } from "@/utils/page3Slice";
+import { setDBDataPricing, setMode3 } from "@/utils/pricingReducer";
+import { setDBTerms, setMode4 } from "@/utils/paymentTermsPageSlice";
+
+const UnifiedPdfEditor = dynamic(() => import("@/components/UnifiedPDFEditor"), { ssr: false });
 
 const ProposalPage = () => {
   const theme = useTheme();
@@ -75,6 +85,8 @@ const ProposalPage = () => {
   const [proposalID, setProposalID] = useState(null);
   const [length, setLength] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [pdfGeneratingId, setPdfGeneratingId] = useState(null);
+  const [downloadingProposal, setDownloadingProposal] = useState(null);
 
   // Filters local states
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
@@ -109,26 +121,202 @@ const ProposalPage = () => {
 
   const handleDownload = async (id) => {
     try {
-      const res = await axiosInstance.get(
-        `/api/proposals/get-single-proposal/${id}`
-      );
-      const pdfPath = res.data.data.pdfPath;
-      if (!pdfPath) {
-        dispatch(showToast({ message: "PDF not found for this proposal.", severity: "error" }));
-        return;
+      setPdfGeneratingId(id);
+      
+      // 1. Fetch proposal details
+      const res = await axiosInstance.get(`/api/proposals/get-single-proposal/${id}`);
+      const proposalData = res.data.data;
+      
+      if (!proposalData) {
+        throw new Error("Proposal data not found");
       }
       
-      const downloadUrl = pdfPath.includes("?") ? `${pdfPath}&download=1` : `${pdfPath}?download=1`;
+      // 2. Seed Redux store with proposal metadata and page details
+      dispatch(updateField({ field: "clientName", value: proposalData.clientName }));
+      dispatch(updateField({ field: "date", value: proposalData.date }));
+      dispatch(updateField({ field: "additionalCosts", value: proposalData.additionalCosts }));
+      dispatch(updateField({ field: "chargeAmount", value: proposalData.chargeAmount }));
+      dispatch(updateField({ field: "advancePercent", value: proposalData.advancePercent }));
+      dispatch(updateField({ field: "selectedCurrency", value: proposalData.selectedCurrency }));
+      dispatch(updateField({ field: "brandName", value: proposalData.brandName }));
+
+      if (proposalData.pdfPages?.page1) dispatch(setDBData(proposalData.pdfPages.page1));
+      if (proposalData.pdfPages?.page3) dispatch(setDBDataP2(proposalData.pdfPages.page3));
+      if (proposalData.pdfPages?.page2) dispatch(setDBDataP3(proposalData.pdfPages.page2));
+      if (proposalData.pdfPages?.pricingPage) dispatch(setDBDataPricing(proposalData.pdfPages.pricingPage));
+      if (proposalData.pdfPages?.paymentTerms) dispatch(setDBTerms(proposalData.pdfPages.paymentTerms));
       
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.setAttribute("download", "");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      dispatch(setMode("edit"));
+      dispatch(setMode1("edit"));
+      dispatch(setMode2("edit"));
+      dispatch(setMode3("edit"));
+      dispatch(setMode4("edit"));
+
+      // 3. Render the offscreen UnifiedPdfEditor
+      setDownloadingProposal(proposalData);
+
+      // 4. Wait for React mount and styles reflow/layout
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      // 5. Find offscreen container
+      const container = document.getElementById("pdf-export-container");
+      if (!container) {
+        throw new Error("Could not find the offscreen PDF container");
+      }
+
+      // 6. Load packages dynamically on client side
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const { jsPDF } = await import("jspdf");
+      const { convertImagesToBase64, restoreOriginalImages, ensureAllImagesConverted } = await import("@/utils/imageToBase64");
+
+      const PAGE_PX_HEIGHT = 1131;
+      const PAGE_PX_WIDTH = 800;
+
+      const origWidth = container.style.width;
+      const origMaxWidth = container.style.maxWidth;
+      container.style.width = `${PAGE_PX_WIDTH}px`;
+      container.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+
+      await new Promise(r => setTimeout(r, 100));
+
+      // 7. Convert images to base64 and preload
+      const originalSources = await convertImagesToBase64(container);
+      
+      let attempts = 0;
+      while (!ensureAllImagesConverted(container) && attempts < 10) {
+        await new Promise((r) => setTimeout(r, 200));
+        attempts++;
+      }
+
+      await new Promise(r => setTimeout(r, 200));
+
+      const preloadAllImages = async (cont) => {
+        const imgs = Array.from(cont.querySelectorAll('img'));
+        await Promise.all(
+          imgs.map((img) =>
+            new Promise((resolve) => {
+              if (img.complete && img.naturalWidth > 0) return resolve();
+              img.onload = resolve;
+              img.onerror = resolve;
+              if (!img.src.startsWith('data:')) {
+                const temp = new Image();
+                temp.crossOrigin = 'anonymous';
+                temp.src = img.src;
+                temp.onload = resolve;
+                temp.onerror = resolve;
+              }
+            })
+          )
+        );
+      };
+
+      let fullCanvas;
+      try {
+        await preloadAllImages(container);
+        fullCanvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: "#ffffff",
+          width: PAGE_PX_WIDTH,
+          height: container.scrollHeight,
+          windowWidth: PAGE_PX_WIDTH,
+          windowHeight: container.scrollHeight,
+          imageTimeout: 15000,
+          onclone: (clonedDoc) => {
+            const clonedBody = clonedDoc.body;
+            clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
+            clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
+
+            const clonedContainer = clonedDoc.getElementById("pdf-export-container");
+            if (clonedContainer) {
+              clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
+              clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+              clonedContainer.style.transform = "none";
+            }
+          }
+        });
+      } finally {
+        container.style.width = origWidth;
+        container.style.maxWidth = origMaxWidth;
+        restoreOriginalImages(originalSources);
+      }
+
+      // 8. Slice canvas and compile A4 PDF doc
+      const SCALE = 2;
+      const pageCanvasHeight = PAGE_PX_HEIGHT * SCALE;
+      const pageCanvasWidth = PAGE_PX_WIDTH * SCALE;
+      const totalPages = Math.max(1, Math.round(fullCanvas.height / pageCanvasHeight));
+
+      const PDF_W = 595.28;
+      const PDF_H = 841.89;
+
+      const pdfDoc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+
+      for (let i = 0; i < totalPages; i++) {
+        const sliceY = i * pageCanvasHeight;
+        const sliceHeight = Math.min(pageCanvasHeight, fullCanvas.height - sliceY);
+        if (sliceHeight <= 0) break;
+
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = pageCanvasWidth;
+        pageCanvas.height = sliceHeight;
+
+        const ctx = pageCanvas.getContext("2d");
+        ctx.drawImage(
+          fullCanvas,
+          0, sliceY,
+          pageCanvasWidth, sliceHeight,
+          0, 0,
+          pageCanvasWidth, sliceHeight
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const imgH = (sliceHeight / pageCanvasWidth) * PDF_W;
+
+        if (i > 0) pdfDoc.addPage();
+        pdfDoc.addImage(imgData, "JPEG", 0, 0, PDF_W, Math.min(imgH, PDF_H));
+      }
+
+      const brandName = proposalData.brandName?.trim() || "Client";
+      const fileName = `${brandName} Proposal.pdf`;
+      pdfDoc.save(fileName);
+
+      // 9. Upload PDF back to server and database (keep it synced)
+      const blob = pdfDoc.output("blob");
+      const formDataUpload = new FormData();
+      formDataUpload.append("pdfFile", blob, fileName);
+      formDataUpload.append("proposalId", id);
+
+      const uploadRes = await axiosInstance.post(
+        `/api/proposals/upload-pdf`,
+        formDataUpload,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      if (uploadRes.data.success) {
+        await axiosInstance.put(
+          `/api/proposals/update-proposal/${id}`,
+          {
+            pdfPath: uploadRes.data.filePath,
+          }
+        );
+      }
+
+      dispatch(showToast({ message: "PDF downloaded successfully!", severity: "success" }));
     } catch (error) {
-      console.error("Error opening PDF:", error);
-      dispatch(showToast({ message: "Failed to open PDF. Please try again.", severity: "error" }));
+      console.error("PDF generation failed:", error);
+      dispatch(showToast({ message: "Failed to generate PDF: " + error.message, severity: "error" }));
+    } finally {
+      setPdfGeneratingId(null);
+      setDownloadingProposal(null);
     }
   };
 
@@ -852,6 +1040,43 @@ const ProposalPage = () => {
           </Paper>
         </Fade>
       </Box>
+      {/* Offscreen PDF render container */}
+      {downloadingProposal && (
+        <Box sx={{ position: "absolute", left: "-9999px", top: "-9999px", width: "800px", zIndex: -1000, pointerEvents: "none" }}>
+          <UnifiedPdfEditor
+            pdfPages={downloadingProposal.pdfPages}
+            mode="edit-doc"
+            clientName={downloadingProposal.clientName}
+            date={downloadingProposal.date || downloadingProposal.createdAt}
+            isStudioMode={false}
+            zoomLevel={100}
+          />
+        </Box>
+      )}
+
+      {/* Dynamic PDF compilation backdrop loader */}
+      <Backdrop
+        sx={{
+          color: '#f3a833',
+          zIndex: (theme) => theme.zIndex.drawer + 101,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          bgcolor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+        }}
+        open={pdfGeneratingId !== null}
+      >
+        <CircularProgress color="inherit" size={60} thickness={4} />
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ color: '#f8fafc', fontWeight: 700 }}>
+            Generating High-Quality PDF
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
+            Converting and slicing pages to A4 for a pixel-perfect print...
+          </Typography>
+        </Box>
+      </Backdrop>
     </Box>
   );
 };
