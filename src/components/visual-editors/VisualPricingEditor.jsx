@@ -529,18 +529,17 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   </Box>
                 );
               })}
+              {/* Floating Add Content Block button on the right side of the last page */}
+              {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
+                <Box sx={{ position: "absolute", bottom: "80px", left: "100%", ml: "20px", zIndex: 100, pointerEvents: "auto" }}>
+                  <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
+                    Add Content Block
+                  </Button>
+                </Box>
+              )}
             </Box>
           );
         })}
-
-        {/* Absolutely positioned Add Content Block button at the bottom of the editor workspace */}
-        {isStudioMode && !isThumbnail && (
-          <Box sx={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 100, pointerEvents: "auto" }}>
-            <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
-              Add Content Block
-            </Button>
-          </Box>
-        )}
       </Box>
 
       <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)} sx={{ pointerEvents: "auto" }}>

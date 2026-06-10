@@ -343,51 +343,51 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
             )}
           </Box>
         </Box>
-      </Box>
 
-      {isStudioMode && (
-        <Box sx={{ width: "100%", maxWidth: "800px", textAlign: "center", mt: 4, pt: 4, borderTop: "1px dashed #ddd" }}>
-          {textElementsCount < 2 && (
-            <Button 
-              variant="outlined" 
-              startIcon={<Add />} 
-              onClick={handleAddTextElement} 
-              disabled={isOverflowing}
-              sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", mr: 2, "&.Mui-disabled": { borderColor: "#ccc" } }}
-            >
-              {isOverflowing ? "Page is Full" : "Add Text Block"}
-            </Button>
-          )}
-          
-          {!hasImage && (
-            <Button variant="outlined" component="label" startIcon={<ImageIcon />} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
-              Add Image Block
-              <input type="file" hidden accept="image/*" onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  try {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => {
-                      const base64Url = reader.result;
-                      dispatch(addElement({ type: "image", content: base64Url }));
-                      dispatch(showToast({ message: "Image block added successfully!", severity: "success" }));
-                    };
-                    reader.onerror = (err) => {
+        {/* Floating Add buttons on the right side of the page container */}
+        {isStudioMode && (
+          <Box sx={{ position: "absolute", bottom: "120px", left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>
+            {textElementsCount < 2 && (
+              <Button 
+                variant="outlined" 
+                startIcon={<Add />} 
+                onClick={handleAddTextElement} 
+                disabled={isOverflowing}
+                sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414", "&.Mui-disabled": { borderColor: "#ccc" } }}
+              >
+                {isOverflowing ? "Page is Full" : "Add Text Block"}
+              </Button>
+            )}
+            
+            {!hasImage && (
+              <Button variant="outlined" component="label" startIcon={<ImageIcon />} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
+                Add Image Block
+                <input type="file" hidden accept="image/*" onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    try {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = () => {
+                        const base64Url = reader.result;
+                        dispatch(addElement({ type: "image", content: base64Url }));
+                        dispatch(showToast({ message: "Image block added successfully!", severity: "success" }));
+                      };
+                      reader.onerror = (err) => {
+                        console.error(err);
+                        dispatch(showToast({ message: "Failed to read image file", severity: "error" }));
+                      };
+                    } catch (err) {
                       console.error(err);
-                      dispatch(showToast({ message: "Failed to read image file", severity: "error" }));
-                    };
-                  } catch (err) {
-                    console.error(err);
-                    dispatch(showToast({ message: "Failed to load image", severity: "error" }));
+                      dispatch(showToast({ message: "Failed to load image", severity: "error" }));
+                    }
                   }
-                }
-              }} />
-            </Button>
-          )}
-        </Box>
-      )}
-
+                }} />
+              </Button>
+            )}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

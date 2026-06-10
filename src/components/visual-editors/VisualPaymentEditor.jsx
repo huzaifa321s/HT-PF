@@ -167,21 +167,18 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   <Typography sx={{ fontSize: 14, color: "#333333", ml: "5px" }}>No payment terms added yet.</Typography>
                 ) : null}
               </Box>
-
             </Box>
-
+            {/* Floating Add Term button on the right side of the last page */}
+            {isStudioMode && pageIdx === pages.length - 1 && (
+              <Box sx={{ position: "absolute", bottom: "90px", left: "100%", ml: "20px", zIndex: 100 }}>
+                <Button variant="outlined" startIcon={<Add />} onClick={handleAddTerm} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
+                  Add Term
+                </Button>
+              </Box>
+            )}
           </Box>
         );
       })}
-
-      {/* Add Term Button (Rendered outside the A4 pages flow at the bottom) */}
-      {isStudioMode && (
-        <Box sx={{ mt: 2, mb: 4, zIndex: 10 }}>
-          <Button variant="outlined" startIcon={<Add />} onClick={handleAddTerm} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
-            Add Term
-          </Button>
-        </Box>
-      )}
     </Box>
   );
 };

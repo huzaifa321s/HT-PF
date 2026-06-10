@@ -1189,17 +1189,15 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
         {/* Add Button */}
         {isStudioMode && !isThumbnail && (
-          <Box sx={{ position: "absolute", top: `${lastContentY + 20}px`, left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 100 }}>
-            <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", flexWrap: "wrap", mb: 1.5 }}>
-              <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)}
-                sx={{ color: "#f3a833", borderColor: "#f3a833", borderStyle: "dashed", bgcolor: "#141414" }}>
-                Add Section or Table
-              </Button>
-              <Button variant="outlined" startIcon={<AutoFixHigh />} onClick={() => setSmartPasteOpen(true)}
-                sx={{ color: "#a78bfa", borderColor: "#a78bfa", borderStyle: "dashed", bgcolor: "#141414", "&:hover": { bgcolor: "rgba(167,139,250,0.08)" } }}>
-                Smart Paste
-              </Button>
-            </Box>
+          <Box sx={{ position: "absolute", top: `${(totalPages - 1) * CYCLE + PAGE_HEIGHT - 180}px`, left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>
+            <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)}
+              sx={{ color: "#f3a833", borderColor: "#f3a833", borderStyle: "dashed", bgcolor: "#141414", whiteSpace: "nowrap" }}>
+              Add Section or Table
+            </Button>
+            <Button variant="outlined" startIcon={<AutoFixHigh />} onClick={() => setSmartPasteOpen(true)}
+              sx={{ color: "#a78bfa", borderColor: "#a78bfa", borderStyle: "dashed", bgcolor: "#141414", whiteSpace: "nowrap", "&:hover": { bgcolor: "rgba(167,139,250,0.08)" } }}>
+              Smart Paste
+            </Button>
 
             <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)}
               PaperProps={{ sx: { borderRadius: '10px', mt: 1, boxShadow: "0 12px 32px rgba(0,0,0,0.3)", minWidth: 420, bgcolor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", p: 1.5 } }}>
