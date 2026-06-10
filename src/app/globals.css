@@ -80,9 +80,101 @@ body {
 
 
 @font-face {
-  font-family: "Degular Demo";
-  src: url("/fonts/degular.otf") format("opentype");
+  font-family: "Degular";
+  src: url("/fonts/Degular-Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Regular.otf") format("opentype");
   font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Degular";
+  src: url("/fonts/Degular-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("/fonts/DegularDisplay-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
 }
 
 .pdf-container {
@@ -162,4 +254,134 @@ body::-webkit-scrollbar-thumb:hover,
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: #ffb84d !important;
+}
+
+/* Map Liberation Serif, Helvetica, Helvetica Neue, Oswald to Degular/DegularDisplay for visual editors */
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src: url("/fonts/Degular-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/Degular-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/DegularDisplay-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/DegularDisplay-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/DegularDisplay-Bold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
 }

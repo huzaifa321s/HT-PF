@@ -15,18 +15,33 @@ import { Font } from "@react-pdf/renderer";
 Font.register({
   family: "Liberation Serif",
   fonts: [
-    { src: "/fonts/static/Inter_18pt-Regular.ttf", fontWeight: 400 },
-    { src: "/fonts/static/Inter_18pt-Italic.ttf", fontWeight: 400, fontStyle: "italic" },
-    { src: "/fonts/static/Inter_18pt-Bold.ttf", fontWeight: 700 },
-    { src: "/fonts/static/Inter_18pt-Black.ttf", fontWeight: 800 },
-    { src: "/fonts/static/Inter_24pt-Black.ttf", fontWeight: 900 },
+    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
+  ],
+});
+
+Font.register({
+  family: "Helvetica",
+  fonts: [
+    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
   ],
 });
 
 Font.register({
   family: "Oswald",
   fonts: [
-    { src: "/fonts/Degular-Thin.otf", fontWeight: 400 },
+    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
     { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
     { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
   ],
@@ -38,6 +53,34 @@ Font.register({
     { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-400-normal.woff", fontWeight: 400 },
     { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-700-normal.woff", fontWeight: 700 },
     { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-900-normal.woff", fontWeight: 900 },
+  ],
+});
+
+Font.register({
+  family: "Degular",
+  fonts: [
+    { src: "/fonts/Degular-Thin.otf", fontWeight: 100 },
+    { src: "/fonts/Degular-Light.otf", fontWeight: 300 },
+    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
+    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+  ],
+});
+
+Font.register({
+  family: "DegularDisplay",
+  fonts: [
+    { src: "/fonts/DegularDisplay-Thin.otf", fontWeight: 100 },
+    { src: "/fonts/DegularDisplay-Light.otf", fontWeight: 300 },
+    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
+    { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
+    { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
+    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
+    { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
   ],
 });
 
