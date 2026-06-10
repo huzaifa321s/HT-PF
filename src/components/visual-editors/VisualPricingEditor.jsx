@@ -298,7 +298,7 @@ const PackageVisualBox = ({
       )}
 
       {isStudioMode && !pkg.continueNext && (
-        <Button size="small" onClick={onAddItem} sx={{ mt: totalPkgs >= 3 ? 0.5 : 1, fontSize: itemSize - 1, py: totalPkgs >= 3 ? 0.25 : 0.5 }} startIcon={<Add sx={{ fontSize: 12 }} />}>Add Feature</Button>
+        <Button size="small" onClick={onAddItem} sx={{ position: "absolute", bottom: totalPkgs >= 3 ? 2 : 4, right: totalPkgs >= 3 ? 8 : 12, zIndex: 10, fontSize: itemSize - 1, py: totalPkgs >= 3 ? 0.25 : 0.5 }} startIcon={<Add sx={{ fontSize: 12 }} />}>Add Feature</Button>
       )}
     </Box>
   );
@@ -529,18 +529,18 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   </Box>
                 );
               })}
-
-              {/* Only show add button on last page at the bottom */}
-              {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
-                <Box sx={{ textAlign: "center", mt: 4, pt: 4, borderTop: "1px dashed #ddd" }}>
-                  <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", pointerEvents: "auto" }}>
-                    Add Content Block
-                  </Button>
-                </Box>
-              )}
             </Box>
           );
         })}
+
+        {/* Absolutely positioned Add Content Block button at the bottom of the editor workspace */}
+        {isStudioMode && !isThumbnail && (
+          <Box sx={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 100, pointerEvents: "auto" }}>
+            <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
+              Add Content Block
+            </Button>
+          </Box>
+        )}
       </Box>
 
       <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)} sx={{ pointerEvents: "auto" }}>

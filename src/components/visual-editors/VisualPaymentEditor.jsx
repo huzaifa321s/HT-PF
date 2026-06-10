@@ -168,19 +168,20 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                 ) : null}
               </Box>
 
-              {/* Add Term Button (Only on last page) */}
-              {isStudioMode && pageIdx === pages.length - 1 && (
-                <Box sx={{ textAlign: "center", mt: 4, pt: 4, borderTop: "1px dashed #ddd" }}>
-                  <Button variant="outlined" startIcon={<Add />} onClick={handleAddTerm} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
-                    Add Term
-                  </Button>
-                </Box>
-              )}
             </Box>
 
           </Box>
         );
       })}
+
+      {/* Add Term Button (Rendered outside the A4 pages flow at the bottom) */}
+      {isStudioMode && (
+        <Box sx={{ mt: 2, mb: 4, zIndex: 10 }}>
+          <Button variant="outlined" startIcon={<Add />} onClick={handleAddTerm} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed" }}>
+            Add Term
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

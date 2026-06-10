@@ -601,16 +601,36 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
           />
         )}
         {isStudioMode && !isThumbnail && (
-          <Tooltip title="Delete Table">
-            <IconButton
-              className="tbl-del"
-              onClick={handleDeleteTable}
-              size="small"
-              sx={{ opacity: 0, transition: "opacity 0.2s", bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", "&:hover": { bgcolor: "rgba(244,67,54,0.2)" } }}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <Box className="tbl-actions" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Tooltip title="Add Row">
+              <IconButton
+                onClick={() => dispatch(addTableRow(table.id))}
+                size="small"
+                sx={{ color: "#f3a833", p: 0.5, "&:hover": { bgcolor: "rgba(243,168,51,0.1)" } }}
+              >
+                <AddCircleOutline sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Bulk Add Rows">
+              <IconButton
+                onClick={() => setBulkOpen(true)}
+                size="small"
+                sx={{ color: "#a78bfa", p: 0.5, "&:hover": { bgcolor: "rgba(167,139,250,0.1)" } }}
+              >
+                <PlaylistAdd sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete Table">
+              <IconButton
+                className="tbl-del"
+                onClick={handleDeleteTable}
+                size="small"
+                sx={{ opacity: 0, transition: "opacity 0.2s", bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", "&:hover": { bgcolor: "rgba(244,67,54,0.2)" } }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
       </Box>
 
@@ -662,30 +682,6 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
           </Box>
         ))}
       </Box>
-
-      {/* Add Row + Bulk Add Buttons */}
-      {isStudioMode && !isThumbnail && (
-        <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
-          <Button
-            size="small"
-            startIcon={<AddCircleOutline sx={{ fontSize: 14 }} />}
-            onClick={() => dispatch(addTableRow(table.id))}
-            sx={{ color: "#f3a833", borderColor: "#f3a833", borderStyle: "dashed", fontSize: 11, textTransform: "none", py: 0.3 }}
-            variant="outlined"
-          >
-            Add Row
-          </Button>
-          <Button
-            size="small"
-            startIcon={<PlaylistAdd sx={{ fontSize: 16 }} />}
-            onClick={() => setBulkOpen(true)}
-            sx={{ color: "#a78bfa", borderColor: "#a78bfa", borderStyle: "dashed", fontSize: 11, textTransform: "none", py: 0.3, "&:hover": { bgcolor: "rgba(167,139,250,0.08)" } }}
-            variant="outlined"
-          >
-            Bulk Add Rows
-          </Button>
-        </Box>
-      )}
       <BulkAddDialog open={bulkOpen} onClose={() => setBulkOpen(false)} table={table} dispatch={dispatch} />
     </Box>
   );
@@ -1193,7 +1189,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
         {/* Add Button */}
         {isStudioMode && !isThumbnail && (
-          <Box sx={{ textAlign: "center", mt: 6, mb: 2 }}>
+          <Box sx={{ position: "absolute", top: `${lastContentY + 20}px`, left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 100 }}>
             <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", flexWrap: "wrap", mb: 1.5 }}>
               <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)}
                 sx={{ color: "#f3a833", borderColor: "#f3a833", borderStyle: "dashed", bgcolor: "#141414" }}>

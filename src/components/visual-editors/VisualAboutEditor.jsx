@@ -327,21 +327,6 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                   />
                 )}
 
-                {element.type === "image" && isStudioMode && textElementsCount < 2 && (
-                  <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
-                    <Button 
-                      variant="outlined" 
-                      size="small"
-                      startIcon={<Add />} 
-                      onClick={handleAddTextElement} 
-                      disabled={isOverflowing}
-                      sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", "&.Mui-disabled": { borderColor: "#ccc" } }}
-                    >
-                      {isOverflowing ? "Page is Full" : "Add Text Block Here"}
-                    </Button>
-                  </Box>
-                )}
-
                 {element.type === "image" && (
                   <ImageResizer 
                     element={element} 
@@ -362,7 +347,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
 
       {isStudioMode && (
         <Box sx={{ width: "100%", maxWidth: "800px", textAlign: "center", mt: 4, pt: 4, borderTop: "1px dashed #ddd" }}>
-          {!hasImage && textElementsCount < 2 && (
+          {textElementsCount < 2 && (
             <Button 
               variant="outlined" 
               startIcon={<Add />} 
