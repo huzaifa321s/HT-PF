@@ -114,12 +114,37 @@ const splitPackage = (pkg, maxFirstChunkHeight, maxSubsequentChunkHeight = 420) 
 };
 
 const organizeIntoPages = (standalonePkgs, gridPkgs) => {
-  // Always return exactly one page containing all standalone and grid packages
-  return [{
-    standalone: standalonePkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
-    grid: gridPkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
-    heightUsed: 0
-  }];
+  const pages = [];
+  let currentPage = { standalone: [], grid: [], totalPkgsCount: 0 };
+
+  const startNewPage = () => {
+    if (currentPage.totalPkgsCount > 0) {
+      pages.push(currentPage);
+    }
+    currentPage = { standalone: [], grid: [], totalPkgsCount: 0 };
+  };
+
+  standalonePkgs.forEach((pkg) => {
+    if (currentPage.totalPkgsCount >= 2) {
+      startNewPage();
+    }
+    currentPage.standalone.push({ ...pkg, isSplit: false, itemOffset: 0 });
+    currentPage.totalPkgsCount += 1;
+  });
+
+  gridPkgs.forEach((pkg) => {
+    if (currentPage.totalPkgsCount >= 2) {
+      startNewPage();
+    }
+    currentPage.grid.push({ ...pkg, isSplit: false, itemOffset: 0 });
+    currentPage.totalPkgsCount += 1;
+  });
+
+  if (currentPage.totalPkgsCount > 0 || pages.length === 0) {
+    pages.push(currentPage);
+  }
+
+  return pages;
 };
 
 const PackageVisualBox = ({ 
@@ -337,8 +362,8 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
             gridChunks.push(page.grid.slice(i, i + 2));
           }
 
-          // Calculate sizes based on totalPackagesCount
-          const totalPkgs = standalonePkgs.length + gridPackages.length;
+          // Calculate sizes based on packages count on this page
+          const totalPkgs = page.standalone.length + page.grid.length;
           
           let pageTitleSize = 20;
           let pageTitleMb = "10px";
