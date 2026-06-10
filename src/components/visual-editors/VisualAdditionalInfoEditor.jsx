@@ -1080,13 +1080,27 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
     const spaceLeft = pageContentBottom - currentY;
 
     const isHeading = sec.type === "heading";
-    const requiredSpace = isHeading ? (h + 160) : h;
 
     if (idx === 0) {
       absoluteTops[sec.id] = TOP_PADDING;
       currentY = TOP_PADDING + h + 28;
     } else {
-      if (spaceLeft < requiredSpace) {
+      const isAtPageStart = (currentY === pageIndex * CYCLE + TOP_PADDING);
+      let shouldPush = false;
+      if (spaceLeft < h) {
+        shouldPush = true;
+      } else if (isHeading && idx < orderedSections.length - 1) {
+        // Lookahead: check if the next section fits on this page
+        const nextSec = orderedSections[idx + 1];
+        const nextH = sectionHeights[nextSec.id] || 100;
+        const cappedNextH = Math.min(270, nextH); // cap at 200pt (270px)
+        const requiredSpaceForBoth = h + 28 + cappedNextH;
+        if (spaceLeft < requiredSpaceForBoth) {
+          shouldPush = true;
+        }
+      }
+
+      if (shouldPush && !isAtPageStart) {
         // Push to next page
         const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
         absoluteTops[sec.id] = nextY;
@@ -1102,6 +1116,13 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
   // ── Table absolute top positions (continues from where sections left off) ──
   const tableAbsoluteTops = {};
+  // If there are both sections and tables, tables start on a new page, matching the PDF
+  if (orderedSections.length > 0 && tables.length > 0) {
+    const lastSecY = Math.max(currentY - 28, TOP_PADDING);
+    const currentSectionPageIndex = Math.floor(lastSecY / CYCLE);
+    currentY = (currentSectionPageIndex + 1) * CYCLE + TOP_PADDING;
+  }
+
   tables.forEach((table) => {
     const h = tableHeights[table.id] || 250;
 

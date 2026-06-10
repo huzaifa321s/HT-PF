@@ -166,6 +166,44 @@ const styles = StyleSheet.create({
   },
 });
 
+// Helper to estimate height of a section in points to prevent orphan headings
+const estimateSectionHeight = (sec) => {
+  if (!sec) return 0;
+  let height = 0;
+
+  if (sec.type === "heading") {
+    return 98;
+  }
+
+  // Regular section wrapper has marginBottom: 14 in renderSection
+  height += 14;
+
+  // Title
+  if (sec.title) {
+    if (sec.type === "title") {
+      height += 36;
+    } else {
+      height += 21;
+    }
+  }
+
+  // Content
+  if (sec.content?.trim()) {
+    const text = sec.content.replace(/<[^>]+>/g, "").trim();
+    if (text) {
+      const charCount = text.length;
+      const lines = Math.max(1, Math.ceil(charCount / 75));
+      const lineSpacing = 12.5 * 1.6; // 20pt
+      height += lines * lineSpacing;
+    }
+    if (sec.type === "bullets" || sec.type === "numbered") {
+      height += 12;
+    }
+  }
+
+  return height;
+};
+
 const PdfPageDocument2 = ({
   orderedSections = [],
   tables = [],
@@ -198,8 +236,12 @@ const PdfPageDocument2 = ({
     if (!sec.content?.trim() && !sec.title?.trim()) return null;
 
     if (sec.type === "heading") {
+      const nextSec = orderedSections[idx + 1];
+      const nextHeight = nextSec ? estimateSectionHeight(nextSec) : 100;
+      const mpa = Math.min(200, Math.max(120, nextHeight + 10));
+
       return (
-        <View key={key} style={{ marginBottom: 18, marginTop: 8 }} minPresenceAhead={120}>
+        <View key={key} style={{ marginBottom: 18, marginTop: 8 }} minPresenceAhead={mpa}>
           <Text style={styles.sectionHeading}>{sec.title}</Text>
         </View>
       );
