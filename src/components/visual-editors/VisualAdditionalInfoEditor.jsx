@@ -778,7 +778,7 @@ const SectionToolbar = ({ contentRef }) => {
       className="section-toolbar"
       onFocus={updateActive}
       sx={{
-        position: 'absolute', top: 0, right: 0,
+        position: 'absolute', top: 0, right: '28px',
         display: 'flex', alignItems: 'center', gap: 0.4,
         bgcolor: '#f7f7f7',
         border: '1px solid #e0e0e0',
@@ -853,7 +853,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             className={`action-btns ${Boolean(typeAnchor) || Boolean(alignAnchor) || Boolean(colorAnchor) ? 'menu-open' : ''}`}
             sx={{
               position: "absolute", 
-              left: "14px", 
+              left: "28px", 
               top: isHeading ? "14px" : "4px",
               display: "flex", 
               flexDirection: "column", 
