@@ -6,6 +6,9 @@ export const metadata = {
   title: "Proposal Maker | Humantek",
   description:
     "AI-powered proposal creation tool for agents and admins — live transcription, PDF generation, and business intelligence.",
+  icons: {
+    icon: "/ht-logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
