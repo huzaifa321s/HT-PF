@@ -218,14 +218,15 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
         </Alert>
       )}
 
-      <Box
-        sx={{
-          position: "relative", width: "100%", maxWidth: "800px", height: "1131px",
-          margin: "0 auto", backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
-          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", pt: "100px", pb: "90px", px: "60px",
-          overflow: "hidden" 
-        }}
-      >
+      <Box sx={{ position: "relative", width: "100%", maxWidth: "800px", margin: "0 auto" }}>
+        <Box
+          sx={{
+            position: "relative", width: "100%", height: "1131px",
+            backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", pt: "100px", pb: "90px", px: "60px",
+            overflow: "hidden" 
+          }}
+        >
         {/* Header Overlay */}
         <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none" }}>
           <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
@@ -343,7 +344,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
             )}
           </Box>
         </Box>
-
+      </Box>
         {/* Floating Add buttons on the right side of the page container */}
         {isStudioMode && (
           <Box sx={{ position: "absolute", bottom: "120px", left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>

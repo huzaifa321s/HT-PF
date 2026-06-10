@@ -67,107 +67,109 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
   }, [pages.length, onPageCountChange]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: isStudioMode ? "20px" : "0px", alignItems: "center" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: isStudioMode ? "20px" : "0px", alignItems: "center", width: "100%" }}>
       {pages.map((pageTerms, pageIdx) => {
         const isFirstPage = pageIdx === 0;
 
         return (
-          <Box
-            id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined}
-            key={pageIdx}
-            sx={{
-              position: "relative", width: "100%", maxWidth: "800px", height: "1131px",
-              backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
-              fontFamily: "'Liberation Serif', Times, serif", pt: "50px", pb: "90px", px: "60px",
-              overflow: "hidden"
-            }}
-          >
-            {isStudioMode && isFirstPage && (
-              <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-                <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
-                  <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
-                </Typography>
-              </Box>
-            )}
-
-            {/* Header Overlay */}
-            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none" }}>
-              <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
-            </Box>
-
-            {/* Footer Overlay */}
-            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none" }}>
-              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
-            </Box>
-
-            {/* Content Layer (positive stacking context) */}
-            <Box sx={{ position: "relative", zIndex: 2 }}>
-              <Box sx={{ height: 50 }} />
-
-              <Box sx={{ width: "100%", height: "1px", backgroundColor: "#000", my: "25px" }} />
-
-              {/* Title */}
-              {isFirstPage ? (
-                <EditableText
-                  value={paymentData.title}
-                  fallback="Payment Terms"
-                  isStudioMode={isStudioMode}
-                  onInput={handleTitleInput}
-                  sx={{
-                    fontSize: 30, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                    "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
-                  }}
-                />
-              ) : (
-                <Typography sx={{ fontSize: 20, color: "#000", textAlign: "center", mb: "30px" }}>
-                  {paymentData.title || "Payment Terms"} (Continued)
-                </Typography>
+          <Box key={pageIdx} sx={{ position: "relative", width: "100%", maxWidth: "800px" }}>
+            <Box
+              id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined}
+              sx={{
+                position: "relative", width: "100%", height: "1131px",
+                backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
+                fontFamily: "'Liberation Serif', Times, serif", pt: "50px", pb: "90px", px: "60px",
+                overflow: "hidden"
+              }}
+            >
+              {isStudioMode && isFirstPage && (
+                <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
+                  <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
+                    <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
+                  </Typography>
+                </Box>
               )}
 
-              {/* Terms List */}
-              <Box sx={{ mt: "20px", flexGrow: 1 }}>
-                {pageTerms.length > 0 ? pageTerms.map((item, idx) => (
-                  <Box key={item.globalIndex} sx={{ position: "relative", mb: "0px", "&:hover .term-actions": { opacity: 1 } }}>
-                    <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                      <Typography sx={{ width: "25px", fontSize: 14, fontWeight: "bold", color: "#000", textAlign: "right", pt: "2px" }}>
-                        {item.globalIndex + 1}.
-                      </Typography>
-                      <EditableText
-                        value={item.term}
-                        isStudioMode={isStudioMode}
-                        onInput={(e) => debouncedUpdateTerm(item.globalIndex, e.currentTarget.textContent)}
-                        sx={{
-                          flex: 1, fontSize: 14, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
-                          "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
-                        }}
-                      />
-                    </Box>
+              {/* Header Overlay */}
+              <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none" }}>
+                <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+              </Box>
 
-                    {isStudioMode && (
-                      <Box className="term-actions" sx={{ position: "absolute", right: -30, top: 0, opacity: 0, transition: "opacity 0.2s" }}>
-                        <IconButton size="small" color="error" onClick={() => {
-                          dispatch(deleteTerm(item.globalIndex));
-                          dispatch(showToast({
-                            message: "Term deleted",
-                            severity: "info",
-                            undoAction: restoreTerm({ index: item.globalIndex, value: item.term })
-                          }));
-                        }}>
-                          <Delete fontSize="small" />
-                        </IconButton>
+              {/* Footer Overlay */}
+              <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none" }}>
+                <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+              </Box>
+
+              {/* Content Layer (positive stacking context) */}
+              <Box sx={{ position: "relative", zIndex: 2 }}>
+                <Box sx={{ height: 50 }} />
+
+                <Box sx={{ width: "100%", height: "1px", backgroundColor: "#000", my: "25px" }} />
+
+                {/* Title */}
+                {isFirstPage ? (
+                  <EditableText
+                    value={paymentData.title}
+                    fallback="Payment Terms"
+                    isStudioMode={isStudioMode}
+                    onInput={handleTitleInput}
+                    sx={{
+                      fontSize: 30, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                      "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                    }}
+                  />
+                ) : (
+                  <Typography sx={{ fontSize: 20, color: "#000", textAlign: "center", mb: "30px" }}>
+                    {paymentData.title || "Payment Terms"} (Continued)
+                  </Typography>
+                )}
+
+                {/* Terms List */}
+                <Box sx={{ mt: "20px", flexGrow: 1 }}>
+                  {pageTerms.length > 0 ? pageTerms.map((item, idx) => (
+                    <Box key={item.globalIndex} sx={{ position: "relative", mb: "0px", "&:hover .term-actions": { opacity: 1 } }}>
+                      <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                        <Typography sx={{ width: "25px", fontSize: 14, fontWeight: "bold", color: "#000", textAlign: "right", pt: "2px" }}>
+                          {item.globalIndex + 1}.
+                        </Typography>
+                        <EditableText
+                          value={item.term}
+                          isStudioMode={isStudioMode}
+                          onInput={(e) => debouncedUpdateTerm(item.globalIndex, e.currentTarget.textContent)}
+                          sx={{
+                            flex: 1, fontSize: 14, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
+                            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                          }}
+                        />
                       </Box>
-                    )}
 
-                    {/* Professional Bottom Border */}
-                    {idx < pageTerms.length - 1 && (
-                      <Box sx={{ width: "calc(100% - 30px)", height: "1px", backgroundColor: "#e0e0e0", ml: "30px", mt: "15px", mb: "15px" }} />
-                    )}
-                  </Box>
-                )) : isFirstPage ? (
-                  <Typography sx={{ fontSize: 14, color: "#333333", ml: "5px" }}>No payment terms added yet.</Typography>
-                ) : null}
+                      {isStudioMode && (
+                        <Box className="term-actions" sx={{ position: "absolute", right: -30, top: 0, opacity: 0, transition: "opacity 0.2s" }}>
+                          <IconButton size="small" color="error" onClick={() => {
+                            dispatch(deleteTerm(item.globalIndex));
+                            dispatch(showToast({
+                              message: "Term deleted",
+                              severity: "info",
+                              undoAction: restoreTerm({ index: item.globalIndex, value: item.term })
+                            }));
+                          }}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      )}
+
+                      {/* Professional Bottom Border */}
+                      {idx < pageTerms.length - 1 && (
+                        <Box sx={{ width: "calc(100% - 30px)", height: "1px", backgroundColor: "#e0e0e0", ml: "30px", mt: "15px", mb: "15px" }} />
+                      )}
+                    </Box>
+                  )) : isFirstPage ? (
+                    <Typography sx={{ fontSize: 14, color: "#333333", ml: "5px" }}>No payment terms added yet.</Typography>
+                  ) : null}
+                </Box>
               </Box>
             </Box>
+
             {/* Floating Add Term button on the right side of the last page */}
             {isStudioMode && pageIdx === pages.length - 1 && (
               <Box sx={{ position: "absolute", bottom: "90px", left: "100%", ml: "20px", zIndex: 100 }}>
