@@ -298,11 +298,11 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
 
 // ─── Smart Content Parser ──────────────────────────────────────────────────
 const TYPE_META = {
-  heading:  { label: "Heading",       color: "#a78bfa", bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.3)" },
-  title:    { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)",  border: "rgba(243,168,51,0.3)" },
-  bullets:  { label: "Bullet List",   color: "#22c55e", bg: "rgba(34,197,94,0.12)",   border: "rgba(34,197,94,0.3)" },
-  numbered: { label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)",  border: "rgba(56,189,248,0.3)" },
-  plain:    { label: "Plain Text",    color: "#94a3b8", bg: "rgba(148,163,184,0.1)",  border: "rgba(148,163,184,0.2)" },
+  heading: { label: "Heading", color: "#a78bfa", bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.3)" },
+  title: { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)", border: "rgba(243,168,51,0.3)" },
+  bullets: { label: "Bullet List", color: "#22c55e", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)" },
+  numbered: { label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)" },
+  plain: { label: "Plain Text", color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
 };
 
 const detectSectionType = (block) => {
@@ -340,7 +340,7 @@ const detectSectionType = (block) => {
     const rest = lines.slice(1);
     const restIsBullets = rest.every((l) => bulletPattern.test(l));
     const restIsNumbered = rest.every((l) => numPattern.test(l));
-    if (restIsBullets) return { type: "bullets",  title: firstLine, content: rest.join("\n") };
+    if (restIsBullets) return { type: "bullets", title: firstLine, content: rest.join("\n") };
     if (restIsNumbered) return { type: "numbered", title: firstLine, content: rest.join("\n") };
     return { type: "title", title: firstLine, content: rest.join("\n") };
   }
@@ -504,8 +504,10 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
                       </Typography>
                     )}
                     {sec.content && (
-                      <Typography sx={{ fontSize: 11, color: "#888", whiteSpace: "pre-wrap", lineHeight: 1.6,
-                        display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      <Typography sx={{
+                        fontSize: 11, color: "#888", whiteSpace: "pre-wrap", lineHeight: 1.6,
+                        display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden"
+                      }}>
                         {sec.content}
                       </Typography>
                     )}
@@ -699,7 +701,7 @@ const SectionToolbar = ({ contentRef }) => {
   // Detect active formats — queryCommandState matches execCommand output
   const updateActive = () => {
     setActive({
-      bold:      document.queryCommandState('bold'),
+      bold: document.queryCommandState('bold'),
       underline: document.queryCommandState('underline'),
     });
   };
@@ -739,7 +741,7 @@ const SectionToolbar = ({ contentRef }) => {
     if (!el) return;
     const lines = el.innerText.split('\n');
     const isBullet = lines.some((l) => /^[•\-]\s/.test(l.trim()));
-    const isNum   = lines.some((l) => /^\d+\.\s/.test(l.trim()));
+    const isNum = lines.some((l) => /^\d+\.\s/.test(l.trim()));
     if (listType === 'bullet') {
       el.innerText = isBullet
         ? lines.map((l) => l.replace(/^\s*[•\-]\s?/, '')).join('\n')
@@ -791,10 +793,10 @@ const SectionToolbar = ({ contentRef }) => {
         pointerEvents: 'auto',
       }}
     >
-      <Btn title="Bold"      onClick={() => applyFormat('bold')}      icon={<FormatBold sx={{ fontSize: 14 }} />}       isActive={active.bold} />
+      <Btn title="Bold" onClick={() => applyFormat('bold')} icon={<FormatBold sx={{ fontSize: 14 }} />} isActive={active.bold} />
       <Btn title="Underline" onClick={() => applyFormat('underline')} icon={<FormatUnderlined sx={{ fontSize: 14 }} />} isActive={active.underline} />
       <Box sx={{ width: '1px', height: 16, bgcolor: '#ddd', mx: 0.3 }} />
-      <Btn title="Toggle Bullet List"   onClick={() => toggleList('bullet')}   icon={<FormatListBulleted sx={{ fontSize: 14 }} />}  isActive={false} />
+      <Btn title="Toggle Bullet List" onClick={() => toggleList('bullet')} icon={<FormatListBulleted sx={{ fontSize: 14 }} />} isActive={false} />
       <Btn title="Toggle Numbered List" onClick={() => toggleList('numbered')} icon={<FormatListNumbered sx={{ fontSize: 14 }} />} isActive={false} />
     </Box>
   );
@@ -849,14 +851,14 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
           )}
 
           {/* Action Buttons Container */}
-          <Box 
+          <Box
             className={`action-btns ${Boolean(typeAnchor) || Boolean(alignAnchor) || Boolean(colorAnchor) ? 'menu-open' : ''}`}
             sx={{
-              position: "absolute", 
-              left: "28px", 
-              top: isHeading ? "14px" : "4px",
-              display: "flex", 
-              flexDirection: isHeading ? "row" : "column", 
+              position: "absolute",
+              left: "28px",
+              top: "4px",
+              display: "flex",
+              flexDirection: isHeading ? "row" : "column",
               gap: "6px",
               bgcolor: "#1a1a1a",
               borderRadius: isHeading ? "20px" : "8px",
@@ -1171,11 +1173,11 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
   const handleAddSection = (type) => {
     const defaults = {
-      heading:  { title: "Section Heading",    content: "" },
-      title:    { title: "Sub-Section Title",  content: "<p>Start typing your content here...</p>" },
-      bullets:  { title: "Bullet List",        content: "<ul><li>First point</li><li>Second point</li><li>Third point</li></ul>" },
-      numbered: { title: "Numbered List",      content: "<ol><li>First item</li><li>Second item</li><li>Third item</li></ol>" },
-      plain:    { title: "",                   content: "<p>Plain text paragraph without a title...</p>" },
+      heading: { title: "Section Heading", content: "" },
+      title: { title: "Sub-Section Title", content: "<p>Start typing your content here...</p>" },
+      bullets: { title: "Bullet List", content: "<ul><li>First point</li><li>Second point</li><li>Third point</li></ul>" },
+      numbered: { title: "Numbered List", content: "<ol><li>First item</li><li>Second item</li><li>Third item</li></ol>" },
+      plain: { title: "", content: "<p>Plain text paragraph without a title...</p>" },
     };
     const d = defaults[type] || defaults.title;
     dispatch(addSection({ type, ...d }));
@@ -1282,7 +1284,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
   let lastContentY = Math.max(currentY - 28, TOP_PADDING);
   const derivedPages = Math.floor(lastContentY / CYCLE) + 1;
   const totalPages = Math.max(1, Math.min(derivedPages, maxPageIndex + 1));
-  
+
   // Extend container height in studio mode so the buttons are visible, without generating phantom pages
   const exactContainerHeight = totalPages * PAGE_HEIGHT + (totalPages - 1) * GAP + (isStudioMode ? 120 : 0);
 
@@ -1366,29 +1368,35 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Heading */}
                 <Box onClick={() => handleAddSection("heading")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <Box sx={{ borderBottom: "2px solid #1a1a1a", pb: 0.3, mb: 0.8, bgcolor: "#fff", px: 0.5 }}>
                     <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#1a1a1a", lineHeight: 1.3 }}>Heading</Typography>
                   </Box>
-                  <Typography sx={{ fontSize: 9, color: "#666" }}>Large section divider with bottom border<br/>(e.g. Deliverables, Timeline, Pricing)</Typography>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Large section divider with bottom border<br />(e.g. Deliverables, Timeline, Pricing)</Typography>
                 </Box>
 
                 {/* Title */}
                 <Box onClick={() => handleAddSection("title")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Sub-Heading</Typography>
                     <Typography sx={{ fontSize: 9.5, color: "#666", lineHeight: 1.5 }}>Description text here...</Typography>
                   </Box>
-                  <Typography sx={{ fontSize: 9, color: "#666" }}>Sub-section with title + content<br/>(e.g. Monthly Deliverables)</Typography>
+                  <Typography sx={{ fontSize: 9, color: "#666" }}>Sub-section with title + content<br />(e.g. Monthly Deliverables)</Typography>
                 </Box>
 
                 {/* Bullet List */}
                 <Box onClick={() => handleAddSection("bullets")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Bullet List</Typography>
                     {["• First point", "• Second point", "• Third point"].map((t, i) => (
@@ -1400,8 +1408,10 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Numbered List */}
                 <Box onClick={() => handleAddSection("numbered")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4 }}>Numbered List</Typography>
                     {["1. First item", "2. Second item", "3. Third item"].map((t, i) => (
@@ -1413,9 +1423,11 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
                 {/* Plain text */}
                 <Box onClick={() => handleAddSection("plain")}
-                  sx={{ cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                  sx={{
+                    cursor: "pointer", p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
                     gridColumn: "1 / -1",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <Box sx={{ bgcolor: "#fff", px: 0.5, mb: 0.5 }}>
                     <Typography sx={{ fontSize: 9.5, color: "#555", lineHeight: 1.7 }}>Plain paragraph text without a heading, good for introductions or notes.</Typography>
                   </Box>
@@ -1427,15 +1439,19 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
               <Typography sx={{ color: "#888", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, px: 1, mb: 1 }}>Tables</Typography>
               <Box sx={{ display: "flex", gap: 1, px: 0.5 }}>
                 <Box onClick={() => handleAddTable(2)}
-                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
                   <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>2-Column Table</Typography>
                   <Typography sx={{ fontSize: 9, color: "#666" }}>Service / Price</Typography>
                 </Box>
                 <Box onClick={() => handleAddTable(3)}
-                  sx={{ cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
-                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" } }}>
+                  sx={{
+                    cursor: "pointer", flex: 1, p: 1.5, borderRadius: '10px', bgcolor: "#111", border: "1px solid rgba(255,255,255,0.08)",
+                    "&:hover": { border: "1px solid #f3a833", bgcolor: "rgba(243,168,51,0.06)" }
+                  }}>
                   <TableChart sx={{ fontSize: 20, color: "#f3a833", mb: 0.5 }} />
                   <Typography sx={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>3-Column Table</Typography>
                   <Typography sx={{ fontSize: 9, color: "#666" }}>Phase / Deliverable / Timeline</Typography>
