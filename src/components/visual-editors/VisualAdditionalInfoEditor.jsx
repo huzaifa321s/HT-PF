@@ -436,9 +436,61 @@ const linesToHtml = (lines, listType = 'ul') => {
   return `<${tag}>${items.join('')}</${tag}>`;
 };
 
-// ── 6. Smart split: breaks text into logical blocks ──────────────────────────
+// ── 6. Convert mixed plain-text lines to HTML structure ──────────────────────
+const formatLinesToHtml = (lines) => {
+  const result = [];
+  let currentList = [];
+  let currentListType = null; // 'ul' or 'ol'
+  let currentPara = [];
+
+  const flushList = () => {
+    if (currentList.length > 0) {
+      result.push(linesToHtml(currentList, currentListType));
+      currentList = [];
+      currentListType = null;
+    }
+  };
+
+  const flushPara = () => {
+    if (currentPara.length > 0) {
+      result.push(`<p>${currentPara.join(' ')}</p>`);
+      currentPara = [];
+    }
+  };
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (isBulletLine(trimmed)) {
+      flushPara();
+      if (currentListType && currentListType !== 'ul') {
+        flushList();
+      }
+      currentListType = 'ul';
+      currentList.push(line);
+    } else if (isNumberedLine(trimmed)) {
+      flushPara();
+      if (currentListType && currentListType !== 'ol') {
+        flushList();
+      }
+      currentListType = 'ol';
+      currentList.push(line);
+    } else {
+      flushList();
+      if (trimmed) {
+        currentPara.push(trimmed);
+      }
+    }
+  });
+
+  flushList();
+  flushPara();
+  return result.join('');
+};
+
+// ── 7. Smart split: breaks text into logical blocks ──────────────────────────
+// KEY FIX: when ANY heading is detected, ALWAYS flush current block first.
+// Also flushes when transitioning between list blocks and plain paragraphs.
 const splitIntoBlocks = (text) => {
-  // Normalize newlines
   const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const rawLines   = normalized.split('\n');
 
@@ -446,56 +498,56 @@ const splitIntoBlocks = (text) => {
   let current  = [];
 
   const flush = () => {
-    if (current.length > 0) {
-      blocks.push(current.join('\n').trim());
-      current = [];
+    const joined = current.join('\n').trim();
+    if (joined) {
+      blocks.push(joined);
     }
+    current = [];
   };
 
-  let i = 0;
-  while (i < rawLines.length) {
+  for (let i = 0; i < rawLines.length; i++) {
     const line = rawLines[i];
     const trimmed = line.trim();
 
     // Empty line → paragraph break
     if (!trimmed) {
       flush();
-      i++;
       continue;
     }
 
     const hScore = scoreAsHeading(trimmed);
+    const isHeading = hScore >= 45;
+    const isList = isBulletLine(trimmed) || isNumberedLine(trimmed);
 
-    // A high-confidence heading on its own line → always its own block
-    if (hScore >= 45 && current.length > 0) {
-      // Check if the CURRENT block is NOT a heading — if so, flush first
-      const currentFirstLine = current[0]?.trim() || '';
-      const currentHScore = scoreAsHeading(currentFirstLine);
-      if (currentHScore < 45) {
-        flush();
-      }
+    if (current.length === 0) {
+      current.push(line);
+      continue;
+    }
+
+    const firstLine = current[0].trim();
+    const firstIsHeading = scoreAsHeading(firstLine) >= 45;
+    const currentHasList = current.some(l => isBulletLine(l) || isNumberedLine(l));
+
+    // When to flush and start a new block:
+    if (isHeading) {
+      // Always flush when hitting a new heading
+      flush();
+    } else if (isList && !firstIsHeading && !currentHasList) {
+      // Transitioning from plain text (without heading) to a list -> flush plain text first
+      flush();
+    } else if (!isList && currentHasList) {
+      // Transitioning from a list block to a non-list line -> flush the list first
+      flush();
     }
 
     current.push(line);
-
-    // If this heading line has no following content on same block, flush immediately
-    // (so it stays standalone)
-    if (hScore >= 60) {
-      // Peek: if next non-empty line is also a heading or blank, flush now
-      const nextLine = rawLines[i + 1]?.trim() || '';
-      if (!nextLine || scoreAsHeading(nextLine) >= 45) {
-        flush();
-      }
-    }
-
-    i++;
   }
   flush();
 
-  return blocks.filter(b => b.length > 0);
+  return blocks;
 };
 
-// ── 7. Main type classifier for a single block ───────────────────────────────
+// ── 8. Main type classifier for a single block ───────────────────────────────
 const classifyBlock = (block, idx) => {
   if (!block.trim()) return null;
 
@@ -507,7 +559,7 @@ const classifyBlock = (block, idx) => {
   // ── Markdown heading (#)
   if (/^#{1,4}\s/.test(firstLine)) {
     const title   = firstLine.replace(/^#+\s*/, '').replace(/:$/, '').trim();
-    const content = restLines.length ? `<p>${restLines.join(' ')}</p>` : '';
+    const content = restLines.length ? formatLinesToHtml(restLines) : '';
     // If it's a top heading (# or ##) with no content → heading type
     if (/^#{1,2}\s/.test(firstLine) && !restLines.length) {
       return { type: 'heading', title, content: '' };
@@ -524,18 +576,17 @@ const classifyBlock = (block, idx) => {
   // ── First line is a heading, rest is content
   if (hScore >= 45 && restLines.length > 0) {
     const cleanTitle = firstLine.replace(/^[\d]+[.):]\s*/, '').replace(/:$/, '').trim();
+    const content = formatLinesToHtml(restLines);
+
+    // Check if the rest is purely a list
     const allBullets  = restLines.every(isBulletLine);
     const allNumbered = restLines.every(isNumberedLine);
 
-    if (allBullets) {
-      return { type: 'bullets', title: cleanTitle, content: linesToHtml(restLines, 'ul') };
-    }
-    if (allNumbered) {
-      return { type: 'numbered', title: cleanTitle, content: linesToHtml(restLines, 'ol') };
-    }
-    // Mixed content or plain paragraph
-    const htmlContent = `<p>${restLines.join(' ')}</p>`;
-    return { type: 'title', title: cleanTitle, content: htmlContent };
+    let type = 'title';
+    if (allBullets) type = 'bullets';
+    else if (allNumbered) type = 'numbered';
+
+    return { type, title: cleanTitle, content };
   }
 
   // ── All lines are bullets
@@ -552,23 +603,24 @@ const classifyBlock = (block, idx) => {
   if (restLines.length > 0 && firstLine.length < 80 && !/[.!?]$/.test(firstLine)) {
     const allBullets  = restLines.every(isBulletLine);
     const allNumbered = restLines.every(isNumberedLine);
+    const content = formatLinesToHtml(restLines);
+
     if (allBullets) {
-      return { type: 'bullets', title: firstLine.replace(/:$/, '').trim(), content: linesToHtml(restLines, 'ul') };
+      return { type: 'bullets', title: firstLine.replace(/:$/, '').trim(), content };
     }
     if (allNumbered) {
-      return { type: 'numbered', title: firstLine.replace(/:$/, '').trim(), content: linesToHtml(restLines, 'ol') };
+      return { type: 'numbered', title: firstLine.replace(/:$/, '').trim(), content };
     }
-    // Could be a title + paragraph
     if (restLines.length >= 1 && hScore >= 20) {
-      return { type: 'title', title: firstLine.replace(/:$/, '').trim(), content: `<p>${restLines.join(' ')}</p>` };
+      return { type: 'title', title: firstLine.replace(/:$/, '').trim(), content };
     }
   }
 
   // ── Default: plain paragraph
-  return { type: 'plain', title: '', content: `<p>${lines.join(' ')}</p>` };
+  return { type: 'plain', title: '', content: formatLinesToHtml(lines) };
 };
 
-// ── 8. Post-process: merge orphan headings with following title/plain ─────────
+// ── 9. Post-process: merge orphan headings with following title/plain ─────────
 const postProcess = (raw) => {
   const out = [];
   let i = 0;
@@ -589,22 +641,171 @@ const postProcess = (raw) => {
   return out;
 };
 
-// ── 9. Master parse entry-point ───────────────────────────────────────────────
+// ── 10. Intelligent HTML DOM parser ──────────────────────────────────────────
+const parseHtmlToSections = (htmlString) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, "text/html");
+
+  const sections = [];
+  let currentSection = null;
+
+  const flushCurrent = () => {
+    if (currentSection) {
+      const cleanTitle = currentSection.title.trim();
+      let cleanContent = currentSection.content.trim();
+
+      if (currentSection.type === 'bullets' && !cleanContent.startsWith('<ul')) {
+        cleanContent = `<ul>${cleanContent}</ul>`;
+      } else if (currentSection.type === 'numbered' && !cleanContent.startsWith('<ol')) {
+        cleanContent = `<ol>${cleanContent}</ol>`;
+      }
+
+      if (cleanTitle || cleanContent) {
+        sections.push({
+          type: currentSection.type,
+          title: cleanTitle,
+          content: cleanContent
+        });
+      }
+      currentSection = null;
+    }
+  };
+
+  const processNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent.trim();
+      if (text) {
+        if (!currentSection) {
+          currentSection = { type: 'plain', title: '', content: `<p>${text}</p>` };
+        } else {
+          currentSection.content += ` ${text}`;
+        }
+      }
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const tagName = node.tagName.toLowerCase();
+
+    // Headings
+    if (/^h[1-6]$/.test(tagName)) {
+      flushCurrent();
+      currentSection = {
+        type: tagName === 'h1' || tagName === 'h2' ? 'heading' : 'title',
+        title: node.textContent.trim(),
+        content: ''
+      };
+      return;
+    }
+
+    // Paragraphs / Divs
+    if (tagName === 'p' || tagName === 'div' || tagName === 'blockquote') {
+      const hasHeading = node.querySelector('h1, h2, h3, h4, h5, h6');
+      const hasList = node.querySelector('ul, ol, li');
+      if (hasHeading || hasList) {
+        Array.from(node.childNodes).forEach(processNode);
+      } else {
+        let cleanHtml = node.innerHTML
+          .replace(/style="[^"]*"/gi, '')
+          .replace(/class="[^"]*"/gi, '')
+          .replace(/<span[^>]*>/gi, '')
+          .replace(/<\/span>/gi, '')
+          .trim();
+
+        const text = node.textContent.trim();
+        if (text) {
+          if (isBulletLine(text)) {
+            const bulletFree = cleanHtml.replace(BULLET_PATTERN, '').trim();
+            if (!currentSection || currentSection.type !== 'bullets') {
+              flushCurrent();
+              currentSection = { type: 'bullets', title: '', content: `<li>${bulletFree}</li>` };
+            } else {
+              currentSection.content += `<li>${bulletFree}</li>`;
+            }
+          } else if (isNumberedLine(text)) {
+            const numFree = cleanHtml.replace(NUM_PATTERN, '').trim();
+            if (!currentSection || currentSection.type !== 'numbered') {
+              flushCurrent();
+              currentSection = { type: 'numbered', title: '', content: `<li>${numFree}</li>` };
+            } else {
+              currentSection.content += `<li>${numFree}</li>`;
+            }
+          } else {
+            const hScore = scoreAsHeading(text);
+            if (hScore >= 45) {
+              flushCurrent();
+              currentSection = { type: hScore >= 60 ? 'heading' : 'title', title: text, content: '' };
+            } else {
+              if (!currentSection) {
+                currentSection = { type: 'plain', title: '', content: `<p>${cleanHtml}</p>` };
+              } else {
+                if ((currentSection.type === 'heading' || currentSection.type === 'title') && !currentSection.content) {
+                  currentSection.content = `<p>${cleanHtml}</p>`;
+                } else {
+                  currentSection.content += `<p>${cleanHtml}</p>`;
+                }
+              }
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    // Lists
+    if (tagName === 'ul' || tagName === 'ol') {
+      const type = tagName === 'ul' ? 'bullets' : 'numbered';
+      const cleanListItems = Array.from(node.querySelectorAll('li')).map(li => {
+        let html = li.innerHTML
+          .replace(/style="[^"]*"/gi, '')
+          .replace(/class="[^"]*"/gi, '')
+          .replace(/<span[^>]*>/gi, '')
+          .replace(/<\/span>/gi, '')
+          .trim();
+        return `<li>${html}</li>`;
+      }).filter(Boolean).join('');
+
+      if (currentSection && (currentSection.type === 'heading' || currentSection.type === 'title') && !currentSection.content) {
+        currentSection.type = type;
+        currentSection.content = cleanListItems;
+      } else {
+        flushCurrent();
+        currentSection = {
+          type,
+          title: '',
+          content: cleanListItems
+        };
+      }
+      return;
+    }
+
+    // Fallback: traverse children
+    Array.from(node.childNodes).forEach(processNode);
+  };
+
+  Array.from(doc.body.childNodes).forEach(processNode);
+  flushCurrent();
+
+  return sections;
+};
+
+// ── 11. Master parse entry-point ──────────────────────────────────────────────
 const parseContent = (raw) => {
-  // 1. Strip HTML if pasted from rich-text / Word / AI output
+  // 1. If it looks like HTML, try parsing as HTML structure first
   const isHtml = /<[a-z][\s\S]*>/i.test(raw);
-  const text   = isHtml ? stripHtmlAndDecode(raw) : raw;
+  if (isHtml) {
+    const htmlSections = parseHtmlToSections(raw);
+    if (htmlSections.length > 0) {
+      return htmlSections.map((s, i) => ({ ...s, _id: i }));
+    }
+  }
 
-  // 2. Split into logical blocks
+  // 2. Fallback to intelligent plain-text split & classification
+  const text = isHtml ? stripHtmlAndDecode(raw) : raw;
   const blocks = splitIntoBlocks(text);
-
-  // 3. Classify each block
   const classified = blocks.map((b, i) => classifyBlock(b, i)).filter(Boolean);
-
-  // 4. Post-process
   const processed = postProcess(classified);
-
-  // 5. Assign preview _id
   return processed.map((s, i) => ({ ...s, _id: i }));
 };
 
@@ -613,9 +814,17 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
   const [rawText, setRawText] = useState("");
   const [sections, setSections] = useState([]);
   const [parsed, setParsed] = useState(false);
+  const [copiedHtml, setCopiedHtml] = useState("");
+  const pastedRef = useRef(false);
 
   const handleParse = () => {
-    const result = parseContent(rawText);
+    let result = [];
+    if (copiedHtml) {
+      result = parseHtmlToSections(copiedHtml);
+    }
+    if (result.length === 0) {
+      result = parseContent(rawText);
+    }
     setSections(result);
     setParsed(true);
   };
@@ -634,12 +843,13 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
     dispatch(showToast({ message: `✅ ${sections.length} sections added successfully`, severity: "success" }));
     setRawText("");
     setSections([]);
+    setCopiedHtml("");
     setParsed(false);
     onClose();
   };
 
   const handleClose = () => {
-    setRawText(""); setSections([]); setParsed(false); onClose();
+    setRawText(""); setSections([]); setCopiedHtml(""); setParsed(false); onClose();
   };
 
   const TYPES = Object.keys(TYPE_META);
@@ -666,7 +876,24 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
       <DialogContent sx={{ pt: 3, display: "flex", gap: 3, flexDirection: { xs: "column", md: "row" } }}>
         {/* LEFT: Paste Area */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="caption" sx={{ color: "#888", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, display: "block", mb: 1 }}>Paste Content Here</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <Typography variant="caption" sx={{ color: "#888", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Paste Content Here</Typography>
+            {copiedHtml && (
+              <Chip
+                label="✨ Rich Text / Word Captured"
+                size="small"
+                sx={{
+                  ml: 1.5,
+                  bgcolor: "rgba(167,139,250,0.15)",
+                  color: "#a78bfa",
+                  border: "1px solid rgba(167,139,250,0.3)",
+                  fontSize: 10,
+                  height: 18,
+                  fontWeight: 600
+                }}
+              />
+            )}
+          </Box>
           <TextField
             multiline
             minRows={14}
@@ -674,7 +901,21 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             fullWidth
             placeholder={`Paste any content here. Works with:\n\n# Scope of Work\n\n1. Social Media Management\nWe will handle all platforms...\n\n• Increase brand awareness\n• Boost engagement\n• Drive conversions\n\nTimeline:\nPhase 1 – Setup (Week 1-2)\nPhase 2 – Execution (Week 3+)`}
             value={rawText}
-            onChange={(e) => { setRawText(e.target.value); setParsed(false); }}
+            onPaste={(e) => {
+              const html = e.clipboardData.getData("text/html");
+              if (html) {
+                setCopiedHtml(html);
+                pastedRef.current = true;
+              }
+            }}
+            onChange={(e) => {
+              setRawText(e.target.value);
+              setParsed(false);
+              if (!pastedRef.current) {
+                setCopiedHtml("");
+              }
+              pastedRef.current = false;
+            }}
             InputProps={{ sx: { fontFamily: "monospace", fontSize: 12.5, color: "#e0e0e0", bgcolor: "#141414", borderRadius: '10px', alignItems: "flex-start" } }}
             sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(167,139,250,0.3)" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" } }}
           />
