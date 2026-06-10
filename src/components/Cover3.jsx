@@ -245,7 +245,8 @@ const PdfPageDocument2 = ({
           <Text style={[
             styles.sectionHeading,
             sec.titleAlign && { textAlign: sec.titleAlign },
-            sec.color && { color: sec.color, borderBottomColor: sec.color }
+            sec.color && { color: sec.color, borderBottomColor: sec.color },
+            sec.hideBorder && { borderBottomWidth: 0 }
           ]}>
             {sec.title}
           </Text>

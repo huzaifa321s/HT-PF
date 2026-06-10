@@ -10,7 +10,7 @@ import {
   Add, Delete, Edit, FormatListNumbered, FormatListBulleted,
   Title, TextFields, TableChart, AddCircleOutline, PlaylistAdd, ContentPaste,
   AutoFixHigh, Article, FormatBold, FormatUnderlined,
-  FormatAlignLeft, FormatAlignCenter, FormatAlignRight, ColorLens,
+  FormatAlignLeft, FormatAlignCenter, FormatAlignRight, ColorLens, HorizontalRule,
 } from "@mui/icons-material";
 import {
   updateSection, addSection, deleteSection, restoreSection,
@@ -852,29 +852,38 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
           <Box 
             className={`action-btns ${Boolean(typeAnchor) || Boolean(alignAnchor) || Boolean(colorAnchor) ? 'menu-open' : ''}`}
             sx={{
-              position: "absolute", left: 6, top: isHeading ? 4 : 0,
-              display: "flex", flexDirection: "row", gap: "6px",
+              position: "absolute", 
+              left: "14px", 
+              top: isHeading ? "14px" : "4px",
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "6px",
+              bgcolor: "#1a1a1a",
+              borderRadius: "8px",
+              p: "4px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              border: "1px solid rgba(243,168,51,0.15)",
               opacity: 0,
               transition: "opacity 0.2s",
               zIndex: 30,
             }}
           >
-            <Tooltip title="Delete Section">
+            <Tooltip title="Delete Section" placement="right">
               <IconButton
                 onClick={() => {
                   dispatch(deleteSection(section.id));
                   dispatch(showToast({ message: "Section deleted", severity: "info", undoAction: restoreSection({ section, index }) }));
                 }}
-                sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", borderRadius: '6px', "&:hover": { bgcolor: "rgba(244,67,54,0.2)" } }}
+                sx={{ width: 26, height: 26, p: 0, color: "#ef4444", borderRadius: '6px', "&:hover": { bgcolor: "rgba(239,68,68,0.15)" } }}
               >
                 <Delete sx={{ fontSize: 15 }} />
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Change Section Type">
+            <Tooltip title="Change Section Type" placement="right">
               <IconButton
                 onClick={(e) => setTypeAnchor(e.currentTarget)}
-                sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+                sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
               >
                 <Edit sx={{ fontSize: 15 }} />
               </IconButton>
@@ -882,10 +891,10 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
 
             {isHeading && (
               <>
-                <Tooltip title="Align Heading">
+                <Tooltip title="Align Heading" placement="right">
                   <IconButton
                     onClick={(e) => setAlignAnchor(e.currentTarget)}
-                    sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+                    sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
                   >
                     {section.titleAlign === "center" ? (
                       <FormatAlignCenter sx={{ fontSize: 15 }} />
@@ -897,12 +906,29 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Heading Color">
+                <Tooltip title="Heading Color" placement="right">
                   <IconButton
                     onClick={(e) => setColorAnchor(e.currentTarget)}
-                    sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+                    sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
                   >
                     <ColorLens sx={{ fontSize: 15 }} />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title={section.hideBorder ? "Show Horizontal Bar" : "Hide Horizontal Bar"} placement="right">
+                  <IconButton
+                    onClick={() => {
+                      dispatch(updateSection({ id: section.id, hideBorder: !section.hideBorder }));
+                    }}
+                    sx={{
+                      width: 26, height: 26, p: 0,
+                      color: section.hideBorder ? "#888" : "#f3a833",
+                      borderRadius: '6px',
+                      bgcolor: section.hideBorder ? "transparent" : "rgba(243,168,51,0.12)",
+                      "&:hover": { bgcolor: "rgba(243,168,51,0.15)" }
+                    }}
+                  >
+                    <HorizontalRule sx={{ fontSize: 15 }} />
                   </IconButton>
                 </Tooltip>
               </>
@@ -1016,7 +1042,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
       {/* ── Heading type: large title + thick bottom border (like "Deliverables", "Timeline", "Pricing") ── */}
       {isHeading && (
         <Box sx={{
-          borderBottom: `2px solid ${section.color || "#1a1a1a"}`,
+          borderBottom: section.hideBorder ? "none" : `2px solid ${section.color || "#1a1a1a"}`,
           mb: "16px",
           pb: "6px",
         }}>
