@@ -246,32 +246,35 @@ const splitPackage = (pkg, maxFirstChunkHeight, maxSubsequentChunkHeight = 420) 
 
 const organizeIntoPages = (standalonePkgs, gridPkgs) => {
   const pages = [];
-  let currentPage = { standalone: [], grid: [], totalPkgsCount: 0 };
+  let currentPage = { standalone: [], grid: [] };
+
+  const getRowsCount = (page) => {
+    return page.standalone.length + Math.ceil(page.grid.length / 2);
+  };
 
   const startNewPage = () => {
-    if (currentPage.totalPkgsCount > 0) {
+    if (currentPage.standalone.length > 0 || currentPage.grid.length > 0) {
       pages.push(currentPage);
     }
-    currentPage = { standalone: [], grid: [], totalPkgsCount: 0 };
+    currentPage = { standalone: [], grid: [] };
   };
 
   standalonePkgs.forEach((pkg) => {
-    if (currentPage.totalPkgsCount >= 2) {
+    if (getRowsCount(currentPage) >= 2) {
       startNewPage();
     }
     currentPage.standalone.push({ ...pkg, isSplit: false, itemOffset: 0 });
-    currentPage.totalPkgsCount += 1;
   });
 
   gridPkgs.forEach((pkg) => {
-    if (currentPage.totalPkgsCount >= 2) {
+    const isStartingNewRow = (currentPage.grid.length % 2 === 0);
+    if (isStartingNewRow && getRowsCount(currentPage) >= 2) {
       startNewPage();
     }
     currentPage.grid.push({ ...pkg, isSplit: false, itemOffset: 0 });
-    currentPage.totalPkgsCount += 1;
   });
 
-  if (currentPage.totalPkgsCount > 0 || pages.length === 0) {
+  if (currentPage.standalone.length > 0 || currentPage.grid.length > 0 || pages.length === 0) {
     pages.push(currentPage);
   }
 
@@ -386,8 +389,8 @@ const PdfPricingPage = ({
           gridChunks.push(page.grid.slice(i, i + 2));
         }
 
-        // Calculate sizes based on packages count on this page
-        const totalPkgs = page.standalone.length + page.grid.length;
+        // Calculate sizes based on vertical rows count on this page
+        const totalPkgs = page.standalone.length + Math.ceil(page.grid.length / 2);
 
         let pageTitleSize = 20;
         let pageTitleMb = 10;
