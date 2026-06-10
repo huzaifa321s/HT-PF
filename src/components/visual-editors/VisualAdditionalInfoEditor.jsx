@@ -364,35 +364,72 @@ const stripHtmlAndDecode = (html) => {
 };
 
 // ── 3. Check if a line looks like a HEADING ──────────────────────────────────
-const scoreAsHeading = (line) => {
-  let score = 0;
+const scoreAsHeading = (line, prevLine = "") => {
   const text = line.trim();
-  const lower = text.toLowerCase().replace(/[^a-z0-9\s&/]/g, '').trim();
-
   if (!text || text.length > 120) return 0;
 
-  // Markdown heading (#, ##, ###)
+  // 1. Lowercase start → never a heading
+  const firstChar = text.charAt(0);
+  const isLowerChar = firstChar === firstChar.toLowerCase() && firstChar !== firstChar.toUpperCase();
+  if (isLowerChar) {
+    return 0;
+  }
+
+  // 2. Markdown heading → always 100
   if (/^#{1,4}\s/.test(text)) return 100;
+
+  let score = 0;
+  const lower = text.toLowerCase().replace(/[^a-z0-9\s&/]/g, '').trim();
+
+  // Check punctuation of previous line to see if this is a continuation
+  let prevLineContinuation = false;
+  if (prevLine) {
+    const prevTrim = prevLine.trim();
+    if (prevTrim) {
+      const endsWithPunctuation = /[.!?\*:;]$/.test(prevTrim);
+      const isPrevList = BULLET_PATTERN.test(prevTrim) || NUM_PATTERN.test(prevTrim);
+      // Recursively score previous line as heading (no nesting prevLine to avoid infinite loop)
+      const isPrevHeading = scoreAsHeading(prevTrim) >= 45;
+      if (!endsWithPunctuation && !isPrevList && !isPrevHeading) {
+        prevLineContinuation = true;
+      }
+    }
+  }
 
   // ALL CAPS, short, no sentence-ending punctuation
   const isAllCaps = text === text.toUpperCase() && /[A-Z]/.test(text);
   if (isAllCaps && text.length >= 3 && text.length <= 80 && !/[.?!]$/.test(text)) score += 50;
 
   // Numbered heading: "1. Scope of Work", "3. Deliverables"
-  if (/^\d+[.):]\s+[A-Z]/.test(text) && text.length < 80) score += 40;
+  const isNumbered = /^\d+[.):]\s+[A-Z]/.test(text);
+  if (isNumbered && text.length < 80) score += 40;
 
   // Lettered heading: "A. Introduction"
-  if (/^[A-Z][.):]\s+[A-Z]/.test(text) && text.length < 80) score += 35;
+  const isLettered = /^[A-Z][.):]\s+[A-Z]/.test(text);
+  if (isLettered && text.length < 80) score += 35;
 
   // Roman numeral heading: "I. Overview"
-  if (/^(I|II|III|IV|V|VI|VII|VIII|IX|X)[.):]\s+[A-Z]/i.test(text) && text.length < 80) score += 35;
+  const isRoman = /^(I|II|III|IV|V|VI|VII|VIII|IX|X)[.):]\s+[A-Z]/i.test(text);
+  if (isRoman && text.length < 80) score += 35;
 
-  // Keyword match (exact or contained)
-  if (HEADING_KEYWORDS.some(kw => lower === kw || lower.startsWith(kw + ' ') || lower.endsWith(' ' + kw))) {
-    score += 45;
+  // Keyword match
+  const isExactKeyword = HEADING_KEYWORDS.some(kw => lower === kw);
+  const isSuffixOrPrefixKeyword = HEADING_KEYWORDS.some(kw => lower.startsWith(kw + ' ') || lower.endsWith(' ' + kw));
+
+  if (isExactKeyword) {
+    score += 55;
+  } else if (isSuffixOrPrefixKeyword) {
+    if (text.split(/\s+/).length <= 4) {
+      score += 35;
+    }
   }
 
-  // Title Case: Most words capitalized, short line, no period at end
+  // Apply previous line continuation penalty if it is not an exact keyword, markdown, or numbered heading
+  if (prevLineContinuation && !isExactKeyword && !isNumbered && !isLettered && !isRoman) {
+    score -= 45;
+  }
+
+  // Title Case
   const words = text.split(/\s+/);
   const capitalizedWords = words.filter(w => w.length > 2 && w[0] === w[0].toUpperCase());
   const titleCaseRatio = capitalizedWords.length / Math.max(words.length, 1);
@@ -400,17 +437,11 @@ const scoreAsHeading = (line) => {
     score += 25;
   }
 
-  // Colon at end ("Scope of Work:") — classic heading marker
   if (/:[\s]*$/.test(text) && text.length < 80) score += 30;
 
-  // Ends with sentence punctuation → less likely a heading
   if (/[.!?]$/.test(text)) score -= 30;
 
-  // Very long → less likely
   if (text.length > 90) score -= 20;
-
-  // Contains multiple sentences → not a heading
-  if ((text.match(/[.!?]\s+[A-Z]/g) || []).length > 0) score -= 40;
 
   return Math.max(score, 0);
 };
@@ -515,7 +546,8 @@ const splitIntoBlocks = (text) => {
       continue;
     }
 
-    const hScore = scoreAsHeading(trimmed);
+    const prevLine = rawLines[i - 1] || "";
+    const hScore = scoreAsHeading(trimmed, prevLine);
     const isHeading = hScore >= 45;
     const isList = isBulletLine(trimmed) || isNumberedLine(trimmed);
 
