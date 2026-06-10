@@ -385,3 +385,13 @@ body::-webkit-scrollbar-thumb:hover,
   font-weight: 800;
   font-style: normal;
 }
+
+/* Force elements inside proposal pages and previews to inherit the page's font family rather than using MUI root theme */
+.pdf-page-container *,
+.sidebar-scroll-forced * {
+  font-family: inherit;
+}
+.pdf-page-container .MuiTypography-root,
+.sidebar-scroll-forced .MuiTypography-root {
+  font-family: inherit !important;
+}
