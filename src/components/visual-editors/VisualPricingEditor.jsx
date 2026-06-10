@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, Button, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
 import { Add, Delete, Edit, ColorLens } from "@mui/icons-material";
@@ -166,8 +166,6 @@ const PackageVisualBox = ({
 }) => {
   const dispatch = useDispatch();
   const [colorAnchor, setColorAnchor] = useState(null);
-  const [isDraggingTop, setIsDraggingTop] = useState(false);
-  const [isDraggingBottom, setIsDraggingBottom] = useState(false);
 
   const handleFieldInput = (field, e) => onUpdate(field, e.currentTarget.textContent);
 
@@ -201,225 +199,22 @@ const PackageVisualBox = ({
     headerBarHeight = 2;
   }
 
-  // Handle global cursor style while dragging
-  useEffect(() => {
-    if (isDraggingTop || isDraggingBottom) {
-      document.body.style.cursor = "ns-resize";
-      document.body.style.userSelect = "none";
-    } else {
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    }
-    return () => {
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-  }, [isDraggingTop, isDraggingBottom]);
-
-  const handleDragStartTop = (e) => {
-    if (!isStudioMode) return;
-    e.preventDefault();
-    setIsDraggingTop(true);
-    const startY = e.clientY;
-    const startMargin = pkg.marginTop || 0;
-
-    const handleMouseMove = (moveEvent) => {
-      const deltaY = moveEvent.clientY - startY;
-      const newMargin = Math.max(-60, Math.min(150, startMargin + deltaY));
-      onUpdate("marginTop", newMargin);
-    };
-
-    const handleMouseUp = () => {
-      setIsDraggingTop(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleTouchStartTop = (e) => {
-    if (!isStudioMode) return;
-    setIsDraggingTop(true);
-    const startY = e.touches[0].clientY;
-    const startMargin = pkg.marginTop || 0;
-
-    const handleTouchMove = (moveEvent) => {
-      const deltaY = moveEvent.touches[0].clientY - startY;
-      const newMargin = Math.max(-60, Math.min(150, startMargin + deltaY));
-      onUpdate("marginTop", newMargin);
-    };
-
-    const handleTouchEnd = () => {
-      setIsDraggingTop(false);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
-
-    document.addEventListener("touchmove", handleTouchMove, { passive: true });
-    document.addEventListener("touchend", handleTouchEnd);
-  };
-
-  const handleDragStartBottom = (e) => {
-    if (!isStudioMode) return;
-    e.preventDefault();
-    setIsDraggingBottom(true);
-    const boxElement = e.currentTarget.parentElement;
-    const startHeight = boxElement ? boxElement.getBoundingClientRect().height : (pkg.minHeight || 200);
-    const startY = e.clientY;
-
-    const handleMouseMove = (moveEvent) => {
-      const deltaY = moveEvent.clientY - startY;
-      const newHeight = Math.max(150, Math.min(800, startHeight + deltaY));
-      onUpdate("minHeight", newHeight);
-    };
-
-    const handleMouseUp = () => {
-      setIsDraggingBottom(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleTouchStartBottom = (e) => {
-    if (!isStudioMode) return;
-    setIsDraggingBottom(true);
-    const boxElement = e.currentTarget.parentElement;
-    const startHeight = boxElement ? boxElement.getBoundingClientRect().height : (pkg.minHeight || 200);
-    const startY = e.touches[0].clientY;
-
-    const handleTouchMove = (moveEvent) => {
-      const deltaY = moveEvent.touches[0].clientY - startY;
-      const newHeight = Math.max(150, Math.min(800, startHeight + deltaY));
-      onUpdate("minHeight", newHeight);
-    };
-
-    const handleTouchEnd = () => {
-      setIsDraggingBottom(false);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
-
-    document.addEventListener("touchmove", handleTouchMove, { passive: true });
-    document.addEventListener("touchend", handleTouchEnd);
-  };
-
   return (
     <Box
       sx={{
         border: "2px solid #e0e0e0",
         borderRadius: isGrid ? "12px" : "16px",
         padding: padding,
-        mt: `${pkg.marginTop || 0}px`,
         mb: marginB,
-        minHeight: pkg.minHeight ? `${pkg.minHeight}px` : "auto",
+        mt: isGrid ? 0 : "15px",
         backgroundColor: "#ffffff",
         position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start",
         flex: "none",
         width: isGrid ? "calc(50% - 10px)" : "100%",
         minWidth: isGrid ? "240px" : "auto",
-        "&:hover .pkg-actions": { opacity: 1 },
-        "&:hover .spacing-handle": { opacity: 0.6 },
-        "& .spacing-handle:hover": { opacity: 1 }
+        "&:hover .pkg-actions": { opacity: 1 }
       }}
     >
-      {isStudioMode && (
-        <>
-          {/* Top Spacing Handle */}
-          <Box
-            className="spacing-handle"
-            onMouseDown={handleDragStartTop}
-            onTouchStart={handleTouchStartTop}
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: "10%",
-              right: "10%",
-              height: "14px",
-              cursor: "ns-resize",
-              transform: "translateY(-50%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: isDraggingTop ? 1 : 0,
-              transition: "opacity 0.2s, background-color 0.2s",
-              zIndex: 20,
-            }}
-          >
-            <Box sx={{ width: "100%", height: "1px", borderTop: "1.5px dashed #FF8C00", position: "absolute", zIndex: 1 }} />
-            <Box
-              sx={{
-                bgcolor: "#FF8C00",
-                color: "#fff",
-                fontSize: "9px",
-                fontWeight: "bold",
-                px: 1.2,
-                py: 0.3,
-                borderRadius: "8px",
-                zIndex: 2,
-                boxShadow: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 0.3,
-                userSelect: "none"
-              }}
-            >
-              ↕ Top: {pkg.marginTop || 0}px
-            </Box>
-          </Box>
-
-          {/* Bottom Spacing Handle */}
-          <Box
-            className="spacing-handle"
-            onMouseDown={handleDragStartBottom}
-            onTouchStart={handleTouchStartBottom}
-            sx={{
-              position: "absolute",
-              bottom: 0,
-              left: "10%",
-              right: "10%",
-              height: "14px",
-              cursor: "ns-resize",
-              transform: "translateY(50%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: isDraggingBottom ? 1 : 0,
-              transition: "opacity 0.2s, background-color 0.2s",
-              zIndex: 20,
-            }}
-          >
-            <Box sx={{ width: "100%", height: "1px", borderTop: "1.5px dashed #FF8C00", position: "absolute", zIndex: 1 }} />
-            <Box
-              sx={{
-                bgcolor: "#FF8C00",
-                color: "#fff",
-                fontSize: "9px",
-                fontWeight: "bold",
-                px: 1.2,
-                py: 0.3,
-                borderRadius: "8px",
-                zIndex: 2,
-                boxShadow: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 0.3,
-                userSelect: "none"
-              }}
-            >
-              ↕ Height: {pkg.minHeight ? `${Math.round(pkg.minHeight)}px` : "Auto"}
-            </Box>
-          </Box>
-        </>
-      )}
-
       {isStudioMode && (
         <Box className="pkg-actions" sx={{ position: "absolute", top: 10, right: 10, opacity: 0, transition: "opacity 0.2s", display: "flex", gap: 1, zIndex: 10, bgcolor: "rgba(20, 20, 20, 0.8)", borderRadius: '10px' }}>
           <IconButton size="small" onClick={(e) => setColorAnchor(e.currentTarget)}><ColorLens fontSize="small" /></IconButton>
@@ -708,7 +503,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               {gridChunks.map((row, rowIdx) => {
                 const isCenteredRow = row.some(p => p.isContinued);
                 return (
-                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: gridGap, mb: gridRowMb, justifyContent: isCenteredRow ? "center" : "flex-start", alignItems: "stretch" }}>
+                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: gridGap, mb: gridRowMb, mt: "15px", justifyContent: isCenteredRow ? "center" : "flex-start" }}>
                     {row.filter(p => p.type !== "placeholder").map((pkg, colIdx) => (
                       <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={true} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset} totalPkgs={totalPkgs}
                         onUpdate={(field, val) => dispatch(updateGridPackage({ id: pkg.id, field, value: val }))}

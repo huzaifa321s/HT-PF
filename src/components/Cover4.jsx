@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 28,
     marginBottom: 30,
+    marginTop: 15,
     backgroundColor: "#141414",
   },
   gridPackage: {
@@ -144,8 +145,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 20,
     marginBottom: 30,
+    marginTop: 15,
     flexWrap: "nowrap",
-    alignItems: "stretch",
   },
   labelContainer: {
     position: "absolute",
@@ -322,8 +323,7 @@ const PackageBox = ({ pkg, totalPkgs }) => {
         isGrid ? styles.gridPackage : styles.standalonePackage,
         {
           padding: padding,
-          marginTop: pkg.marginTop || 0,
-          marginBottom: pkg.marginBottom !== undefined ? pkg.marginBottom : marginB,
+          marginBottom: marginB,
           borderRadius: isGrid ? 12 : 16,
         }
       ]}
