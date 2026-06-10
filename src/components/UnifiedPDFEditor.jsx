@@ -27,7 +27,9 @@ import VisualAdditionalInfoEditor from "./visual-editors/VisualAdditionalInfoEdi
 import VisualPricingEditor from "./visual-editors/VisualPricingEditor";
 import VisualPaymentEditor from "./visual-editors/VisualPaymentEditor";
 import VisualContactEditor from "./visual-editors/VisualContactEditor";
+import VisualImagePage from "./visual-editors/VisualImagePage";
 import EditorSidebar from "./EditorSidebar";
+import { ARTBOARD_1, ARTBOARD_2, ARTBOARD_3, ARTBOARD_4, ARTBOARD_5 } from "../utils/pdfImageAssets";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -130,6 +132,31 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
       cycle: 1171,
       editor: (isThumbnail = false, currentStudioMode = isStudioMode) => <VisualAboutEditor isStudioMode={currentStudioMode} />
     },
+    {
+      name: "Artboard 1",
+      cycle: 1171,
+      editor: () => <VisualImagePage src={ARTBOARD_1} alt="Artboard 1" />
+    },
+    {
+      name: "Artboard 2",
+      cycle: 1171,
+      editor: () => <VisualImagePage src={ARTBOARD_2} alt="Artboard 2" />
+    },
+    {
+      name: "Artboard 3",
+      cycle: 1171,
+      editor: () => <VisualImagePage src={ARTBOARD_3} alt="Artboard 3" />
+    },
+    {
+      name: "Artboard 4",
+      cycle: 1171,
+      editor: () => <VisualImagePage src={ARTBOARD_4} alt="Artboard 4" />
+    },
+    {
+      name: "Artboard 5",
+      cycle: 1171,
+      editor: () => <VisualImagePage src={ARTBOARD_5} alt="Artboard 5" />
+    },
     { 
       name: "Additional Info", 
       cycle: 1171,
@@ -153,8 +180,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
   ], [isStudioMode, handlePageCountChange]);
 
   const visiblePages = useMemo(() => {
-    return pages.filter((page, index) => {
-      if (index === 1 && page2?.includeInPdf === false) return false;
+    return pages.filter((page) => {
+      if (page.name === "About HT" && page2?.includeInPdf === false) return false;
       if (page.name === "Additional Info" && page3?.includeInPdf === false) return false;
       if (page.name === "Pricing" && pricingPage?.includeInPdf === false) return false;
       if (page.name === "Payment Terms" && paymentTerms?.includeInPdf === false) return false;

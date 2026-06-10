@@ -16,6 +16,11 @@ const IMAGE_FILES = [
   { varName: "FOOTER_IMG",      filename: "footer.png" },
   { varName: "CONTACT_PAGE",    filename: "proposal-contact.png" },
   { varName: "HT_LOGO",         filename: "ht-logo.png" },
+  { varName: "ARTBOARD_1",      filename: "Artboard 1.jpg" },
+  { varName: "ARTBOARD_2",      filename: "Artboard 2.jpg" },
+  { varName: "ARTBOARD_3",      filename: "Artboard 3.jpg" },
+  { varName: "ARTBOARD_4",      filename: "Artboard 4.jpg" },
+  { varName: "ARTBOARD_5",      filename: "Artboard 5.jpg" },
 ];
 
 function generateModule() {

@@ -7,8 +7,9 @@ import PdfPage3Document from "./Cover2";
 import PdfPageDocument2 from "./Cover3";
 import PdfPricingPage from "./Cover4";
 import { PdfPaymentTermsCoverPage } from "./Cover5";
-import FixedImagePdfPage from "./FixedImagePdf";
+import FixedImagePdfPage, { FixedImagePage } from "./FixedImagePdf";
 import PdfTracker from "../utils/PdfTracker";
+import { ARTBOARD_1, ARTBOARD_2, ARTBOARD_3, ARTBOARD_4, ARTBOARD_5 } from "../utils/pdfImageAssets";
 
 
 // ✅ Re-introduced memo for performance optimization
@@ -54,6 +55,13 @@ const CombinedPdfDocument = ({
           showLabels={showLabels}
         />
       )}
+
+      {/* Artboard Pages (Added by default after About HT page) */}
+      <FixedImagePage src={ARTBOARD_1} />
+      <FixedImagePage src={ARTBOARD_2} />
+      <FixedImagePage src={ARTBOARD_3} />
+      <FixedImagePage src={ARTBOARD_4} />
+      <FixedImagePage src={ARTBOARD_5} />
 
       {/* Page 3: Additional Info */}
       {page3Data?.includeInPdf !== false && (

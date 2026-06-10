@@ -24,6 +24,11 @@ const ALLOWED_FILES = new Set([
   "about-HT.png",
   "proposal-contact.png",
   "ht-logo.png",
+  "Artboard 1.jpg",
+  "Artboard 2.jpg",
+  "Artboard 3.jpg",
+  "Artboard 4.jpg",
+  "Artboard 5.jpg",
 ]);
 
 const MIME_MAP = {

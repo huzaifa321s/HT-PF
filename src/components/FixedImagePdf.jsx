@@ -1,6 +1,6 @@
 // src/components/FixedImagePdfPage.jsx
 import React from "react";
-import { Document, Page, Image, StyleSheet } from "@react-pdf/renderer";
+import { Page, Image, StyleSheet } from "@react-pdf/renderer";
 import { CONTACT_PAGE } from "../utils/pdfImageAssets";
 
 // ====================== STYLES ======================
@@ -22,15 +22,20 @@ const styles = StyleSheet.create({
 });
 
 // ====================== FIXED IMAGE PDF DOCUMENT ======================
+export const FixedImagePage = ({ src }) => {
+  return (
+    <Page size="A4" style={styles.page}>
+      <Image
+        src={src}
+        style={styles.backgroundImage}
+      />
+    </Page>
+  );
+};
+
 const FixedImagePdfPage = () => {
   return (
-      <Page size="A4" style={styles.page}>
-        <Image
-          src={CONTACT_PAGE} // Only this image
-          style={styles.backgroundImage}
-        />
-      </Page>
-
+    <FixedImagePage src={CONTACT_PAGE} />
   );
 };
 
