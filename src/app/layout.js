@@ -19,6 +19,7 @@ export default function RootLayout({ children }) {
           <LayoutShell>{children}</LayoutShell>
         </Providers>
       </body>
+
     </html>
   );
 }
