@@ -321,7 +321,8 @@ const PackageBox = ({ pkg, totalPkgs }) => {
         isGrid ? styles.gridPackage : styles.standalonePackage,
         {
           padding: padding,
-          marginBottom: marginB,
+          marginTop: pkg.marginTop || 0,
+          marginBottom: pkg.marginBottom !== undefined ? pkg.marginBottom : marginB,
           borderRadius: isGrid ? 12 : 16,
         }
       ]}
