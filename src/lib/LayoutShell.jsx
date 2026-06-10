@@ -50,9 +50,12 @@ Font.register({
 Font.register({
   family: "Unbounded",
   fonts: [
-    { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-400-normal.woff", fontWeight: 400 },
-    { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-700-normal.woff", fontWeight: 700 },
-    { src: "https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-900-normal.woff", fontWeight: 900 },
+    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
+    { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
+    { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
+    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
+    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
+    { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
   ],
 });
 
