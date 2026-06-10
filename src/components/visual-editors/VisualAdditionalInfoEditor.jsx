@@ -164,7 +164,7 @@ const EditCell = ({ value, onChange, isHeader, isStudioMode }) => {
       sx={{
         outline: "none",
         px: 1, py: 0.5,
-        fontSize: isHeader ? 12 : 11,
+        fontSize: isHeader ? 14 : 13,
         fontWeight: isHeader ? 700 : 400,
         color: isHeader ? "#fff" : "#1a1a1a",
         minWidth: 40,
@@ -585,7 +585,7 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
           suppressContentEditableWarning
           onBlur={(e) => dispatch(addTableTitle({ id: table.id, title: e.currentTarget.innerText }))}
           sx={{
-            fontSize: 15, fontWeight: 700, color: "#1a1a1a", outline: "none", flex: 1,
+            fontSize: 17, fontWeight: 700, color: "#1a1a1a", outline: "none", flex: 1,
             borderBottom: isStudioMode ? "1px dashed transparent" : "none",
             "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
           }}
@@ -922,7 +922,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             isStudioMode={isStudioMode}
             onInput={(e) => handleInput(section.id, "title", e)}
             sx={{
-              fontSize: 26, fontWeight: "bold", color: "#1a1a1a",
+              fontSize: 28, fontWeight: "bold", color: "#1a1a1a",
               textAlign: "left", outline: "none", wordBreak: "break-word",
               border: isStudioMode ? "1px dashed transparent" : "none",
               "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
@@ -938,7 +938,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
           isStudioMode={isStudioMode}
           onInput={(e) => handleInput(section.id, "title", e)}
           sx={{
-            fontSize: 18, fontWeight: "bold", color: "#1a1a1a",
+            fontSize: 20, fontWeight: "bold", color: "#1a1a1a",
             textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word", mb: "8px",
             border: isStudioMode ? "1px dashed transparent" : "none",
             "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
@@ -953,7 +953,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
           isStudioMode={isStudioMode}
           onInput={(e) => handleInput(section.id, "title", e)}
           sx={{
-            fontSize: 14, fontWeight: 600, color: "#555",
+            fontSize: 16, fontWeight: 600, color: "#555",
             textAlign: "left", outline: "none", wordBreak: "break-word", mb: "6px",
             border: isStudioMode ? "1px dashed transparent" : "none",
             "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
@@ -971,7 +971,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
           data-formattable="true"
           onInput={(e) => handleInput(section.id, "content", e)}
           sx={{
-            fontSize: 13, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
+            fontSize: 15, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
             outline: "none", minHeight: "20px", wordBreak: "break-word",
             border: isStudioMode ? "1px dashed transparent" : "none",
             "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
@@ -979,9 +979,9 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             "& ul": { paddingLeft: "20px", margin: "4px 0" },
             "& ol": { paddingLeft: "20px", margin: "4px 0" },
             "& li": { marginBottom: "4px", lineHeight: 1.7 },
-            "& h2": { fontSize: "16px", fontWeight: "bold", color: "#1a1a1a", margin: "10px 0 6px" },
-            "& h3": { fontSize: "14px", fontWeight: "bold", color: "#1a1a1a", margin: "8px 0 4px" },
-            "& h4": { fontSize: "13px", fontWeight: "bold", color: "#333", margin: "6px 0 3px" },
+            "& h2": { fontSize: "18px", fontWeight: "bold", color: "#1a1a1a", margin: "10px 0 6px" },
+            "& h3": { fontSize: "16px", fontWeight: "bold", color: "#1a1a1a", margin: "8px 0 4px" },
+            "& h4": { fontSize: "15px", fontWeight: "bold", color: "#333", margin: "6px 0 3px" },
             "& p": { margin: "0 0 8px" },
             "& strong": { fontWeight: "bold" },
           }}

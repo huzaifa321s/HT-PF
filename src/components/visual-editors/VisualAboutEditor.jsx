@@ -274,7 +274,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               isStudioMode={isStudioMode}
               onInput={handleTitleInput}
               sx={{
-                fontSize: 36, fontWeight: "800", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                fontSize: 38, fontWeight: "800", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                 textAlign: "center",
                 "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
@@ -287,7 +287,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               isStudioMode={isStudioMode}
               onInput={handleSubtitleInput}
               sx={{
-                fontSize: 18, fontWeight: "600", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                fontSize: 20, fontWeight: "600", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                 "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
             />
@@ -320,7 +320,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                     isStudioMode={isStudioMode}
                     onInput={(e) => debouncedUpdateElement(element.id, e.currentTarget.textContent)}
                     sx={{
-                      fontSize: 13, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
+                      fontSize: 14, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
                       border: isStudioMode ? "1px dashed transparent" : "none",
                       "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: '10px' } : {}
                     }}

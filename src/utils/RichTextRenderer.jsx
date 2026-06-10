@@ -15,7 +15,7 @@ Font.register({
 
 const styles = StyleSheet.create({
     paragraph: {
-        fontSize: 10.5,
+        fontSize: 12.5,
         lineHeight: 1.6,
         marginBottom: 8,
         color: '#4a4a4a',
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     },
     heading1: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 700,
         marginTop: 16,
         marginBottom: 10,
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
     },
     heading2: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 700,
         marginTop: 12,
         marginBottom: 6,
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
     },
     heading3: {
-        fontSize: 13,
+        fontSize: 15,
         fontWeight: 700,
         marginTop: 10,
         marginBottom: 4,
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
     },
     heading4: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 700,
         marginTop: 8,
         marginBottom: 3,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
     },
     heading5: {
-        fontSize: 11,
+        fontSize: 13,
         fontWeight: 700,
         marginTop: 4,
         marginBottom: 2,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
     },
     heading6: {
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 700,
         marginTop: 4,
         marginBottom: 2,
@@ -81,20 +81,20 @@ const styles = StyleSheet.create({
     },
     bulletMarker: {
         width: 15,
-        fontSize: 10.5,
+        fontSize: 12.5,
         marginRight: 5,
         textAlign: 'right',
     },
     numberMarker: {
         width: 20,
-        fontSize: 10.5,
+        fontSize: 12.5,
         marginRight: 5,
         fontWeight: 600,
         textAlign: 'right',
     },
     listContent: {
         flex: 1,
-        fontSize: 10.5,
+        fontSize: 12.5,
         lineHeight: 1.6,
     },
     // Indentation Levels
@@ -211,7 +211,7 @@ export const RichTextRenderer = ({ content, html, baseStyle = {} }) => {
 
         const parts = cleanedHtml.split(/(<[^>]+>)/);
         const result = [];
-        const stack = [{ color: '#4a4a4a', fontSize: 10.5, fontFamily: 'Roboto' }];
+        const stack = [{ color: '#4a4a4a', fontSize: 12.5, fontFamily: 'Roboto' }];
 
         parts.forEach((part, i) => {
             if (!part) return;

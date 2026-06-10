@@ -183,8 +183,8 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       <Box sx={{ position: "absolute", top: "67px", left: "67px", display: "flex", flexDirection: "row", alignItems: "center", gap: "8px", zIndex: 2 }}>
         <img src={LOGO} alt="Logo" style={{ width: "67px", height: "67px", borderRadius: "34px", objectFit: "cover" }} />
         <Box>
-          <Typography sx={{ color: "#F3A833", fontSize: 29, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
-          <Typography sx={{ color: "white", fontSize: 13, letterSpacing: 3, mt: 0, lineHeight: 1 }}>IT SERVICES & SOLUTIONS</Typography>
+          <Typography sx={{ color: "#F3A833", fontSize: 31, fontWeight: 900, letterSpacing: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>HUMANTEK</Typography>
+          <Typography sx={{ color: "white", fontSize: 15, letterSpacing: 3, mt: 0, lineHeight: 1 }}>IT SERVICES & SOLUTIONS</Typography>
         </Box>
       </Box>
 
@@ -220,7 +220,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
               onInput={handleNameInput}
               sx={{
                 color: "white",
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: 700,
                 fontFamily: "'Unbounded', sans-serif",
                 outline: "none",
@@ -253,7 +253,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
             onInput={handleTaglineInput}
             sx={{
               color: "#F3A833",
-              fontSize: 61,
+              fontSize: 63,
               fontWeight: 900,
               lineHeight: 1.1,
               fontFamily: "'Unbounded', sans-serif",
@@ -281,7 +281,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         </Box>
 
         {/* Proposal By */}
-        <Typography sx={{ color: "white", fontSize: 20, fontWeight: 600, mt: "53px" }}>
+        <Typography sx={{ color: "white", fontSize: 22, fontWeight: 600, mt: "53px" }}>
           Proposal by <span style={{ color: "#F3A833" }}>Humantek</span>
         </Typography>
 
@@ -364,13 +364,13 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
             {/* Client Details */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-              <Typography sx={{ color: "#FFFFFF", fontSize: 13, textTransform: "uppercase", letterSpacing: 1.3, opacity: 0.8 }}>
+              <Typography sx={{ color: "#FFFFFF", fontSize: 15, textTransform: "uppercase", letterSpacing: 1.3, opacity: 0.8 }}>
                 Prepared for:
               </Typography>
               {/* Client name row with Form Field badge to the right */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Box ref={clientNameRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleClientNameInput}
-                  sx={{ color: "#FF8C00", fontSize: 26, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                  sx={{ color: "#FF8C00", fontSize: 28, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                 />
                 {isStudioMode && (
                   <Chip
@@ -390,7 +390,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                 )}
               </Box>
               <Box ref={dateRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleDateInput}
-                sx={{ color: "#FFFFFF", fontSize: 13, opacity: 0.7, outline: "none", minWidth: "60px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.05)" } : {} }}
+                sx={{ color: "#FFFFFF", fontSize: 15, opacity: 0.7, outline: "none", minWidth: "60px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.05)" } : {} }}
               />
             </Box>
           </Box>

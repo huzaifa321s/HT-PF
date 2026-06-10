@@ -35,13 +35,13 @@ const styles = StyleSheet.create({
   logo: { width: 50, height: 50, borderRadius: 25 },
   logoTitle: {
     color: "#F3A833",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 900,
     letterSpacing: 0,
     fontFamily: "Liberation Serif", // This maps to Inter based on LayoutShell.jsx
     lineHeight: 1,
   },
-  logoSubtitle: { color: "#fff", fontSize: 10, letterSpacing: 2.5, lineHeight: 1 },
+  logoSubtitle: { color: "#fff", fontSize: 12, letterSpacing: 2.5, lineHeight: 1 },
   mainContainer: {
     position: "absolute",
     top: 350,
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontFamily: "Unbounded",
     color: "#FFF",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 700,
 
     margin: 0,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
 
   proposalBy: {
     color: "#FFF",
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: 600,
     marginTop: 40,
   },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   brandTagline: {
     color: "#F3A833",
-    fontSize: 56,
+    fontSize: 58,
     fontWeight: 900,
     fontFamily: "Unbounded",
     lineHeight: 1.1,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
 
   lastWords: {
     color: "#FFFFFF",
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: 700,
     lineHeight: 1,
     margin: 0,
@@ -143,20 +143,20 @@ const styles = StyleSheet.create({
   },
   preparedFor: {
     color: "#FFFFFF",
-    fontSize: 10,
+    fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 1.3,
     opacity: 0.8,
   },
   clientName: {
     color: "#F3A833",
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     marginVertical: 2,
   },
   proposalDate: {
     color: "#FFFFFF",
-    fontSize: 10,
+    fontSize: 12,
     opacity: 0.7,
   },
 });
@@ -227,7 +227,7 @@ export const PdfCoverPage = ({
           {brandTagline?.trim().toLowerCase() === "crafting legacies that last" ? (
             <View>
               <Text style={{ ...styles.brandTagline, color: "#F3A833" }}>Crafting Legacies</Text>
-              <Text style={{ ...styles.brandTagline, color: "#FFFFFF", fontSize: 42, marginTop: 6 }}>That Last</Text>
+              <Text style={{ ...styles.brandTagline, color: "#FFFFFF", fontSize: 44, marginTop: 6 }}>That Last</Text>
             </View>
           ) : (
             <Text style={styles.brandTagline}>{brandTagline}</Text>

@@ -14,7 +14,7 @@ const PAGE_CONTENT_HEIGHT = 850;
 const estimateTermHeight = (term) => {
   const charsPerLine = 80;
   const lines = Math.ceil(term.length / charsPerLine) || 1;
-  return lines * 22 + 40; // 22px per line + 40px for paddings/border
+  return lines * 25 + 45; // 25px per line + 45px for paddings/border
 };
 
 const splitTermsByHeight = (terms) => {
@@ -114,12 +114,12 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   isStudioMode={isStudioMode}
                   onInput={handleTitleInput}
                   sx={{
-                    fontSize: 28, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                    fontSize: 30, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                     "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
                   }}
                 />
               ) : (
-                <Typography sx={{ fontSize: 18, color: "#000", textAlign: "center", mb: "30px" }}>
+                <Typography sx={{ fontSize: 20, color: "#000", textAlign: "center", mb: "30px" }}>
                   {paymentData.title || "Payment Terms"} (Continued)
                 </Typography>
               )}
@@ -129,7 +129,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                 {pageTerms.length > 0 ? pageTerms.map((item, idx) => (
                   <Box key={item.globalIndex} sx={{ position: "relative", mb: "0px", "&:hover .term-actions": { opacity: 1 } }}>
                     <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                      <Typography sx={{ width: "25px", fontSize: 12, fontWeight: "bold", color: "#000", textAlign: "right", pt: "2px" }}>
+                      <Typography sx={{ width: "25px", fontSize: 14, fontWeight: "bold", color: "#000", textAlign: "right", pt: "2px" }}>
                         {item.globalIndex + 1}.
                       </Typography>
                       <EditableText
@@ -137,7 +137,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                         isStudioMode={isStudioMode}
                         onInput={(e) => debouncedUpdateTerm(item.globalIndex, e.currentTarget.textContent)}
                         sx={{
-                          flex: 1, fontSize: 12, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
+                          flex: 1, fontSize: 14, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
                           "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
                         }}
                       />
@@ -164,7 +164,7 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     )}
                   </Box>
                 )) : isFirstPage ? (
-                  <Typography sx={{ fontSize: 12, color: "#333333", ml: "5px" }}>No payment terms added yet.</Typography>
+                  <Typography sx={{ fontSize: 14, color: "#333333", ml: "5px" }}>No payment terms added yet.</Typography>
                 ) : null}
               </Box>
 

@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   // Page Title
   mainTitle: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "bold",
     color: "#000",
     marginBottom: 30,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
 
   },
   continueTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "normal",
     color: "#000",
     marginBottom: 30,
@@ -79,14 +79,14 @@ const styles = StyleSheet.create({
   },
   termNumber: {
     width: 25, // increased from 15 to 25 for proper dot display
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#000",
     textAlign: "right", // right-align to ensure dot stays within bounds
   },
   termText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 14,
     lineHeight: 1.8,
     color: "#4a4a4a",
     textAlign: "justify",
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
 const splitTermsByHeight = (terms) => {
   const MAX_PAGE_HEIGHT = 650; // Maximum content height per page
   const TITLE_HEIGHT = 60; // Title + margin
-  const TERM_BASE_HEIGHT = 40; // Base height for each term
+  const TERM_BASE_HEIGHT = 45; // Base height for each term
   const LOGO_HEIGHT = 60; // Logo container height
 
   const pages = [];
@@ -157,7 +157,7 @@ const splitTermsByHeight = (terms) => {
   terms.forEach((term, index) => {
     // Calculate term height based on text length
     const lines = Math.ceil(term.length / 70); // ~70 chars per line
-    const termHeight = TERM_BASE_HEIGHT + (lines - 1) * 20;
+    const termHeight = TERM_BASE_HEIGHT + (lines - 1) * 25;
 
     // Check if adding this term would exceed page height
     if (

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#1a1a1a",
     marginTop: 12,
@@ -63,28 +63,28 @@ const styles = StyleSheet.create({
   },
 
   paragraph: {
-    fontSize: 10.5,
+    fontSize: 12.5,
     lineHeight: 1.6,
     marginBottom: 16,
     textAlign: "justify",
   },
 
   bulletItem: {
-    fontSize: 11,
+    fontSize: 13,
     lineHeight: 1.8,
     marginBottom: 6,
 
   },
 
   numberedMain: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: "bold",
     color: "#000",
     marginBottom: 8,
   },
 
   tableTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#1a1a1a",
     marginTop: 32,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   tableHeaderCell: {
     padding: 10,
     fontWeight: "bold",
-    fontSize: 11,
+    fontSize: 13,
     color: "#fff",
     textAlign: "start",
     flex: 1,
@@ -121,20 +121,20 @@ const styles = StyleSheet.create({
 
   tableCell: {
     padding: 8,
-    fontSize: 10,
+    fontSize: 12,
     textAlign: "start",
     flex: 1,
   },
 
   noteText: {
-    fontSize: 9.5,
+    fontSize: 11,
     color: "#94a3b8",
     marginTop: 30,
     // fontStyle: "italic",
     textAlign: "start",
   },
   sectionHeading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#000",
     marginTop: 28,
@@ -228,7 +228,7 @@ const PdfPageDocument2 = ({
       <View key={table.id} wrap={false}>
         <Text
           style={{
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: "bold",
             textAlign: "center",
             marginTop: 32,

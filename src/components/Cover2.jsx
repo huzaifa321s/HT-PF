@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   mainTitle: {
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: "bold",
     color: "#1a1a1a",
     marginTop: 10,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     color: "#1a1a1a",
     marginBottom: 20,
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
 
   textContent: {
-    fontSize: 12,
+    fontSize: 14,
     lineHeight: 1.8,
     color: "#4a4a4a",
     marginBottom: 16,
@@ -135,7 +135,7 @@ export const splitElementsIntoPages = (elements) => {
   elements.forEach((element) => {
     const elementHeight =
       element.type === "text"
-        ? Math.ceil(element.content.length / 50) * 12 * 1.8 + 16
+        ? Math.ceil(element.content.length / 50) * 14 * 1.8 + 16
         : 220 + 36;
 
     if (currentHeight + elementHeight > MAX_HEIGHT && currentPage.length > 0) {

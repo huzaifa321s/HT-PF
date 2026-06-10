@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   pageTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#f8fafc",
     marginBottom: 10,
@@ -60,19 +60,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
     textAlign: "center",
-    fontSize: 28,
+    fontSize: 30,
     marginTop: 10,
     marginBottom: 20,
   },
   subheading: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#000",
     textAlign: "center",
     lineHeight: 1.6,
 
   },
   textContent: {
-    fontSize: 11,
+    fontSize: 13,
     color: "#f8fafc",
     lineHeight: 1.6,
     marginBottom: 15,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#141414",
   },
   packageTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
@@ -105,21 +105,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   packageSubtitle: {
-    fontSize: 11,
+    fontSize: 13,
     textAlign: "start",
     color: "#0000",
     fontWeight: "bold",
     marginBottom: 12,
   },
   packagePrice: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "bold",
     color: "#000",
     textAlign: "start",
     marginBottom: 16,
   },
   featuresTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "bold",
     textAlign: "start",
     marginBottom: 12,
@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: "row",
     marginBottom: 6,
-    fontSize: 10.5,
+    fontSize: 12.5,
   },
   bullet: {
     marginRight: 10,
     fontWeight: "bold",
   },
   continuationNote: {
-    fontSize: 9,
+    fontSize: 11,
     color: "#000",
     // fontStyle: "italic",
     textAlign: "center",
@@ -291,29 +291,29 @@ const PackageBox = ({ pkg, totalPkgs }) => {
   let padding = isGrid ? 20 : 28;
   let marginB = isGrid ? 0 : 30;
   let itemMarginB = 8;
-  let titleSize = 20;
-  let subtitleSize = 11;
-  let priceSize = 15;
-  let itemSize = 11;
+  let titleSize = 22;
+  let subtitleSize = 13;
+  let priceSize = 17;
+  let itemSize = 13;
   let headerBarHeight = 4;
 
   if (totalPkgs === 2) {
     padding = isGrid ? 14 : 18;
     marginB = isGrid ? 0 : 16;
     itemMarginB = 5;
-    titleSize = 16;
-    subtitleSize = 10;
-    priceSize = 13;
-    itemSize = 10;
+    titleSize = 18;
+    subtitleSize = 12;
+    priceSize = 15;
+    itemSize = 12;
     headerBarHeight = 3;
   } else if (totalPkgs >= 3) {
     padding = isGrid ? 10 : 12;
     marginB = isGrid ? 0 : 8;
     itemMarginB = 3;
-    titleSize = 13;
-    subtitleSize = 9;
-    priceSize = 11;
-    itemSize = 9;
+    titleSize = 15;
+    subtitleSize = 11;
+    priceSize = 13;
+    itemSize = 11;
     headerBarHeight = 2;
   }
 
@@ -394,43 +394,43 @@ const PdfPricingPage = ({
         // Calculate sizes based on vertical rows count on this page
         const totalPkgs = page.standalone.length + Math.ceil(page.grid.length / 2);
 
-        let pageTitleSize = 20;
+        let pageTitleSize = 22;
         let pageTitleMb = 10;
-        let headingSize = 28;
+        let headingSize = 30;
         let headingMt = 10;
         let headingMb = 20;
-        let subheadingSize = 12;
+        let subheadingSize = 14;
         let dividerMy = 15;
         let textElMb = 15;
-        let mainHeadingSize = 28;
-        let textFontSize = 11;
+        let mainHeadingSize = 30;
+        let textFontSize = 13;
         let gridGap = 20;
         let gridRowMb = 30;
 
         if (totalPkgs === 2) {
-          pageTitleSize = 16;
+          pageTitleSize = 18;
           pageTitleMb = 6;
-          headingSize = 22;
+          headingSize = 24;
           headingMt = 6;
           headingMb = 12;
-          subheadingSize = 10;
+          subheadingSize = 12;
           dividerMy = 10;
           textElMb = 10;
-          mainHeadingSize = 22;
-          textFontSize = 10;
+          mainHeadingSize = 24;
+          textFontSize = 12;
           gridGap = 12;
           gridRowMb = 16;
         } else if (totalPkgs >= 3) {
-          pageTitleSize = 14;
+          pageTitleSize = 16;
           pageTitleMb = 4;
-          headingSize = 18;
+          headingSize = 20;
           headingMt = 4;
           headingMb = 8;
-          subheadingSize = 9;
+          subheadingSize = 11;
           dividerMy = 6;
           textElMb = 6;
-          mainHeadingSize = 18;
-          textFontSize = 9;
+          mainHeadingSize = 20;
+          textFontSize = 11;
           gridGap = 8;
           gridRowMb = 8;
         }

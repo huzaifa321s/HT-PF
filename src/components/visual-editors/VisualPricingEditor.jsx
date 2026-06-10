@@ -173,29 +173,29 @@ const PackageVisualBox = ({
   let padding = isGrid ? "20px" : "28px";
   let marginB = isGrid ? 0 : "30px";
   let itemMarginB = "8px";
-  let titleSize = 20;
-  let subtitleSize = 11;
-  let priceSize = 15;
-  let itemSize = 11;
+  let titleSize = 22;
+  let subtitleSize = 13;
+  let priceSize = 17;
+  let itemSize = 13;
   let headerBarHeight = 4;
 
   if (totalPkgs === 2) {
     padding = isGrid ? "14px" : "18px";
     marginB = isGrid ? 0 : "16px";
     itemMarginB = "5px";
-    titleSize = 16;
-    subtitleSize = 10;
-    priceSize = 13;
-    itemSize = 10;
+    titleSize = 18;
+    subtitleSize = 12;
+    priceSize = 15;
+    itemSize = 12;
     headerBarHeight = 3;
   } else if (totalPkgs >= 3) {
     padding = isGrid ? "10px" : "12px";
     marginB = isGrid ? 0 : "8px";
     itemMarginB = "3px";
-    titleSize = 13;
-    subtitleSize = 9;
-    priceSize = 11;
-    itemSize = 9;
+    titleSize = 15;
+    subtitleSize = 11;
+    priceSize = 13;
+    itemSize = 11;
     headerBarHeight = 2;
   }
 
@@ -369,43 +369,43 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
           // Calculate sizes based on vertical rows count on this page
           const totalPkgs = page.standalone.length + Math.ceil(page.grid.length / 2);
           
-          let pageTitleSize = 20;
+          let pageTitleSize = 22;
           let pageTitleMb = "10px";
-          let headingSize = 28;
+          let headingSize = 30;
           let headingMt = "10px";
           let headingMb = "20px";
-          let subheadingSize = 12;
+          let subheadingSize = 14;
           let dividerMy = "15px";
           let textElMb = 2;
-          let mainHeadingSize = 28;
-          let textFontSize = 11;
+          let mainHeadingSize = 30;
+          let textFontSize = 13;
           let gridGap = "20px";
           let gridRowMb = "30px";
 
           if (totalPkgs === 2) {
-            pageTitleSize = 16;
+            pageTitleSize = 18;
             pageTitleMb = "6px";
-            headingSize = 22;
+            headingSize = 24;
             headingMt = "6px";
             headingMb = "12px";
-            subheadingSize = 10;
+            subheadingSize = 12;
             dividerMy = "10px";
             textElMb = 1.5;
-            mainHeadingSize = 22;
-            textFontSize = 10;
+            mainHeadingSize = 24;
+            textFontSize = 12;
             gridGap = "12px";
             gridRowMb = "16px";
           } else if (totalPkgs >= 3) {
-            pageTitleSize = 14;
+            pageTitleSize = 16;
             pageTitleMb = "4px";
-            headingSize = 18;
+            headingSize = 20;
             headingMt = "4px";
             headingMb = "8px";
-            subheadingSize = 9;
+            subheadingSize = 11;
             dividerMy = "6px";
             textElMb = 1;
-            mainHeadingSize = 18;
-            textFontSize = 9;
+            mainHeadingSize = 20;
+            textFontSize = 11;
             gridGap = "8px";
             gridRowMb = "8px";
           }
