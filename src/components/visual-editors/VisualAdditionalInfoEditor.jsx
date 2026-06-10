@@ -296,68 +296,316 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
   );
 };
 
-// ─── Smart Content Parser ──────────────────────────────────────────────────
+// ─── Smart Content Parser (No AI — fully client-side intelligent parsing) ────
 const TYPE_META = {
   heading: { label: "Heading", color: "#a78bfa", bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.3)" },
-  title: { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)", border: "rgba(243,168,51,0.3)" },
+  title:   { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)", border: "rgba(243,168,51,0.3)" },
   bullets: { label: "Bullet List", color: "#22c55e", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)" },
-  numbered: { label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)" },
-  plain: { label: "Plain Text", color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
+  numbered:{ label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)" },
+  plain:   { label: "Plain Text", color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
 };
 
-const detectSectionType = (block) => {
-  const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
-  if (!lines.length) return null;
+// ── 1. Heading keyword dictionary (proposal-specific + general) ──────────────
+const HEADING_KEYWORDS = [
+  // Proposal core sections
+  "scope of work", "scope", "deliverables", "timeline", "pricing", "price",
+  "quotation", "quote", "payment", "payment terms", "payment plan",
+  "objectives", "goals", "overview", "summary", "executive summary",
+  "introduction", "about us", "about", "company overview", "company profile",
+  "proposal overview", "project overview", "project brief", "project summary",
+  "why choose us", "why us", "our approach", "our process",
+  "expected outcomes", "outcomes", "results", "kpis",
+  "contact information", "contact us", "contact", "get in touch",
+  "closing statement", "closing", "next steps",
+  "team", "our team", "team structure",
+  "terms & conditions", "terms and conditions", "terms",
+  "revisions", "revision policy", "support", "maintenance",
+  // Service headings
+  "social media", "social media management", "content creation",
+  "branding", "brand identity", "brand strategy", "branding optimization",
+  "performance marketing", "digital marketing", "seo", "paid ads",
+  "web development", "website development", "mobile app", "app development",
+  "ui/ux design", "design", "graphic design", "motion graphics",
+  "video production", "photography",
+  // Phases
+  "phase 1", "phase 2", "phase 3", "phase one", "phase two", "phase three",
+  "initial setup", "setup phase", "execution", "monthly execution",
+  "planning", "strategy", "research", "analysis",
+  "implementation", "development", "launch", "deployment",
+  "testing", "qa", "quality assurance", "review",
+  // Common document sections
+  "services", "service packages", "packages", "offerings",
+  "features", "what's included", "what is included", "includes",
+  "benefits", "advantages", "value proposition",
+  "requirements", "prerequisites", "assumptions",
+  "risks", "challenges", "limitations",
+  "appendix", "glossary", "references",
+];
 
-  const firstLine = lines[0];
-
-  // Markdown heading
-  if (/^#{1,3}\s/.test(firstLine)) {
-    return { type: "heading", title: firstLine.replace(/^#+\s*/, ""), content: lines.slice(1).join("\n") };
-  }
-
-  // ALL CAPS short line = heading
-  if (firstLine === firstLine.toUpperCase() && firstLine.length < 80 && firstLine.length > 3 && !/[.?!,]$/.test(firstLine) && lines.length === 1) {
-    return { type: "heading", title: firstLine, content: "" };
-  }
-
-  // All lines are bullets (•, -, *, –)
-  const bulletPattern = /^[•\-\*–>]/;
-  const isBullets = lines.every((l) => bulletPattern.test(l));
-  if (isBullets) {
-    return { type: "bullets", title: "Bullet List", content: lines.join("\n") };
-  }
-
-  // All lines are numbered (1. 2. a. etc)
-  const numPattern = /^(\d+[.):]|[a-z][.):])/i;
-  const isNumbered = lines.every((l) => numPattern.test(l));
-  if (isNumbered) {
-    return { type: "numbered", title: "Numbered List", content: lines.join("\n") };
-  }
-
-  // Mixed: first line short non-sentence = title, rest = content
-  if (lines.length > 1 && firstLine.length < 70 && !/[.!?]$/.test(firstLine) && !bulletPattern.test(firstLine)) {
-    const rest = lines.slice(1);
-    const restIsBullets = rest.every((l) => bulletPattern.test(l));
-    const restIsNumbered = rest.every((l) => numPattern.test(l));
-    if (restIsBullets) return { type: "bullets", title: firstLine, content: rest.join("\n") };
-    if (restIsNumbered) return { type: "numbered", title: firstLine, content: rest.join("\n") };
-    return { type: "title", title: firstLine, content: rest.join("\n") };
-  }
-
-  // Default — plain paragraph
-  return { type: "plain", title: "", content: lines.join("\n") };
+// ── 2. Strip HTML tags and decode entities ───────────────────────────────────
+const stripHtmlAndDecode = (html) => {
+  if (!html || typeof html !== 'string') return '';
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim();
 };
 
+// ── 3. Check if a line looks like a HEADING ──────────────────────────────────
+const scoreAsHeading = (line) => {
+  let score = 0;
+  const text = line.trim();
+  const lower = text.toLowerCase().replace(/[^a-z0-9\s&/]/g, '').trim();
+
+  if (!text || text.length > 120) return 0;
+
+  // Markdown heading (#, ##, ###)
+  if (/^#{1,4}\s/.test(text)) return 100;
+
+  // ALL CAPS, short, no sentence-ending punctuation
+  const isAllCaps = text === text.toUpperCase() && /[A-Z]/.test(text);
+  if (isAllCaps && text.length >= 3 && text.length <= 80 && !/[.?!]$/.test(text)) score += 50;
+
+  // Numbered heading: "1. Scope of Work", "3. Deliverables"
+  if (/^\d+[.):]\s+[A-Z]/.test(text) && text.length < 80) score += 40;
+
+  // Lettered heading: "A. Introduction"
+  if (/^[A-Z][.):]\s+[A-Z]/.test(text) && text.length < 80) score += 35;
+
+  // Roman numeral heading: "I. Overview"
+  if (/^(I|II|III|IV|V|VI|VII|VIII|IX|X)[.):]\s+[A-Z]/i.test(text) && text.length < 80) score += 35;
+
+  // Keyword match (exact or contained)
+  if (HEADING_KEYWORDS.some(kw => lower === kw || lower.startsWith(kw + ' ') || lower.endsWith(' ' + kw))) {
+    score += 45;
+  }
+
+  // Title Case: Most words capitalized, short line, no period at end
+  const words = text.split(/\s+/);
+  const capitalizedWords = words.filter(w => w.length > 2 && w[0] === w[0].toUpperCase());
+  const titleCaseRatio = capitalizedWords.length / Math.max(words.length, 1);
+  if (titleCaseRatio >= 0.7 && text.length < 70 && !/[.?!]$/.test(text) && words.length <= 8) {
+    score += 25;
+  }
+
+  // Colon at end ("Scope of Work:") — classic heading marker
+  if (/:[\s]*$/.test(text) && text.length < 80) score += 30;
+
+  // Ends with sentence punctuation → less likely a heading
+  if (/[.!?]$/.test(text)) score -= 30;
+
+  // Very long → less likely
+  if (text.length > 90) score -= 20;
+
+  // Contains multiple sentences → not a heading
+  if ((text.match(/[.!?]\s+[A-Z]/g) || []).length > 0) score -= 40;
+
+  return Math.max(score, 0);
+};
+
+// ── 4. Detect bullet list ────────────────────────────────────────────────────
+const BULLET_PATTERN = /^[•\-\*–>○●▪▸►◆■]/;
+const NUM_PATTERN    = /^(\d+[.):]|[a-z][.):]|[IVX]+[.):])\s/i;
+
+const isBulletLine   = (line) => BULLET_PATTERN.test(line.trim());
+const isNumberedLine = (line) => NUM_PATTERN.test(line.trim());
+
+// ── 5. Convert plain-text list lines to HTML ─────────────────────────────────
+const linesToHtml = (lines, listType = 'ul') => {
+  const tag = listType === 'ol' ? 'ol' : 'ul';
+  const items = lines.map(l => {
+    const clean = l.trim()
+      .replace(BULLET_PATTERN, '')
+      .replace(/^\d+[.):]\s*/, '')
+      .replace(/^[a-z][.):]\s*/i, '')
+      .trim();
+    return `<li>${clean}</li>`;
+  });
+  return `<${tag}>${items.join('')}</${tag}>`;
+};
+
+// ── 6. Smart split: breaks text into logical blocks ──────────────────────────
+const splitIntoBlocks = (text) => {
+  // Normalize newlines
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const rawLines   = normalized.split('\n');
+
+  const blocks = [];
+  let current  = [];
+
+  const flush = () => {
+    if (current.length > 0) {
+      blocks.push(current.join('\n').trim());
+      current = [];
+    }
+  };
+
+  let i = 0;
+  while (i < rawLines.length) {
+    const line = rawLines[i];
+    const trimmed = line.trim();
+
+    // Empty line → paragraph break
+    if (!trimmed) {
+      flush();
+      i++;
+      continue;
+    }
+
+    const hScore = scoreAsHeading(trimmed);
+
+    // A high-confidence heading on its own line → always its own block
+    if (hScore >= 45 && current.length > 0) {
+      // Check if the CURRENT block is NOT a heading — if so, flush first
+      const currentFirstLine = current[0]?.trim() || '';
+      const currentHScore = scoreAsHeading(currentFirstLine);
+      if (currentHScore < 45) {
+        flush();
+      }
+    }
+
+    current.push(line);
+
+    // If this heading line has no following content on same block, flush immediately
+    // (so it stays standalone)
+    if (hScore >= 60) {
+      // Peek: if next non-empty line is also a heading or blank, flush now
+      const nextLine = rawLines[i + 1]?.trim() || '';
+      if (!nextLine || scoreAsHeading(nextLine) >= 45) {
+        flush();
+      }
+    }
+
+    i++;
+  }
+  flush();
+
+  return blocks.filter(b => b.length > 0);
+};
+
+// ── 7. Main type classifier for a single block ───────────────────────────────
+const classifyBlock = (block, idx) => {
+  if (!block.trim()) return null;
+
+  const lines      = block.split('\n').map(l => l.trim()).filter(Boolean);
+  const firstLine  = lines[0];
+  const restLines  = lines.slice(1);
+  const hScore     = scoreAsHeading(firstLine);
+
+  // ── Markdown heading (#)
+  if (/^#{1,4}\s/.test(firstLine)) {
+    const title   = firstLine.replace(/^#+\s*/, '').replace(/:$/, '').trim();
+    const content = restLines.length ? `<p>${restLines.join(' ')}</p>` : '';
+    // If it's a top heading (# or ##) with no content → heading type
+    if (/^#{1,2}\s/.test(firstLine) && !restLines.length) {
+      return { type: 'heading', title, content: '' };
+    }
+    return { type: restLines.length ? 'title' : 'heading', title, content };
+  }
+
+  // ── Solo line with high heading score → heading
+  if (lines.length === 1 && hScore >= 50) {
+    const cleanTitle = firstLine.replace(/^[\d]+[.):]\s*/, '').replace(/:$/, '').trim();
+    return { type: 'heading', title: cleanTitle, content: '' };
+  }
+
+  // ── First line is a heading, rest is content
+  if (hScore >= 45 && restLines.length > 0) {
+    const cleanTitle = firstLine.replace(/^[\d]+[.):]\s*/, '').replace(/:$/, '').trim();
+    const allBullets  = restLines.every(isBulletLine);
+    const allNumbered = restLines.every(isNumberedLine);
+
+    if (allBullets) {
+      return { type: 'bullets', title: cleanTitle, content: linesToHtml(restLines, 'ul') };
+    }
+    if (allNumbered) {
+      return { type: 'numbered', title: cleanTitle, content: linesToHtml(restLines, 'ol') };
+    }
+    // Mixed content or plain paragraph
+    const htmlContent = `<p>${restLines.join(' ')}</p>`;
+    return { type: 'title', title: cleanTitle, content: htmlContent };
+  }
+
+  // ── All lines are bullets
+  if (lines.every(isBulletLine)) {
+    return { type: 'bullets', title: '', content: linesToHtml(lines, 'ul') };
+  }
+
+  // ── All lines are numbered
+  if (lines.every(isNumberedLine)) {
+    return { type: 'numbered', title: '', content: linesToHtml(lines, 'ol') };
+  }
+
+  // ── Mixed: first line short (could be implied title), rest = list or text
+  if (restLines.length > 0 && firstLine.length < 80 && !/[.!?]$/.test(firstLine)) {
+    const allBullets  = restLines.every(isBulletLine);
+    const allNumbered = restLines.every(isNumberedLine);
+    if (allBullets) {
+      return { type: 'bullets', title: firstLine.replace(/:$/, '').trim(), content: linesToHtml(restLines, 'ul') };
+    }
+    if (allNumbered) {
+      return { type: 'numbered', title: firstLine.replace(/:$/, '').trim(), content: linesToHtml(restLines, 'ol') };
+    }
+    // Could be a title + paragraph
+    if (restLines.length >= 1 && hScore >= 20) {
+      return { type: 'title', title: firstLine.replace(/:$/, '').trim(), content: `<p>${restLines.join(' ')}</p>` };
+    }
+  }
+
+  // ── Default: plain paragraph
+  return { type: 'plain', title: '', content: `<p>${lines.join(' ')}</p>` };
+};
+
+// ── 8. Post-process: merge orphan headings with following title/plain ─────────
+const postProcess = (raw) => {
+  const out = [];
+  let i = 0;
+  while (i < raw.length) {
+    const sec = raw[i];
+    // If heading with no content, peek next — if next is plain, merge
+    if (sec.type === 'heading' && !sec.content && i + 1 < raw.length) {
+      const next = raw[i + 1];
+      if (next.type === 'plain' && !next.title) {
+        out.push({ ...sec, content: next.content });
+        i += 2;
+        continue;
+      }
+    }
+    out.push(sec);
+    i++;
+  }
+  return out;
+};
+
+// ── 9. Master parse entry-point ───────────────────────────────────────────────
 const parseContent = (raw) => {
-  // Split on 2+ newlines (paragraph break) or lines that look like headings
-  const blocks = raw
-    .split(/\n{2,}/)
-    .map((b) => b.trim())
-    .filter((b) => b.length > 0);
+  // 1. Strip HTML if pasted from rich-text / Word / AI output
+  const isHtml = /<[a-z][\s\S]*>/i.test(raw);
+  const text   = isHtml ? stripHtmlAndDecode(raw) : raw;
 
-  const sections = blocks.map((block) => detectSectionType(block)).filter(Boolean);
-  return sections.map((s, i) => ({ ...s, _id: i }));
+  // 2. Split into logical blocks
+  const blocks = splitIntoBlocks(text);
+
+  // 3. Classify each block
+  const classified = blocks.map((b, i) => classifyBlock(b, i)).filter(Boolean);
+
+  // 4. Post-process
+  const processed = postProcess(classified);
+
+  // 5. Assign preview _id
+  return processed.map((s, i) => ({ ...s, _id: i }));
 };
 
 // ─── Smart Paste Dialog ────────────────────────────────────────────────────
@@ -383,7 +631,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
   const handleConfirm = () => {
     if (!sections.length) return;
     dispatch(addMultipleSections(sections.map(({ type, title, content }) => ({ type, title, content }))));
-    dispatch(showToast({ message: `${sections.length} sections added successfully`, severity: "success" }));
+    dispatch(showToast({ message: `✅ ${sections.length} sections added successfully`, severity: "success" }));
     setRawText("");
     setSections([]);
     setParsed(false);
@@ -396,6 +644,12 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
 
   const TYPES = Object.keys(TYPE_META);
 
+  // Count by type for the summary bar
+  const typeCounts = sections.reduce((acc, s) => {
+    acc[s.type] = (acc[s.type] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth
       PaperProps={{ sx: { bgcolor: "#0d0d0d", border: "1px solid rgba(167,139,250,0.25)", borderRadius: '10px', minHeight: "80vh" } }}>
@@ -403,8 +657,8 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <AutoFixHigh sx={{ color: "#a78bfa", fontSize: 28 }} />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700, lineHeight: 1 }}>Smart Paste & Auto-Structure</Typography>
-            <Typography variant="caption" sx={{ color: "#888" }}>Paste any content — headings, lists, paragraphs — and it will be parsed and structured automatically</Typography>
+            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700, lineHeight: 1 }}>Smart Paste &amp; Auto-Structure</Typography>
+            <Typography variant="caption" sx={{ color: "#888" }}>Paste any content (plain text, HTML, Word, AI output) — sections will be intelligently detected</Typography>
           </Box>
         </Box>
       </DialogTitle>
@@ -418,12 +672,28 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             minRows={14}
             maxRows={28}
             fullWidth
-            placeholder={`Paste any content here. Examples:\n\n# Scope of Work\n\nProject Brief\nWe will deliver a complete website...\n\n• Item 1\n• Item 2\n• Item 3\n\n1. Step one\n2. Step two\n3. Step three`}
+            placeholder={`Paste any content here. Works with:\n\n# Scope of Work\n\n1. Social Media Management\nWe will handle all platforms...\n\n• Increase brand awareness\n• Boost engagement\n• Drive conversions\n\nTimeline:\nPhase 1 – Setup (Week 1-2)\nPhase 2 – Execution (Week 3+)`}
             value={rawText}
             onChange={(e) => { setRawText(e.target.value); setParsed(false); }}
             InputProps={{ sx: { fontFamily: "monospace", fontSize: 12.5, color: "#e0e0e0", bgcolor: "#141414", borderRadius: '10px', alignItems: "flex-start" } }}
             sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(167,139,250,0.3)" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#a78bfa" } }}
           />
+          {/* Supported format hints */}
+          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.7 }}>
+            {[
+              { label: '# Markdown', color: '#a78bfa' },
+              { label: 'ALL CAPS', color: '#f3a833' },
+              { label: '1. Numbered', color: '#38bdf8' },
+              { label: '• Bullets', color: '#22c55e' },
+              { label: 'HTML', color: '#f87171' },
+              { label: 'Keywords', color: '#fb923c' },
+            ].map(h => (
+              <Box key={h.label} sx={{ px: 0.9, py: 0.2, borderRadius: '6px', fontSize: 10, fontWeight: 600,
+                border: `1px solid ${h.color}44`, color: h.color, bgcolor: `${h.color}11` }}>
+                {h.label}
+              </Box>
+            ))}
+          </Box>
           <Button
             fullWidth
             variant="contained"
@@ -432,7 +702,7 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             startIcon={<AutoFixHigh />}
             sx={{ mt: 1.5, bgcolor: "#a78bfa", color: "#000", fontWeight: 700, "&:hover": { bgcolor: "#9061ea" }, "&:disabled": { bgcolor: "rgba(167,139,250,0.2)", color: "rgba(0,0,0,0.3)" } }}
           >
-            Auto-Parse Content
+            Smart Parse Content
           </Button>
         </Box>
 
@@ -441,23 +711,25 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
 
         {/* RIGHT: Parsed Preview */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
             <Typography variant="caption" sx={{ color: "#888", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Detected Sections</Typography>
-            {parsed && sections.length > 0 && (
-              <Chip label={`${sections.length} sections`} size="small" sx={{ bgcolor: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", fontSize: 10 }} />
-            )}
+            {parsed && sections.length > 0 && Object.entries(typeCounts).map(([type, count]) => (
+              <Chip key={type} label={`${count} ${TYPE_META[type]?.label || type}`} size="small"
+                sx={{ bgcolor: TYPE_META[type]?.bg, color: TYPE_META[type]?.color,
+                  border: `1px solid ${TYPE_META[type]?.border}`, fontSize: 10, height: 20 }} />
+            ))}
           </Box>
 
           {!parsed && (
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 2, opacity: 0.4 }}>
               <AutoFixHigh sx={{ fontSize: 56, color: "#a78bfa" }} />
-              <Typography sx={{ color: "#888", fontSize: 13 }}>Paste content and click Auto-Parse to see detected sections</Typography>
+              <Typography sx={{ color: "#888", fontSize: 13 }}>Paste content and click Smart Parse to see detected sections</Typography>
             </Box>
           )}
 
           {parsed && sections.length === 0 && (
             <Box sx={{ textAlign: "center", py: 6 }}>
-              <Typography sx={{ color: "#f44336", fontSize: 13 }}>No sections detected. Try adding paragraph breaks (blank lines) between sections.</Typography>
+              <Typography sx={{ color: "#f44336", fontSize: 13 }}>No sections detected. Try adding blank lines between sections or using headings.</Typography>
             </Box>
           )}
 
@@ -465,9 +737,13 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, maxHeight: 420, overflowY: "auto", pr: 0.5 }}>
               {sections.map((sec) => {
                 const meta = TYPE_META[sec.type] || TYPE_META.plain;
+                // Strip HTML for preview text
+                const previewContent = sec.content ? sec.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
                 return (
                   <Box key={sec._id}
-                    sx={{ bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: '10px', p: 1.5, position: "relative", "&:hover .sp-del": { opacity: 1 } }}>
+                    sx={{ bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: '10px',
+                      p: 1.5, position: "relative", "&:hover .sp-del": { opacity: 1 },
+                      borderLeft: `3px solid ${meta.color}` }}>
                     {/* Type Selector Row */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mb: 1, flexWrap: "wrap" }}>
                       {TYPES.map((t) => {
@@ -499,17 +775,20 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
 
                     {/* Content Preview */}
                     {sec.title && (
-                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: meta.color, mb: 0.5, lineHeight: 1.3 }}>
+                      <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: meta.color, mb: 0.4, lineHeight: 1.3 }}>
                         {sec.title}
                       </Typography>
                     )}
-                    {sec.content && (
+                    {previewContent && (
                       <Typography sx={{
                         fontSize: 11, color: "#888", whiteSpace: "pre-wrap", lineHeight: 1.6,
-                        display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden"
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden"
                       }}>
-                        {sec.content}
+                        {previewContent}
                       </Typography>
+                    )}
+                    {!sec.title && !previewContent && (
+                      <Typography sx={{ fontSize: 11, color: '#555', fontStyle: 'italic' }}>Empty section</Typography>
                     )}
                   </Box>
                 );
@@ -519,17 +798,22 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3, pt: 1.5, gap: 1.5, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <Button onClick={handleClose} sx={{ color: "#888", "&:hover": { bgcolor: "rgba(255,255,255,0.05)" } }}>Cancel</Button>
-        <Button
-          variant="contained"
-          disabled={sections.length === 0}
-          onClick={handleConfirm}
-          startIcon={<Article />}
-          sx={{ bgcolor: "#a78bfa", color: "#000", fontWeight: 700, px: 3, "&:hover": { bgcolor: "#9061ea" }, "&:disabled": { bgcolor: "rgba(167,139,250,0.2)", color: "rgba(0,0,0,0.3)" } }}
-        >
-          Add {sections.length > 0 ? `${sections.length} Sections` : "Sections"}
-        </Button>
+      <DialogActions sx={{ px: 3, pb: 3, pt: 1.5, gap: 1.5, borderTop: "1px solid rgba(255,255,255,0.06)", justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ color: "#555", fontSize: 10 }}>
+          {parsed && sections.length > 0 ? `${sections.length} section${sections.length !== 1 ? 's' : ''} ready to add` : 'You can adjust types before adding'}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button onClick={handleClose} sx={{ color: "#888", "&:hover": { bgcolor: "rgba(255,255,255,0.05)" } }}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={sections.length === 0}
+            onClick={handleConfirm}
+            startIcon={<Article />}
+            sx={{ bgcolor: "#a78bfa", color: "#000", fontWeight: 700, px: 3, "&:hover": { bgcolor: "#9061ea" }, "&:disabled": { bgcolor: "rgba(167,139,250,0.2)", color: "rgba(0,0,0,0.3)" } }}
+          >
+            Add {sections.length > 0 ? `${sections.length} Sections` : "Sections"}
+          </Button>
+        </Box>
       </DialogActions>
     </Dialog>
   );
