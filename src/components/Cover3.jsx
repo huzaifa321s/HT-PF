@@ -199,7 +199,7 @@ const PdfPageDocument2 = ({
 
     if (sec.type === "heading") {
       return (
-        <View key={key} style={{ marginBottom: 18, marginTop: 8 }}>
+        <View key={key} style={{ marginBottom: 18, marginTop: 8 }} minPresenceAhead={120}>
           <Text style={styles.sectionHeading}>{sec.title}</Text>
         </View>
       );

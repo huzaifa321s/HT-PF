@@ -1079,11 +1079,14 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
     const pageContentBottom = pageIndex * CYCLE + PAGE_HEIGHT - BOTTOM_PADDING;
     const spaceLeft = pageContentBottom - currentY;
 
+    const isHeading = sec.type === "heading";
+    const requiredSpace = isHeading ? (h + 160) : h;
+
     if (idx === 0) {
       absoluteTops[sec.id] = TOP_PADDING;
       currentY = TOP_PADDING + h + 28;
     } else {
-      if (spaceLeft < h) {
+      if (spaceLeft < requiredSpace) {
         // Push to next page
         const nextY = (pageIndex + 1) * CYCLE + TOP_PADDING;
         absoluteTops[sec.id] = nextY;
