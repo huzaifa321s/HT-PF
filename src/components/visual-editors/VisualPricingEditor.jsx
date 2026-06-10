@@ -265,13 +265,14 @@ const PackageVisualBox = ({
     if (!isStudioMode) return;
     e.preventDefault();
     setIsDraggingBottom(true);
+    const boxElement = e.currentTarget.parentElement;
+    const startHeight = boxElement ? boxElement.getBoundingClientRect().height : (pkg.minHeight || 200);
     const startY = e.clientY;
-    const startMargin = pkg.marginBottom !== undefined ? pkg.marginBottom : (isGrid ? 0 : parseInt(marginB) || 0);
 
     const handleMouseMove = (moveEvent) => {
       const deltaY = moveEvent.clientY - startY;
-      const newMargin = Math.max(-30, Math.min(150, startMargin + deltaY));
-      onUpdate("marginBottom", newMargin);
+      const newHeight = Math.max(150, Math.min(800, startHeight + deltaY));
+      onUpdate("minHeight", newHeight);
     };
 
     const handleMouseUp = () => {
@@ -287,13 +288,14 @@ const PackageVisualBox = ({
   const handleTouchStartBottom = (e) => {
     if (!isStudioMode) return;
     setIsDraggingBottom(true);
+    const boxElement = e.currentTarget.parentElement;
+    const startHeight = boxElement ? boxElement.getBoundingClientRect().height : (pkg.minHeight || 200);
     const startY = e.touches[0].clientY;
-    const startMargin = pkg.marginBottom !== undefined ? pkg.marginBottom : (isGrid ? 0 : parseInt(marginB) || 0);
 
     const handleTouchMove = (moveEvent) => {
       const deltaY = moveEvent.touches[0].clientY - startY;
-      const newMargin = Math.max(-30, Math.min(150, startMargin + deltaY));
-      onUpdate("marginBottom", newMargin);
+      const newHeight = Math.max(150, Math.min(800, startHeight + deltaY));
+      onUpdate("minHeight", newHeight);
     };
 
     const handleTouchEnd = () => {
@@ -313,9 +315,13 @@ const PackageVisualBox = ({
         borderRadius: isGrid ? "12px" : "16px",
         padding: padding,
         mt: `${pkg.marginTop || 0}px`,
-        mb: pkg.marginBottom !== undefined ? `${pkg.marginBottom}px` : marginB,
+        mb: marginB,
+        minHeight: pkg.minHeight ? `${pkg.minHeight}px` : "auto",
         backgroundColor: "#ffffff",
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
         flex: "none",
         width: isGrid ? "calc(50% - 10px)" : "100%",
         minWidth: isGrid ? "240px" : "auto",
@@ -408,7 +414,7 @@ const PackageVisualBox = ({
                 userSelect: "none"
               }}
             >
-              ↕ Bottom: {pkg.marginBottom !== undefined ? pkg.marginBottom : (isGrid ? 0 : parseInt(marginB) || 0)}px
+              ↕ Height: {pkg.minHeight ? `${Math.round(pkg.minHeight)}px` : "Auto"}
             </Box>
           </Box>
         </>
@@ -702,7 +708,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               {gridChunks.map((row, rowIdx) => {
                 const isCenteredRow = row.some(p => p.isContinued);
                 return (
-                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: gridGap, mb: gridRowMb, justifyContent: isCenteredRow ? "center" : "flex-start" }}>
+                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: gridGap, mb: gridRowMb, justifyContent: isCenteredRow ? "center" : "flex-start", alignItems: "stretch" }}>
                     {row.filter(p => p.type !== "placeholder").map((pkg, colIdx) => (
                       <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={true} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset} totalPkgs={totalPkgs}
                         onUpdate={(field, val) => dispatch(updateGridPackage({ id: pkg.id, field, value: val }))}

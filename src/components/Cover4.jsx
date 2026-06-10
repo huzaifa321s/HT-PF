@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
     gap: 20,
     marginBottom: 30,
     flexWrap: "nowrap",
+    alignItems: "stretch",
   },
   labelContainer: {
     position: "absolute",
