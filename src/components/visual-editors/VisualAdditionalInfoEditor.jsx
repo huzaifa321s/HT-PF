@@ -856,7 +856,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             sx={{
               position: "absolute",
               left: "28px",
-              top: isHeading ? "0px" : "4px",
+              top: isHeading ? "-38px" : "4px",
               display: "flex",
               flexDirection: isHeading ? "row" : "column",
               gap: "6px",
