@@ -856,10 +856,10 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               left: "28px", 
               top: isHeading ? "14px" : "4px",
               display: "flex", 
-              flexDirection: "column", 
+              flexDirection: isHeading ? "row" : "column", 
               gap: "6px",
               bgcolor: "#1a1a1a",
-              borderRadius: "8px",
+              borderRadius: isHeading ? "20px" : "8px",
               p: "4px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
               border: "1px solid rgba(243,168,51,0.15)",
@@ -868,7 +868,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               zIndex: 30,
             }}
           >
-            <Tooltip title="Delete Section" placement="right">
+            <Tooltip title="Delete Section" placement={isHeading ? "top" : "right"}>
               <IconButton
                 onClick={() => {
                   dispatch(deleteSection(section.id));
@@ -880,7 +880,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Change Section Type" placement="right">
+            <Tooltip title="Change Section Type" placement={isHeading ? "top" : "right"}>
               <IconButton
                 onClick={(e) => setTypeAnchor(e.currentTarget)}
                 sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
@@ -891,7 +891,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
 
             {isHeading && (
               <>
-                <Tooltip title="Align Heading" placement="right">
+                <Tooltip title="Align Heading" placement={isHeading ? "top" : "right"}>
                   <IconButton
                     onClick={(e) => setAlignAnchor(e.currentTarget)}
                     sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
@@ -906,7 +906,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Heading Color" placement="right">
+                <Tooltip title="Heading Color" placement={isHeading ? "top" : "right"}>
                   <IconButton
                     onClick={(e) => setColorAnchor(e.currentTarget)}
                     sx={{ width: 26, height: 26, p: 0, color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.15)" } }}
@@ -915,7 +915,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title={section.hideBorder ? "Show Horizontal Bar" : "Hide Horizontal Bar"} placement="right">
+                <Tooltip title={section.hideBorder ? "Show Horizontal Bar" : "Hide Horizontal Bar"} placement={isHeading ? "top" : "right"}>
                   <IconButton
                     onClick={() => {
                       dispatch(updateSection({ id: section.id, hideBorder: !section.hideBorder }));
