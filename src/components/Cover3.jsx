@@ -242,7 +242,13 @@ const PdfPageDocument2 = ({
 
       return (
         <View key={key} style={{ marginBottom: 18, marginTop: 8 }} minPresenceAhead={mpa}>
-          <Text style={styles.sectionHeading}>{sec.title}</Text>
+          <Text style={[
+            styles.sectionHeading,
+            sec.titleAlign && { textAlign: sec.titleAlign },
+            sec.color && { color: sec.color, borderBottomColor: sec.color }
+          ]}>
+            {sec.title}
+          </Text>
         </View>
       );
     }

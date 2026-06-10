@@ -161,7 +161,7 @@ const page2Slice = createSlice({
     updateSection: (state, action) => {
       const mode = state.currentMode;
 
-      const { id, type, title, content, titleAlign, contentAlign } = action.payload;
+      const { id, type, title, content, titleAlign, contentAlign, color } = action.payload;
       state[mode].orderedSections = (state[mode].orderedSections || []).map((sec) =>
         sec.id === id
           ? {
@@ -171,6 +171,7 @@ const page2Slice = createSlice({
             content: content ?? sec.content,
             titleAlign: titleAlign ?? sec.titleAlign ?? "left",
             contentAlign: contentAlign ?? sec.contentAlign ?? "left",
+            color: color ?? sec.color ?? "#000000",
           }
           : sec
       );

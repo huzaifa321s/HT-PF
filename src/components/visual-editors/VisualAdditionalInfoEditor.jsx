@@ -10,6 +10,7 @@ import {
   Add, Delete, Edit, FormatListNumbered, FormatListBulleted,
   Title, TextFields, TableChart, AddCircleOutline, PlaylistAdd, ContentPaste,
   AutoFixHigh, Article, FormatBold, FormatUnderlined,
+  FormatAlignLeft, FormatAlignCenter, FormatAlignRight, ColorLens,
 } from "@mui/icons-material";
 import {
   updateSection, addSection, deleteSection, restoreSection,
@@ -804,6 +805,8 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
   const ref = useRef(null);
   const contentRef = useRef(null);
   const [typeAnchor, setTypeAnchor] = useState(null);
+  const [alignAnchor, setAlignAnchor] = useState(null);
+  const [colorAnchor, setColorAnchor] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -847,7 +850,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
 
           {/* Action Buttons Container */}
           <Box 
-            className={`action-btns ${Boolean(typeAnchor) ? 'menu-open' : ''}`}
+            className={`action-btns ${Boolean(typeAnchor) || Boolean(alignAnchor) || Boolean(colorAnchor) ? 'menu-open' : ''}`}
             sx={{
               position: "absolute", left: 6, top: isHeading ? 4 : 0,
               display: "flex", flexDirection: "row", gap: "6px",
@@ -876,6 +879,34 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
                 <Edit sx={{ fontSize: 15 }} />
               </IconButton>
             </Tooltip>
+
+            {isHeading && (
+              <>
+                <Tooltip title="Align Heading">
+                  <IconButton
+                    onClick={(e) => setAlignAnchor(e.currentTarget)}
+                    sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+                  >
+                    {section.titleAlign === "center" ? (
+                      <FormatAlignCenter sx={{ fontSize: 15 }} />
+                    ) : section.titleAlign === "right" ? (
+                      <FormatAlignRight sx={{ fontSize: 15 }} />
+                    ) : (
+                      <FormatAlignLeft sx={{ fontSize: 15 }} />
+                    )}
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Heading Color">
+                  <IconButton
+                    onClick={(e) => setColorAnchor(e.currentTarget)}
+                    sx={{ width: 26, height: 26, p: 0, bgcolor: "rgba(243,168,51,0.1)", color: "#f3a833", borderRadius: '6px', "&:hover": { bgcolor: "rgba(243,168,51,0.2)" } }}
+                  >
+                    <ColorLens sx={{ fontSize: 15 }} />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
           </Box>
 
           <Menu
@@ -902,6 +933,82 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
               </MenuItem>
             ))}
           </Menu>
+
+          {/* Alignment Menu */}
+          <Menu
+            anchorEl={alignAnchor}
+            open={Boolean(alignAnchor)}
+            onClose={() => setAlignAnchor(null)}
+            PaperProps={{ sx: { bgcolor: "#1a1a1a", border: "1px solid rgba(243,168,51,0.2)", color: "#fff", borderRadius: '8px' } }}
+          >
+            <MenuItem
+              onClick={() => {
+                dispatch(updateSection({ id: section.id, titleAlign: "left" }));
+                setAlignAnchor(null);
+              }}
+              sx={{ fontSize: 13, "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
+            >
+              <FormatAlignLeft sx={{ mr: 1, fontSize: 16 }} /> Left
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                dispatch(updateSection({ id: section.id, titleAlign: "center" }));
+                setAlignAnchor(null);
+              }}
+              sx={{ fontSize: 13, "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
+            >
+              <FormatAlignCenter sx={{ mr: 1, fontSize: 16 }} /> Center
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                dispatch(updateSection({ id: section.id, titleAlign: "right" }));
+                setAlignAnchor(null);
+              }}
+              sx={{ fontSize: 13, "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
+            >
+              <FormatAlignRight sx={{ mr: 1, fontSize: 16 }} /> Right
+            </MenuItem>
+          </Menu>
+
+          {/* Color Menu */}
+          <Menu
+            anchorEl={colorAnchor}
+            open={Boolean(colorAnchor)}
+            onClose={() => setColorAnchor(null)}
+            PaperProps={{ sx: { bgcolor: "#1a1a1a", border: "1px solid rgba(243,168,51,0.2)", color: "#fff", borderRadius: '8px', p: 1, minWidth: 150 } }}
+          >
+            <Typography variant="caption" sx={{ color: "#888", display: "block", mb: 1, px: 0.5, fontWeight: 700, textTransform: "uppercase" }}>
+              Select Color
+            </Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+              {[
+                "#000000", // Black
+                "#f3a833", // Gold/Orange
+                "#2563eb", // Royal Blue
+                "#7c3aed", // Purple
+                "#db2777", // Pink
+                "#16a34a", // Green
+                "#dc2626", // Red
+                "#4b5563"  // Grey
+              ].map((c) => (
+                <Box
+                  key={c}
+                  onClick={() => {
+                    dispatch(updateSection({ id: section.id, color: c }));
+                    setColorAnchor(null);
+                  }}
+                  sx={{
+                    width: 24, height: 24, bgcolor: c, borderRadius: "50%", cursor: "pointer",
+                    border: (section.color || "#000000") === c ? "2px solid #fff" : "1px solid rgba(255,255,255,0.2)",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                    transition: "transform 0.1s",
+                    "&:hover": { transform: "scale(1.15)" }
+                  }}
+                />
+              ))}
+            </Box>
+          </Menu>
+
           {!isHeading && <SectionToolbar contentRef={contentRef} />}
         </>
       )}
@@ -909,7 +1016,7 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
       {/* ── Heading type: large title + thick bottom border (like "Deliverables", "Timeline", "Pricing") ── */}
       {isHeading && (
         <Box sx={{
-          borderBottom: "2px solid #1a1a1a",
+          borderBottom: `2px solid ${section.color || "#1a1a1a"}`,
           mb: "16px",
           pb: "6px",
         }}>
@@ -918,8 +1025,8 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
             isStudioMode={isStudioMode}
             onInput={(e) => handleInput(section.id, "title", e)}
             sx={{
-              fontSize: 28, fontWeight: "bold", color: "#1a1a1a",
-              textAlign: "left", outline: "none", wordBreak: "break-word",
+              fontSize: 28, fontWeight: "bold", color: section.color || "#1a1a1a",
+              textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word",
               border: isStudioMode ? "1px dashed transparent" : "none",
               "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
             }}
