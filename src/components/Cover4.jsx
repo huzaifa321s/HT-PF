@@ -245,137 +245,91 @@ const splitPackage = (pkg, maxFirstChunkHeight, maxSubsequentChunkHeight = 420) 
 };
 
 const organizeIntoPages = (standalonePkgs, gridPkgs) => {
-  const pages = [];
-  let firstPageExtraHeight = 220; // heading, subheading, etc on first page
-  let currentPage = { standalone: [], grid: [], heightUsed: firstPageExtraHeight };
-
-  const startNewPage = () => {
-    // Only push if there's actually content, or if it's the very first page and it's empty
-    if (currentPage.standalone.length || currentPage.grid.length || pages.length === 0) {
-      pages.push(currentPage);
-    }
-    currentPage = { standalone: [], grid: [], heightUsed: 0 };
-  };
-
-  // Helper to add package chunks
-  const addPackageChunks = (chunks) => {
-    chunks.forEach((chunk) => {
-      const h = estimatePackageHeight(chunk) + 30; // margin bottom
-
-      if (currentPage.heightUsed + h > PAGE_CONTENT_HEIGHT && (currentPage.standalone.length > 0 || currentPage.grid.length > 0)) {
-        startNewPage();
-      }
-
-      if (chunk.type === "grid") {
-        currentPage.grid.push(chunk);
-      } else {
-        currentPage.standalone.push(chunk);
-      }
-      currentPage.heightUsed += h;
-    });
-  };
-
-  // Process standalone
-  standalonePkgs.forEach((pkg) => {
-    let availableHeight = PAGE_CONTENT_HEIGHT - currentPage.heightUsed;
-    if (availableHeight < 250) {
-      startNewPage();
-      availableHeight = PAGE_CONTENT_HEIGHT;
-    }
-    const chunks = splitPackage(pkg, availableHeight, 420);
-    addPackageChunks(chunks.map(c => ({ ...c, type: "standalone" })));
-  });
-
-  // Process grid packages (2 per row)
-  gridPkgs.forEach((pkg, index) => {
-    const isFirstInRow = (currentPage.grid.length % 2 === 0);
-    let availableHeight = PAGE_CONTENT_HEIGHT - currentPage.heightUsed;
-    if (isFirstInRow && availableHeight < 250) {
-      startNewPage();
-      availableHeight = PAGE_CONTENT_HEIGHT;
-    }
-
-    const chunks = splitPackage(pkg, availableHeight, 380);
-
-    chunks.forEach((chunk) => {
-      const pkgHeight = estimatePackageHeight(chunk) + 30;
-
-      // Force continuation chunks to start on a new page
-      if (chunk.isContinued) {
-        startNewPage();
-      }
-
-      // ---------------------------------------------
-      // GRID FIX: Check row height, not individual box
-      // ---------------------------------------------
-      const isFirst = (currentPage.grid.length % 2 === 0);
-
-      // If this is second item in row → row height already counted
-      if (!isFirst) {
-        // second item of same row → no height increase
-        currentPage.grid.push({ ...chunk, type: "grid" });
-        return;
-      }
-
-      // First item in row → new row height check
-      if (currentPage.heightUsed + pkgHeight > PAGE_CONTENT_HEIGHT && (currentPage.standalone.length > 0 || currentPage.grid.length > 0)) {
-        startNewPage();
-      }
-
-      // Add first item of new row
-      currentPage.grid.push({ ...chunk, type: "grid" });
-      currentPage.heightUsed += pkgHeight;
-
-      // Force continued chunks to sit alone on their row by adding a placeholder
-      if (chunk.isContinued) {
-        currentPage.grid.push({ type: "placeholder" });
-      }
-    });
-  });
-
-  if (currentPage.standalone.length || currentPage.grid.length || pages.length === 0) {
-    pages.push(currentPage);
-  }
-
-  return pages;
+  // Always return exactly one page containing all standalone and grid packages
+  return [{
+    standalone: standalonePkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
+    grid: gridPkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
+    heightUsed: 0
+  }];
 };
 
 // ======================== RENDER COMPONENTS ========================
-const PackageBox = ({ pkg }) => (
-  <View
-    style={pkg.type === "grid" ? styles.gridPackage : styles.standalonePackage}
-    wrap={false}
-  >
-    {pkg.showHeader !== false && (
-      <>
-        <Text style={styles.packageTitle}>{pkg.title}</Text>
-        <View style={[styles.packageLine, { backgroundColor: pkg.color || "#000" }]} />
-        <Text style={[styles.packageSubtitle, { color: pkg.color || "#000" }]}>
-          {pkg.subtitle}
-        </Text>
-        <Text style={styles.packagePrice}>
-          {pkg.price
-            && `${pkg?.currency || pkg.globalCurrency || "$"} ${pkg.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} / Month`}
-        </Text>
-      </>
-    )}
+const PackageBox = ({ pkg, totalPkgs }) => {
+  const isGrid = pkg.type === "grid";
 
-    <Text style={styles.featuresTitle}>
-      {pkg.isContinued ? "...Continued" : pkg.type === "grid" ? "Includes:" : "What's Included"}
-    </Text>
+  // Dynamic sizing based on number of packages
+  let padding = isGrid ? 20 : 28;
+  let marginB = isGrid ? 0 : 30;
+  let itemMarginB = 8;
+  let titleSize = 20;
+  let subtitleSize = 11;
+  let priceSize = 15;
+  let itemSize = 11;
+  let headerBarHeight = 4;
 
-    {pkg.items?.map((item, i) => (
-      <View key={i} style={styles.featureItem}>
-        <Text style={styles.bullet}>•</Text>
-        <Text style={{ textAlign: "left", flex: 1 }}>{item}</Text>
-      </View>
-    ))}
+  if (totalPkgs === 2) {
+    padding = isGrid ? 14 : 18;
+    marginB = isGrid ? 0 : 16;
+    itemMarginB = 5;
+    titleSize = 16;
+    subtitleSize = 10;
+    priceSize = 13;
+    itemSize = 10;
+    headerBarHeight = 3;
+  } else if (totalPkgs >= 3) {
+    padding = isGrid ? 10 : 12;
+    marginB = isGrid ? 0 : 8;
+    itemMarginB = 3;
+    titleSize = 13;
+    subtitleSize = 9;
+    priceSize = 11;
+    itemSize = 9;
+    headerBarHeight = 2;
+  }
 
-    {pkg.continueNext && (
-      <Text style={styles.continuationNote}>→ Continued on next page</Text>
-    )}
-  </View>
-);
+  return (
+    <View
+      style={[
+        isGrid ? styles.gridPackage : styles.standalonePackage,
+        {
+          padding: padding,
+          marginBottom: marginB,
+          borderRadius: isGrid ? 12 : 16,
+        }
+      ]}
+      wrap={false}
+    >
+      {pkg.showHeader !== false && (
+        <>
+          <Text style={[styles.packageTitle, { fontSize: titleSize, marginBottom: totalPkgs >= 3 ? 4 : 8 }]}>{pkg.title}</Text>
+          <View style={[styles.packageLine, { height: headerBarHeight, backgroundColor: pkg.color || "#000", marginBottom: totalPkgs >= 3 ? 8 : 12 }]} />
+          <Text style={[styles.packageSubtitle, { fontSize: subtitleSize, color: pkg.color || "#000", marginBottom: totalPkgs >= 3 ? 8 : 12 }]}>
+            {pkg.subtitle}
+          </Text>
+          <Text style={[styles.packagePrice, { fontSize: priceSize, marginBottom: totalPkgs >= 3 ? 8 : 16 }]}>
+            {pkg.price
+              && `${pkg?.currency || pkg.globalCurrency || "$"} ${pkg.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} / Month`}
+          </Text>
+        </>
+      )}
+
+      <Text style={[styles.featuresTitle, { fontSize: itemSize + 1, marginBottom: totalPkgs >= 3 ? 8 : 12 }]}>
+        {pkg.isContinued ? "...Continued" : isGrid ? "Includes:" : "What's Included"}
+      </Text>
+
+      {pkg.items?.map((item, i) => (
+        <View key={i} style={[styles.featureItem, { marginBottom: itemMarginB }]}>
+          <Text style={[styles.bullet, { marginRight: 10, fontSize: itemSize }]}>•</Text>
+          <Text style={{ textAlign: "left", flex: 1, fontSize: itemSize }}>{item}</Text>
+        </View>
+      ))}
+
+      {pkg.continueNext && (
+        <Text style={[styles.continuationNote, { fontSize: itemSize, marginTop: 10 }]}>→ Continued on next page</Text>
+      )}
+    </View>
+  );
+};
 
 // ======================== MAIN COMPONENT ========================
 const PdfPricingPage = ({
@@ -394,33 +348,10 @@ const PdfPricingPage = ({
     return organizeIntoPages(standalonePkgs, gridPackages);
   }, [standalonePkgs, gridPackages]);
 
-
-
   useEffect(() => {
     // Optional: dispatch to Redux if needed
     // store.dispatch(setCurrentPages({ currentPages: pages.length }));
   }, [pages]);
-
-
-  const orderedElements = useMemo(() => {
-    // 1️⃣ Text / Heading elements
-    const textElems = elements
-      .filter(el => el.type === "text" || el.type === "mainHeading")
-      .map(el => ({ ...el, _elementType: el.type }));
-
-    // 2️⃣ Standalone packages
-    const standaloneElems = elements
-      .filter(el => el.type === "package" && !el.isGrid)
-      .map(pkg => ({ ...pkg, _elementType: "standalone" }));
-
-    // 3️⃣ Grid packages
-    const gridElems = elements
-      .filter(el => el.type === "package" && el.isGrid)
-      .map(pkg => ({ ...pkg, _elementType: "grid" }));
-
-    // 4️⃣ Unified ordered array
-    return [...textElems, ...standaloneElems, ...gridElems];
-  }, [elements]);
 
   return (
     <>
@@ -428,6 +359,50 @@ const PdfPricingPage = ({
         const gridChunks = [];
         for (let i = 0; i < page.grid.length; i += 2) {
           gridChunks.push(page.grid.slice(i, i + 2));
+        }
+
+        // Calculate sizes based on totalPackagesCount
+        const totalPkgs = standalonePkgs.length + gridPackages.length;
+
+        let pageTitleSize = 20;
+        let pageTitleMb = 10;
+        let headingSize = 28;
+        let headingMt = 10;
+        let headingMb = 20;
+        let subheadingSize = 12;
+        let dividerMy = 15;
+        let textElMb = 15;
+        let mainHeadingSize = 28;
+        let textFontSize = 11;
+        let gridGap = 20;
+        let gridRowMb = 30;
+
+        if (totalPkgs === 2) {
+          pageTitleSize = 16;
+          pageTitleMb = 6;
+          headingSize = 22;
+          headingMt = 6;
+          headingMb = 12;
+          subheadingSize = 10;
+          dividerMy = 10;
+          textElMb = 10;
+          mainHeadingSize = 22;
+          textFontSize = 10;
+          gridGap = 12;
+          gridRowMb = 16;
+        } else if (totalPkgs >= 3) {
+          pageTitleSize = 14;
+          pageTitleMb = 4;
+          headingSize = 18;
+          headingMt = 4;
+          headingMb = 8;
+          subheadingSize = 9;
+          dividerMy = 6;
+          textElMb = 6;
+          mainHeadingSize = 18;
+          textFontSize = 9;
+          gridGap = 8;
+          gridRowMb = 8;
         }
 
         return (
@@ -441,43 +416,38 @@ const PdfPricingPage = ({
             {/* First Page Only Content */}
             {pageIdx === 0 && (
               <>
-                <Text style={styles.pageTitle}>{pageTitle}</Text>
-                <Text style={styles.mainHeading}>{heading}</Text>
-                <Text style={styles.subheading}>{subheading}</Text>
-                <View style={styles.divider} />
+                <Text style={[styles.pageTitle, { fontSize: pageTitleSize, marginBottom: pageTitleMb }]}>{pageTitle}</Text>
+                <Text style={[styles.mainHeading, { fontSize: headingSize, marginTop: headingMt, marginBottom: headingMb }]}>{heading}</Text>
+                <Text style={[styles.subheading, { fontSize: subheadingSize }]}>{subheading}</Text>
+                <View style={[styles.divider, { marginVertical: dividerMy }]} />
 
                 {textElements.map((el, i) => (
-                  <Text key={i} style={{ ...styles.textContent, fontSize: el.type === "mainHeading" && 28 }}>{el.content}</Text>
+                  <Text key={i} style={[styles.textContent, { fontSize: el.type === "mainHeading" ? mainHeadingSize : textFontSize, marginBottom: textElMb }]}>{el.content}</Text>
                 ))}
               </>
-            )
-            }
+            )}
 
             {/* Standalone Packages */}
-            {
-              page.standalone.map((pkg, i) => (
-                <PackageBox key={`${pkg.id}-${i}`} pkg={{ ...pkg, globalCurrency }} />
-              ))
-            }
+            {page.standalone.map((pkg, i) => (
+              <PackageBox key={`${pkg.id}-${i}`} pkg={{ ...pkg, globalCurrency }} totalPkgs={totalPkgs} />
+            ))}
 
             {/* Grid Packages - 2 per row */}
-            {
-              gridChunks.map((row, rowIdx) => {
-                const isCenteredRow = row.some(p => p.isContinued);
-                return (
-                  <View key={`row-${rowIdx}`} style={[styles.gridRow, isCenteredRow && { justifyContent: "center" }]}>
-                    {row.filter(p => p.type !== "placeholder").map((pkg, colIdx) => (
-                      <PackageBox key={`${pkg.id}-${rowIdx}-${colIdx}`} pkg={{ ...pkg, globalCurrency }} />
-                    ))}
-                  </View>
-                );
-              })
-            }
+            {gridChunks.map((row, rowIdx) => {
+              const isCenteredRow = row.some(p => p.isContinued);
+              return (
+                <View key={`row-${rowIdx}`} style={[styles.gridRow, { gap: gridGap, marginBottom: gridRowMb }, isCenteredRow && { justifyContent: "center" }]}>
+                  {row.filter(p => p.type !== "placeholder").map((pkg, colIdx) => (
+                    <PackageBox key={`${pkg.id}-${rowIdx}-${colIdx}`} pkg={{ ...pkg, globalCurrency }} totalPkgs={totalPkgs} />
+                  ))}
+                </View>
+              );
+            })}
 
             {/* Fixed Footer */}
-            < View fixed style={styles.footer} >
+            <View fixed style={styles.footer}>
               <Image src={FOOTER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </View >
+            </View>
             {showLabels && (
               <View style={styles.labelContainer} fixed>
                 <View style={styles.labelBox}>
@@ -485,7 +455,7 @@ const PdfPricingPage = ({
                 </View>
               </View>
             )}
-          </Page >
+          </Page>
         );
       })}
     </>

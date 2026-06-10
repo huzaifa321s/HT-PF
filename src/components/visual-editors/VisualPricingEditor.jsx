@@ -114,99 +114,70 @@ const splitPackage = (pkg, maxFirstChunkHeight, maxSubsequentChunkHeight = 420) 
 };
 
 const organizeIntoPages = (standalonePkgs, gridPkgs) => {
-  const pages = [];
-  let firstPageExtraHeight = 220;
-  let currentPage = { standalone: [], grid: [], heightUsed: firstPageExtraHeight };
-
-  const startNewPage = () => {
-    // Only push if there's actually content, or if it's the very first page and it's empty
-    if (currentPage.standalone.length || currentPage.grid.length || pages.length === 0) {
-      pages.push(currentPage);
-    }
-    currentPage = { standalone: [], grid: [], heightUsed: 0 };
-  };
-
-  const addPackageChunks = (chunks) => {
-    chunks.forEach((chunk) => {
-      const h = estimatePackageHeight(chunk) + 30;
-      if (currentPage.heightUsed + h > PAGE_CONTENT_HEIGHT && (currentPage.standalone.length > 0 || currentPage.grid.length > 0)) {
-        startNewPage();
-      }
-      if (chunk.type === "grid") {
-        currentPage.grid.push(chunk);
-      } else {
-        currentPage.standalone.push(chunk);
-      }
-      currentPage.heightUsed += h;
-    });
-  };
-
-  standalonePkgs.forEach((pkg) => {
-    let availableHeight = PAGE_CONTENT_HEIGHT - currentPage.heightUsed;
-    if (availableHeight < 250) {
-      startNewPage();
-      availableHeight = PAGE_CONTENT_HEIGHT;
-    }
-    const chunks = splitPackage(pkg, availableHeight, 420);
-    addPackageChunks(chunks.map(c => ({ ...c, type: "standalone" })));
-  });
-
-  gridPkgs.forEach((pkg, index) => {
-    const isFirstInRow = (currentPage.grid.length % 2 === 0);
-    let availableHeight = PAGE_CONTENT_HEIGHT - currentPage.heightUsed;
-    if (isFirstInRow && availableHeight < 250) {
-      startNewPage();
-      availableHeight = PAGE_CONTENT_HEIGHT;
-    }
-
-    const chunks = splitPackage(pkg, availableHeight, 380);
-
-    chunks.forEach((chunk) => {
-      const pkgHeight = estimatePackageHeight(chunk) + 30;
-
-      // Force continuation chunks to start on a new cloned page
-      if (chunk.isContinued) {
-        startNewPage();
-      }
-
-      const isFirst = (currentPage.grid.length % 2 === 0);
-      if (!isFirst) {
-        currentPage.grid.push({ ...chunk, type: "grid" });
-        return;
-      }
-      if (currentPage.heightUsed + pkgHeight > PAGE_CONTENT_HEIGHT && (currentPage.standalone.length > 0 || currentPage.grid.length > 0)) {
-        startNewPage();
-      }
-      currentPage.grid.push({ ...chunk, type: "grid" });
-      currentPage.heightUsed += pkgHeight;
-
-      // Force continued chunks to sit alone on their row by adding a placeholder
-      if (chunk.isContinued) {
-        currentPage.grid.push({ type: "placeholder" });
-      }
-    });
-  });
-
-  if (currentPage.standalone.length || currentPage.grid.length || pages.length === 0) {
-    pages.push(currentPage);
-  }
-
-  return pages;
+  // Always return exactly one page containing all standalone and grid packages
+  return [{
+    standalone: standalonePkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
+    grid: gridPkgs.map(p => ({ ...p, isSplit: false, itemOffset: 0 })),
+    heightUsed: 0
+  }];
 };
 
-const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAlignChange, onDeleteItem, onDelete, onColorChange, isStudioMode, itemOffset = 0 }) => {
+const PackageVisualBox = ({ 
+  pkg, 
+  isGrid, 
+  onUpdate, 
+  onAddItem, 
+  onUpdateItem, 
+  onAlignChange, 
+  onDeleteItem, 
+  onDelete, 
+  onColorChange, 
+  isStudioMode, 
+  itemOffset = 0,
+  totalPkgs = 1
+}) => {
   const dispatch = useDispatch();
   const [colorAnchor, setColorAnchor] = useState(null);
 
   const handleFieldInput = (field, e) => onUpdate(field, e.currentTarget.textContent);
+
+  // Dynamic sizing based on number of packages to ensure everything fits on a single page
+  let padding = isGrid ? "20px" : "28px";
+  let marginB = isGrid ? 0 : "30px";
+  let itemMarginB = "8px";
+  let titleSize = 20;
+  let subtitleSize = 11;
+  let priceSize = 15;
+  let itemSize = 11;
+  let headerBarHeight = 4;
+
+  if (totalPkgs === 2) {
+    padding = isGrid ? "14px" : "18px";
+    marginB = isGrid ? 0 : "16px";
+    itemMarginB = "5px";
+    titleSize = 16;
+    subtitleSize = 10;
+    priceSize = 13;
+    itemSize = 10;
+    headerBarHeight = 3;
+  } else if (totalPkgs >= 3) {
+    padding = isGrid ? "10px" : "12px";
+    marginB = isGrid ? 0 : "8px";
+    itemMarginB = "3px";
+    titleSize = 13;
+    subtitleSize = 9;
+    priceSize = 11;
+    itemSize = 9;
+    headerBarHeight = 2;
+  }
 
   return (
     <Box
       sx={{
         border: "2px solid #e0e0e0",
         borderRadius: isGrid ? "12px" : "16px",
-        padding: isGrid ? "20px" : "28px",
-        mb: isGrid ? 0 : "30px",
+        padding: padding,
+        mb: marginB,
         backgroundColor: "#ffffff",
         position: "relative",
         flex: "none",
@@ -237,17 +208,17 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
             fallback="Package Title"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("title", e)}
-            sx={{ fontSize: 20, fontWeight: "bold", color: "#1a1a1a", textAlign: "center", mb: 1, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: titleSize, fontWeight: "bold", color: "#1a1a1a", textAlign: "center", mb: totalPkgs >= 3 ? 0.5 : 1, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
           />
 
-          <Box sx={{ height: 4, backgroundColor: pkg.color || "#000", mb: 1.5 }} />
+          <Box sx={{ height: headerBarHeight, backgroundColor: pkg.color || "#000", mb: totalPkgs >= 3 ? 1 : 1.5 }} />
 
           <EditableText
             value={pkg.subtitle}
             fallback="Subtitle"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("subtitle", e)}
-            sx={{ fontSize: 11, textAlign: "start", color: pkg.color || "#000", fontWeight: "bold", mb: 1.5, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: subtitleSize, textAlign: "start", color: pkg.color || "#000", fontWeight: "bold", mb: totalPkgs >= 3 ? 1 : 1.5, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
           />
 
           <EditableText
@@ -255,12 +226,12 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
             fallback="0 / Month"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("price", e)}
-            sx={{ fontSize: 15, fontWeight: "bold", color: "#000", textAlign: "start", mb: 2, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: priceSize, fontWeight: "bold", color: "#000", textAlign: "start", mb: totalPkgs >= 3 ? 1 : 2, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
           />
         </>
       )}
 
-      <Typography sx={{ fontSize: 13, fontWeight: "bold", color: "#1a1a1a", textAlign: "start", mb: 1.5 }}>
+      <Typography sx={{ fontSize: itemSize + 1, fontWeight: "bold", color: "#1a1a1a", textAlign: "start", mb: totalPkgs >= 3 ? 1 : 1.5 }}>
         {pkg.isContinued ? "...Continued" : isGrid ? "Includes:" : "What's Included"}
       </Typography>
 
@@ -268,14 +239,14 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
         const i = localI + itemOffset;
 
         return (
-          <Box key={i} sx={{ display: "flex", mb: 1, position: "relative", "&:hover .item-actions": { opacity: 1 } }}>
-            <Typography sx={{ mr: 1, fontWeight: "bold", fontSize: 10.5, color: "#1a1a1a" }}>•</Typography>
+          <Box key={i} sx={{ display: "flex", mb: itemMarginB, position: "relative", "&:hover .item-actions": { opacity: 1 } }}>
+            <Typography sx={{ mr: 1, fontWeight: "bold", fontSize: itemSize - 0.5, color: "#1a1a1a" }}>•</Typography>
             <EditableText
               value={item}
               fallback="Feature"
               isStudioMode={isStudioMode}
               onInput={(e) => onUpdateItem(i, e.currentTarget.textContent)}
-              sx={{ flexGrow: 1, fontSize: 11, textAlign: "left", outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+              sx={{ flexGrow: 1, fontSize: itemSize, textAlign: "left", outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
             />
             {isStudioMode && (
               <Box className="item-actions" sx={{ position: "absolute", top: -30, left: 0, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: '10px', display: "flex", gap: 0.5, p: 0.5 }}>
@@ -294,16 +265,15 @@ const PackageVisualBox = ({ pkg, isGrid, onUpdate, onAddItem, onUpdateItem, onAl
       })}
 
       {pkg.continueNext && (
-        <Typography sx={{ fontSize: 11, color: "#94a3b8", textAlign: "center", mt: 1, fontStyle: "italic", fontWeight: "bold" }}>→ Continued on next page</Typography>
+        <Typography sx={{ fontSize: itemSize, color: "#94a3b8", textAlign: "center", mt: 1, fontStyle: "italic", fontWeight: "bold" }}>→ Continued on next page</Typography>
       )}
 
       {isStudioMode && !pkg.continueNext && (
-        <Button size="small" onClick={onAddItem} sx={{ mt: 1, fontSize: 10 }} startIcon={<Add sx={{ fontSize: 12 }} />}>Add Feature</Button>
+        <Button size="small" onClick={onAddItem} sx={{ mt: totalPkgs >= 3 ? 0.5 : 1, fontSize: itemSize - 1, py: totalPkgs >= 3 ? 0.25 : 0.5 }} startIcon={<Add sx={{ fontSize: 12 }} />}>Add Feature</Button>
       )}
     </Box>
   );
 };
-
 
 const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Pricing" }) => {
   const dispatch = useDispatch();
@@ -367,6 +337,50 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
             gridChunks.push(page.grid.slice(i, i + 2));
           }
 
+          // Calculate sizes based on totalPackagesCount
+          const totalPkgs = standalonePkgs.length + gridPackages.length;
+          
+          let pageTitleSize = 20;
+          let pageTitleMb = "10px";
+          let headingSize = 28;
+          let headingMt = "10px";
+          let headingMb = "20px";
+          let subheadingSize = 12;
+          let dividerMy = "15px";
+          let textElMb = 2;
+          let mainHeadingSize = 28;
+          let textFontSize = 11;
+          let gridGap = "20px";
+          let gridRowMb = "30px";
+
+          if (totalPkgs === 2) {
+            pageTitleSize = 16;
+            pageTitleMb = "6px";
+            headingSize = 22;
+            headingMt = "6px";
+            headingMb = "12px";
+            subheadingSize = 10;
+            dividerMy = "10px";
+            textElMb = 1.5;
+            mainHeadingSize = 22;
+            textFontSize = 10;
+            gridGap = "12px";
+            gridRowMb = "16px";
+          } else if (totalPkgs >= 3) {
+            pageTitleSize = 14;
+            pageTitleMb = "4px";
+            headingSize = 18;
+            headingMt = "4px";
+            headingMb = "8px";
+            subheadingSize = 9;
+            dividerMy = "6px";
+            textElMb = 1;
+            mainHeadingSize = 18;
+            textFontSize = 9;
+            gridGap = "8px";
+            gridRowMb = "8px";
+          }
+
           return (
             <Box key={pageIdx} id={isStudioMode && !isThumbnail ? `page-${pageIdPrefix}-${pageIdx}` : undefined} sx={{ position: "absolute", top: pageIdx * (1131 + gap), left: 0, right: 0, height: 1131, pt: "100px", pb: "80px", px: "50px", pointerEvents: "none", "& > *": { pointerEvents: isThumbnail ? "none" : "auto" } }}>
               {isStudioMode && pageIdx === 0 && (
@@ -385,7 +399,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Pricing Plans"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updatePageTitle, e)}
-                    sx={{ fontSize: 20, fontWeight: "bold", color: "#333333", mb: "10px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontSize: pageTitleSize, fontWeight: "bold", color: "#333333", mb: pageTitleMb, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                   />
 
                   <EditableText
@@ -393,7 +407,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Choose Your Perfect Plan"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updateHeading, e)}
-                    sx={{ fontWeight: "bold", color: "#000", textAlign: "center", fontSize: 28, mt: "10px", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontWeight: "bold", color: "#000", textAlign: "center", fontSize: headingSize, mt: headingMt, mb: headingMb, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                   />
 
                   <EditableText
@@ -401,18 +415,18 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Flexible options designed for your needs"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updateSubheading, e)}
-                    sx={{ fontSize: 12, color: "#000", textAlign: "center", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontSize: subheadingSize, color: "#000", textAlign: "center", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                   />
 
-                  <Box sx={{ height: "1px", backgroundColor: "#000", my: "15px" }} />
+                  <Box sx={{ height: "1px", backgroundColor: "#000", my: dividerMy }} />
 
                   {textElements.map((el) => (
-                    <Box key={el.id} sx={{ position: "relative", mb: 2, "&:hover .text-actions": { opacity: 1 } }}>
+                    <Box key={el.id} sx={{ position: "relative", mb: textElMb, "&:hover .text-actions": { opacity: 1 } }}>
                       <EditableText
                         value={el.content}
                         isStudioMode={isStudioMode}
                         onInput={(e) => debouncedUpdateContent(el.id, e.currentTarget.textContent)}
-                        sx={{ fontSize: el.type === "mainHeading" ? 28 : 11, fontWeight: el.type === "mainHeading" ? "bold" : "normal", textAlign: el.type === "mainHeading" ? "center" : "left", color: "#333333", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20, "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                        sx={{ fontSize: el.type === "mainHeading" ? mainHeadingSize : textFontSize, fontWeight: el.type === "mainHeading" ? "bold" : "normal", textAlign: el.type === "mainHeading" ? "center" : "left", color: "#333333", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20, "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                       />
                       {isStudioMode && (
                         <Box className="text-actions" sx={{ position: "absolute", right: -30, top: 0, opacity: 0 }}>
@@ -434,7 +448,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
               {/* Standalone Packages for this chunk */}
               {page.standalone.map((pkg) => (
-                <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={false} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset}
+                <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={false} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset} totalPkgs={totalPkgs}
                   onUpdate={(field, val) => dispatch(updateStandalonePackage({ id: pkg.id, field, value: val }))}
                   onAddItem={() => dispatch(addItemToStandalonePackage({ elementId: pkg.id }))}
                   onUpdateItem={(idx, val) => dispatch(updateStandalonePackageItem({ elementId: pkg.id, index: idx, value: val }))}
@@ -460,9 +474,9 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               {gridChunks.map((row, rowIdx) => {
                 const isCenteredRow = row.some(p => p.isContinued);
                 return (
-                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: "20px", mb: "30px", justifyContent: isCenteredRow ? "center" : "flex-start" }}>
+                  <Box key={`row-${rowIdx}`} sx={{ display: "flex", gap: gridGap, mb: gridRowMb, justifyContent: isCenteredRow ? "center" : "flex-start" }}>
                     {row.filter(p => p.type !== "placeholder").map((pkg, colIdx) => (
-                      <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={true} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset}
+                      <PackageVisualBox key={`${pkg.id}-${pkg.itemOffset || 0}`} pkg={pkg} isGrid={true} isStudioMode={isStudioMode} itemOffset={pkg.itemOffset} totalPkgs={totalPkgs}
                         onUpdate={(field, val) => dispatch(updateGridPackage({ id: pkg.id, field, value: val }))}
                         onAddItem={() => dispatch(addItemToGridPackage({ pkgId: pkg.id }))}
                         onUpdateItem={(idx, val) => dispatch(updateGridPackageItem({ pkgId: pkg.id, index: idx, value: val }))}
