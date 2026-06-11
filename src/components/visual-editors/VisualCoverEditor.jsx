@@ -251,92 +251,96 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
           Proposal by <span style={{ color: "#F3A833" }}>Humantek</span>
         </Typography>
 
-        {showClientSection ? (
-          <Box
-            sx={{
-              mt: "53px", position: "relative",
-              "&:hover .client-section-delete": { opacity: 1 }
-            }}
-          >
-            {/* Delete entire client section button */}
-            {isStudioMode && (
-              <Tooltip title="Remove client info section" placement="top">
-                <IconButton
-                  className="client-section-delete"
-                  onClick={() => {
-                    dispatch(setClientSectionVisibility(false));
-                    dispatch(showToast({
-                      message: "Client info section removed",
-                      severity: "info",
-                      undoAction: setClientSectionVisibility(true)
-                    }));
-                  }}
+      </Box>
+
+      {/* Client Section (Positioned in Bottom Left Corner) */}
+      {showClientSection ? (
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: "80px",
+            left: "67px",
+            zIndex: 2,
+            "&:hover .client-section-delete": { opacity: 1 }
+          }}
+        >
+          {/* Delete entire client section button */}
+          {isStudioMode && (
+            <Tooltip title="Remove client info section" placement="top">
+              <IconButton
+                className="client-section-delete"
+                onClick={() => {
+                  dispatch(setClientSectionVisibility(false));
+                  dispatch(showToast({
+                    message: "Client info section removed",
+                    severity: "info",
+                    undoAction: setClientSectionVisibility(true)
+                  }));
+                }}
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: -28,
+                  right: 0,
+                  opacity: 0,
+                  transition: "opacity 0.2s",
+                  bgcolor: "rgba(220,38,38,0.85)",
+                  color: "white",
+                  p: 0.5,
+                  "&:hover": { bgcolor: "rgba(220,38,38,1)", transform: "scale(1.1)" }
+                }}
+              >
+                <Delete sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {/* Client Details */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            <Typography sx={{ color: "#FFFFFF", fontSize: 15, textTransform: "uppercase", letterSpacing: 1.3, opacity: 0.8 }}>
+              Prepared for:
+            </Typography>
+            {/* Client name row with Form Field badge to the right */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box ref={clientNameRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleClientNameInput}
+                sx={{ color: "#FF8C00", fontSize: 28, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+              />
+              {isStudioMode && (
+                <Chip
+                  icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
+                  label="Form Field"
                   size="small"
                   sx={{
-                    position: "absolute",
-                    top: -28,
-                    right: 0,
-                    opacity: 0,
-                    transition: "opacity 0.2s",
-                    bgcolor: "rgba(220,38,38,0.85)",
-                    color: "white",
-                    p: 0.5,
-                    "&:hover": { bgcolor: "rgba(220,38,38,1)", transform: "scale(1.1)" }
+                    bgcolor: "rgba(96,165,250,0.15)",
+                    color: "#60a5fa",
+                    fontWeight: 600,
+                    border: "1px solid rgba(96,165,250,0.35)",
+                    fontSize: "10px",
+                    height: 20,
+                    flexShrink: 0,
                   }}
-                >
-                  <Delete sx={{ fontSize: 14 }} />
-                </IconButton>
-              </Tooltip>
-            )}
-
-            {/* Client Details */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-              <Typography sx={{ color: "#FFFFFF", fontSize: 15, textTransform: "uppercase", letterSpacing: 1.3, opacity: 0.8 }}>
-                Prepared for:
-              </Typography>
-              {/* Client name row with Form Field badge to the right */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box ref={clientNameRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleClientNameInput}
-                  sx={{ color: "#FF8C00", fontSize: 28, fontWeight: "bold", outline: "none", minWidth: "80px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,140,0,0.5)", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
                 />
-                {isStudioMode && (
-                  <Chip
-                    icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
-                    label="Form Field"
-                    size="small"
-                    sx={{
-                      bgcolor: "rgba(96,165,250,0.15)",
-                      color: "#60a5fa",
-                      fontWeight: 600,
-                      border: "1px solid rgba(96,165,250,0.35)",
-                      fontSize: "10px",
-                      height: 20,
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
-              </Box>
-              <Box ref={dateRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleDateInput}
-                sx={{ color: "#FFFFFF", fontSize: 15, opacity: 0.7, outline: "none", minWidth: "60px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.05)" } : {} }}
-              />
+              )}
             </Box>
+            <Box ref={dateRef} contentEditable={isStudioMode} suppressContentEditableWarning onInput={handleDateInput}
+              sx={{ color: "#FFFFFF", fontSize: 15, opacity: 0.7, outline: "none", minWidth: "60px", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(255,255,255,0.3)", bgcolor: "rgba(255,255,255,0.05)" } : {} }}
+            />
           </Box>
-        ) : (
-          isStudioMode && (
-            <Box sx={{ mt: "53px" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => dispatch(setClientSectionVisibility(true))}
-                sx={{ color: "rgba(255,255,255,0.5)", borderColor: "rgba(255,255,255,0.2)", borderStyle: "dashed", fontSize: 11, textTransform: "none", "&:hover": { borderColor: "#f3a833", color: "#f3a833" } }}
-              >
-                + Add Client Info
-              </Button>
-            </Box>
-          )
-        )}
-
-      </Box>
+        </Box>
+      ) : (
+        isStudioMode && (
+          <Box sx={{ position: "absolute", bottom: "80px", left: "67px", zIndex: 2 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => dispatch(setClientSectionVisibility(true))}
+              sx={{ color: "rgba(255,255,255,0.5)", borderColor: "rgba(255,255,255,0.2)", borderStyle: "dashed", fontSize: 11, textTransform: "none", "&:hover": { borderColor: "#f3a833", color: "#f3a833" } }}
+            >
+              + Add Client Info
+            </Button>
+          </Box>
+        )
+      )}
     </Box>
   );
 };

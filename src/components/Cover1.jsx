@@ -106,7 +106,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   clientSection: {
-    marginTop: 40,
+    position: "absolute",
+    bottom: 60,
+    left: 50,
   },
   clientInfo: {
     flexDirection: "column",
@@ -204,17 +206,19 @@ export const PdfCoverPage = ({
           Proposal by <Text style={styles.proposalByOrange}>Humantek</Text>
         </Text>
 
-        {/* Client Section */}
-        {showClientSection && (
-          <View style={styles.clientSection}>
-            <View style={styles.clientInfo}>
-              <Text style={styles.preparedFor}>Prepared for:</Text>
-              <Text style={styles.clientName}>{clientName || "Valued Client"}</Text>
-              <Text style={styles.proposalDate}>{date || "January 2026"}</Text>
-            </View>
-          </View>
-        )}
       </View>
+
+      {/* Client Section (Bottom Left) */}
+      {showClientSection && (
+        <View style={styles.clientSection}>
+          <View style={styles.clientInfo}>
+            <Text style={styles.preparedFor}>Prepared for:</Text>
+            <Text style={styles.clientName}>{clientName || "Valued Client"}</Text>
+            <Text style={styles.proposalDate}>{date || "January 2026"}</Text>
+          </View>
+        </View>
+      )}
+
       {showLabels && (
         <View style={styles.labelContainer} fixed>
           <View style={styles.labelBox}>
