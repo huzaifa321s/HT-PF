@@ -27,21 +27,10 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: "absolute",
-    top: 50,
+    top: 45,
     left: 50,
-    flexDirection: "row",
-    gap: 6,
   },
-  logo: { width: 50, height: 50, borderRadius: 25 },
-  logoTitle: {
-    color: "#F3A833",
-    fontSize: 24,
-    fontWeight: 900,
-    letterSpacing: 0,
-    fontFamily: "Liberation Serif", // This maps to Inter based on LayoutShell.jsx
-    lineHeight: 1,
-  },
-  logoSubtitle: { color: "#fff", fontSize: 12, letterSpacing: 2.5, lineHeight: 1 },
+  logo: { width: 90, height: 90 },
   mainContainer: {
     position: "absolute",
     top: 350,
@@ -182,10 +171,6 @@ export const PdfCoverPage = ({
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image style={styles.logo} src={LOGO} />
-        <View>
-          <Text style={styles.logoTitle}>HUMANTEK</Text>
-          <Text style={styles.logoSubtitle}>IT SERVICES & SOLUTIONS</Text>
-        </View>
       </View>
 
       {/* Main Content */}
