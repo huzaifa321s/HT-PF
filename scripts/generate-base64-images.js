@@ -15,7 +15,7 @@ const IMAGE_FILES = [
   { varName: "LOGO", filename: "ht-logo.png", embed: true },
   { varName: "HEADER_IMG", filename: "header.png", embed: true },
   { varName: "FOOTER_IMG", filename: "footer.png", embed: true },
-  { varName: "CONTACT_PAGE", filename: "proposal-contact.png", embed: false },
+  { varName: "CONTACT_PAGE", filename: "proposal-contact.jpg", embed: false },
   { varName: "HT_LOGO", filename: "ht-logo.png", embed: true },
   { varName: "ARTBOARD_1", filename: "Artboard1.jpg", embed: false },
   { varName: "ARTBOARD_2", filename: "Artboard 2.jpg", embed: false },
