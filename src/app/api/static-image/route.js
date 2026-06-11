@@ -16,7 +16,7 @@ import fs from "fs";
 
 // Whitelist of allowed public image files
 const ALLOWED_FILES = new Set([
-  "newBg.png",
+  "newBg.jpg",
   "download.jpg",
   "new-header.png",
   "footer.png",

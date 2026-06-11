@@ -6,7 +6,7 @@
  * These are resolved to Base64 at PDF export time.
  */
 
-export const COVER_BG = "/newBg.png";
+export const COVER_BG = "/newBg.jpg";
 export const LOGO = "/ht-logo.png";
 export const HEADER_IMG = "/header.png";
 export const FOOTER_IMG = "/footer.png";
