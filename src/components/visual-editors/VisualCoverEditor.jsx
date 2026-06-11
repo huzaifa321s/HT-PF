@@ -180,7 +180,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
       )}
 
       {/* Top Left Logo Area (HT Logo) */}
-      <Box sx={{ position: "absolute", top: "60px", left: "67px", zIndex: 2 }}>
+      <Box sx={{ position: "absolute", top: "40px", left: "67px", zIndex: 2 }}>
         <img src={LOGO} alt="Logo" style={{ width: "250px", height: "250px", objectFit: "contain" }} />
       </Box>
 
