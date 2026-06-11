@@ -275,7 +275,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               isStudioMode={isStudioMode}
               onInput={handleTitleInput}
               sx={{
-                fontSize: 38, fontWeight: "800", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                fontSize: 28, fontWeight: "bold", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                 textAlign: "center",
                 "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
@@ -288,7 +288,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
               isStudioMode={isStudioMode}
               onInput={handleSubtitleInput}
               sx={{
-                fontSize: 20, fontWeight: "600", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                fontSize: 20, fontWeight: "bold", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
                 "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
               }}
             />
