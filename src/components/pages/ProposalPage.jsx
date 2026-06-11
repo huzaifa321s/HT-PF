@@ -105,7 +105,7 @@ const ProposalPage = () => {
   // Helper to dynamically update the URL Search Params
   const updateUrlParams = useCallback((paramsUpdate) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
-    
+
     Object.entries(paramsUpdate).forEach(([key, value]) => {
       if (value) {
         current.set(key, value);
@@ -113,7 +113,7 @@ const ProposalPage = () => {
         current.delete(key);
       }
     });
-    
+
     const search = current.toString();
     const query = search ? `?${search}` : "";
     router.replace(`${pathname}${query}`, { scroll: false });
@@ -122,32 +122,32 @@ const ProposalPage = () => {
   const handleDownload = async (id) => {
     try {
       setPdfGeneratingId(id);
-      
+
       // 1. Fetch proposal details
       const res = await axiosInstance.get(`/api/proposals/get-single-proposal/${id}`);
       const proposalData = res.data.data;
-      
+
       if (!proposalData) {
         throw new Error("Proposal data not found");
       }
 
       // If PDF already exists, download it instantly and skip generation!
       if (proposalData.pdfPath) {
-        const downloadUrl = proposalData.pdfPath.includes("?") 
-          ? `${proposalData.pdfPath}&download=1` 
+        const downloadUrl = proposalData.pdfPath.includes("?")
+          ? `${proposalData.pdfPath}&download=1`
           : `${proposalData.pdfPath}?download=1`;
-        
+
         const link = document.createElement("a");
         link.href = downloadUrl;
         link.setAttribute("download", "");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         setPdfGeneratingId(null);
         return;
       }
-      
+
       // 2. Seed Redux store with proposal metadata and page details
       dispatch(updateField({ field: "clientName", value: proposalData.clientName }));
       dispatch(updateField({ field: "date", value: proposalData.date }));
@@ -161,7 +161,7 @@ const ProposalPage = () => {
       if (proposalData.pdfPages?.page2) dispatch(setDBDataP3(proposalData.pdfPages.page2));
       if (proposalData.pdfPages?.pricingPage) dispatch(setDBDataPricing(proposalData.pdfPages.pricingPage));
       if (proposalData.pdfPages?.paymentTerms) dispatch(setDBTerms(proposalData.pdfPages.paymentTerms));
-      
+
       dispatch(setMode("edit"));
       dispatch(setMode1("edit"));
       dispatch(setMode2("edit"));
@@ -201,7 +201,7 @@ const ProposalPage = () => {
 
       // 7. Convert images to base64 and preload
       const originalSources = await convertImagesToBase64(container);
-      
+
       let attempts = 0;
       while (!ensureAllAssetsConverted(container) && attempts < 10) {
         await new Promise((r) => setTimeout(r, 200));
@@ -234,7 +234,7 @@ const ProposalPage = () => {
             }
             // 3. Force full pixel decode — key fix for base64 header/footer images
             if (typeof img.decode === 'function') {
-              try { await img.decode(); } catch (_) {}
+              try { await img.decode(); } catch (_) { }
             }
           })
         );
@@ -245,7 +245,7 @@ const ProposalPage = () => {
       // Ensure all images are fully decoded and painted before capture
       await preloadAllImages(container);
       // Extra settle time
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 600));
       let fullCanvas;
       try {
         fullCanvas = await html2canvas(container, {
@@ -287,7 +287,7 @@ const ProposalPage = () => {
                   });
                 }
                 if (typeof img.decode === 'function') {
-                  try { await img.decode(); } catch (_) {}
+                  try { await img.decode(); } catch (_) { }
                 }
               })
             );
@@ -398,8 +398,8 @@ const ProposalPage = () => {
 
       const res = await axiosInstance.get(
         `/api/proposals/get-all-proposals`, {
-          params
-        }
+        params
+      }
       );
       setProposals(res.data.proposals || []);
       setTotalPages(res.data.totalPages || 1);

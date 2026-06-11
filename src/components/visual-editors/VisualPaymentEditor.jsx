@@ -92,14 +92,34 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               )}
 
               {/* Header Overlay */}
-              <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
-                <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-              </Box>
+              <Box sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "50px",
+                zIndex: 1,
+                pointerEvents: "none",
+                backgroundImage: `url(${HEADER_IMG})`,
+                backgroundSize: "cover",
+                backgroundPosition: "top center",
+                backgroundRepeat: "no-repeat"
+              }} />
 
               {/* Footer Overlay */}
-              <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
-                <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
-              </Box>
+              <Box sx={{
+                position: "absolute",
+                top: 1071,
+                left: 0,
+                right: 0,
+                height: "60px",
+                zIndex: 1,
+                pointerEvents: "none",
+                backgroundImage: `url(${FOOTER_IMG})`,
+                backgroundSize: "cover",
+                backgroundPosition: "bottom center",
+                backgroundRepeat: "no-repeat"
+              }} />
 
               {/* Content Layer (positive stacking context) */}
               <Box sx={{ position: "relative", zIndex: 2 }}>
