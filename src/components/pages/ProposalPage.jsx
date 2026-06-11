@@ -213,26 +213,41 @@ const ProposalPage = () => {
       const preloadAllImages = async (cont) => {
         const imgs = Array.from(cont.querySelectorAll('img'));
         await Promise.all(
-          imgs.map((img) =>
-            new Promise((resolve) => {
-              if (img.complete && img.naturalWidth > 0) return resolve();
-              img.onload = resolve;
-              img.onerror = resolve;
-              if (!img.src.startsWith('data:')) {
+          imgs.map(async (img) => {
+            // 1. Force reload non-data-URI images into a temp Image first
+            if (img.src && !img.src.startsWith('data:')) {
+              await new Promise((resolve) => {
                 const temp = new Image();
                 temp.crossOrigin = 'anonymous';
-                temp.src = img.src;
                 temp.onload = resolve;
                 temp.onerror = resolve;
-              }
-            })
-          )
+                temp.src = img.src;
+              });
+            }
+            // 2. Wait for image to load if not yet complete
+            if (!img.complete || img.naturalWidth === 0) {
+              await new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 8000); // hard timeout
+              });
+            }
+            // 3. Force full pixel decode — key fix for base64 header/footer images
+            if (typeof img.decode === 'function') {
+              try { await img.decode(); } catch (_) {}
+            }
+          })
         );
+        // 4. Flush two rAF cycles so decoded pixels are painted
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       };
 
+      // Ensure all images are fully decoded and painted before capture
+      await preloadAllImages(container);
+      // Extra settle time
+      await new Promise(r => setTimeout(r, 300));
       let fullCanvas;
       try {
-        await preloadAllImages(container);
         fullCanvas = await html2canvas(container, {
           scale: 2,
           useCORS: true,

@@ -110,26 +110,43 @@ export default function ProposalStudio() {
     fetchProposal();
   }, [id]);
 
-  // Preload all <img> elements to ensure they are fully loaded before conversion
+  // Preload AND decode all <img> elements before html2canvas capture.
+  // img.complete can be true while the browser is still decoding pixel data
+  // (this is especially common with large base64 data-URI images like HEADER_IMG / FOOTER_IMG).
+  // img.decode() returns a promise that only resolves once the image is fully decoded
+  // and ready to be painted — so we use that as the authoritative signal.
   async function preloadAllImages(container) {
     const imgs = Array.from(container.querySelectorAll('img'));
     await Promise.all(
-      imgs.map((img) =>
-        new Promise((resolve) => {
-          if (img.complete && img.naturalWidth > 0) return resolve();
-          img.onload = resolve;
-          img.onerror = resolve;
-          // Force reload if src is remote
-          if (!img.src.startsWith('data:')) {
+      imgs.map(async (img) => {
+        // 1. If the src is not a data-URI, force a reload into a temp Image first
+        if (img.src && !img.src.startsWith('data:')) {
+          await new Promise((resolve) => {
             const temp = new Image();
             temp.crossOrigin = 'anonymous';
-            temp.src = img.src;
             temp.onload = resolve;
             temp.onerror = resolve;
-          }
-        })
-      )
+            temp.src = img.src;
+          });
+        }
+        // 2. Wait for the image to be loaded (handles not-yet-loaded case)
+        if (!img.complete || img.naturalWidth === 0) {
+          await new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+            setTimeout(resolve, 8000); // hard timeout
+          });
+        }
+        // 3. Force full decode — this is the key step that guarantees pixel data is ready
+        if (typeof img.decode === 'function') {
+          try {
+            await img.decode();
+          } catch (_) { /* ignore — e.g. already decoded or broken image */ }
+        }
+      })
     );
+    // 4. Flush two animation frames so the browser paints the decoded pixels
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   }
 
   const saveWithNewPdf = async () => {
@@ -192,12 +209,12 @@ export default function ProposalStudio() {
         attempts++;
       }
 
-      // Ensure all images are fully painted before capture
-      await new Promise(r => setTimeout(r, 200));
+      // Ensure all images are fully decoded and painted before capture
+      await preloadAllImages(container);
+      // Extra settle time after decode before html2canvas runs
+      await new Promise(r => setTimeout(r, 300));
       let fullCanvas;
       try {
-        // Ensure any remaining images are loaded before capture
-        await preloadAllImages(container);
         fullCanvas = await html2canvas(container, {
           scale: 2,
           useCORS: true,
