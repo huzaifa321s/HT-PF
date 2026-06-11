@@ -326,21 +326,6 @@ export default function ProposalStudio() {
 
       const { uploadImageFile } = await import("../../utils/uploadImage");
 
-      // Check page 1 logo
-      if (updatedPage1?.clientLogo && updatedPage1.clientLogo.startsWith("data:image/")) {
-        try {
-          dispatch(showToast({ message: "Uploading client logo to Google Drive...", severity: "info" }));
-          const file = base64ToFile(updatedPage1.clientLogo, "client-logo");
-          const url = await uploadImageFile(file);
-          updatedPage1.clientLogo = url;
-          // Sync with Redux for future edit sessions
-          const { setClientLogo } = await import("../../utils/page1Slice");
-          dispatch(setClientLogo(url));
-        } catch (err) {
-          console.error("Failed to upload client logo:", err);
-          dispatch(showToast({ message: "Failed to upload logo to Google Drive", severity: "error" }));
-        }
-      }
 
       // Check page 2 (About Page) image elements
       if (updatedPage2?.elements?.length > 0) {

@@ -105,26 +105,8 @@ const styles = StyleSheet.create({
     // fontWeight: "bold",
     textTransform: "uppercase",
   },
-  clientLogoContainer: {
-    width: 70, // Reduced from 80
-    height: 70, // Reduced from 80
-    borderRadius: 35, // Adjusted for 70x70
-    backgroundColor: "#FFFFFF",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "4px solid #FFFFFF",
-    overflow: "hidden"
-  },
-  clientLogo: {
-    width: "100%",
-    height: "100%",
-  },
   clientSection: {
     marginTop: 40,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
   },
   clientInfo: {
     flexDirection: "column",
@@ -153,8 +135,6 @@ const styles = StyleSheet.create({
 export const PdfCoverPage = ({
   brandName = "Your Brand",
   brandTagline = "Your Tagline Here",
-  clientLogo = null,
-  clientLogoFit = "contain",
   showLabels = false,
   clientName = "",
   date = "",
@@ -227,12 +207,6 @@ export const PdfCoverPage = ({
         {/* Client Section */}
         {showClientSection && (
           <View style={styles.clientSection}>
-            {clientLogo && (
-              <View style={[styles.clientLogoContainer, clientLogoFit === "fill" ? { border: "none" } : {}]}>
-                <Image src={resolveImageUrl(clientLogo)} style={[styles.clientLogo, { objectFit: clientLogoFit === "fill" ? "cover" : "contain" }]} />
-              </View>
-            )}
-
             <View style={styles.clientInfo}>
               <Text style={styles.preparedFor}>Prepared for:</Text>
               <Text style={styles.clientName}>{clientName || "Valued Client"}</Text>

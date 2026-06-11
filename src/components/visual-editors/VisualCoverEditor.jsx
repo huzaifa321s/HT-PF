@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, Button, IconButton, Tooltip, Stack, Chip } from "@mui/material";
 import { CloudUpload, Delete, Edit, Link as LinkIcon } from "@mui/icons-material";
-import { setBrandName, setBrandTagline, setClientLogo, setClientLogoFit, setClientSectionVisibility } from "../../utils/page1Slice";
+import { setBrandName, setBrandTagline, setClientSectionVisibility } from "../../utils/page1Slice";
 import { updateField } from "../../utils/proposalSlice";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
@@ -26,8 +26,6 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
 
   const [localName, setLocalName] = useState(page1.brandName || "Your Brand");
   const [localTagline, setLocalTagline] = useState(page1.brandTagline || "Your Tagline Here");
-  const [localLogo, setLocalLogo] = useState(page1.clientLogo || null);
-  const clientLogoFit = page1.clientLogoFit || "contain";
   const [localClientName, setLocalClientName] = useState(clientName);
   const [localDate, setLocalDate] = useState(date);
 
@@ -41,10 +39,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
     if (page1.brandTagline && page1.brandTagline !== localTagline && document.activeElement !== taglineRef.current) {
       setLocalTagline(page1.brandTagline);
     }
-    if (page1.clientLogo !== localLogo) {
-      setLocalLogo(page1.clientLogo || null);
-    }
-  }, [page1.brandTagline, page1.clientLogo]);
+  }, [page1.brandTagline]);
 
   // Sync brand name directly to DOM ref (from proposal form field)
   useEffect(() => {
@@ -114,32 +109,6 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
     debouncedSaveDate(e.currentTarget.textContent);
   };
 
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        dispatch(showToast({ message: "Image size should be less than 5MB", severity: "error" }));
-        return;
-      }
-      try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          const base64Url = reader.result;
-          dispatch(setClientLogo(base64Url));
-          setLocalLogo(base64Url);
-          dispatch(showToast({ message: "Logo added to UI successfully!", severity: "success" }));
-        };
-        reader.onerror = (err) => {
-          console.error(err);
-          dispatch(showToast({ message: "Failed to read logo file", severity: "error" }));
-        };
-      } catch (err) {
-        console.error(err);
-        dispatch(showToast({ message: "Failed to load logo", severity: "error" }));
-      }
-    }
-  };
 
   const showClientSection = page1.showClientSection !== false;
 
@@ -282,12 +251,10 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
           Proposal by <span style={{ color: "#F3A833" }}>Humantek</span>
         </Typography>
 
-        {/* Client Section */}
         {showClientSection ? (
           <Box
             sx={{
-              display: "flex", flexDirection: "row", alignItems: "center",
-              gap: "20px", mt: "53px", position: "relative",
+              mt: "53px", position: "relative",
               "&:hover .client-section-delete": { opacity: 1 }
             }}
           >
@@ -321,43 +288,6 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                 </IconButton>
               </Tooltip>
             )}
-
-            {/* Client Logo */}
-            <Box sx={{ position: "relative", "&:hover .logo-overlay": { opacity: 1 }, "&:hover .logo-controls": { opacity: 1 } }}>
-              <Box sx={{
-                width: "94px", height: "94px", borderRadius: "47px",
-                backgroundColor: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
-                border: clientLogoFit === "fill" ? "none" : "5px solid #FFFFFF", overflow: "hidden"
-              }}>
-                {localLogo ? (
-                  <img src={resolveImageUrl(localLogo)} alt="Client Logo" style={{ width: "100%", height: "100%", objectFit: clientLogoFit === "fill" ? "cover" : "contain" }} />
-                ) : (
-                  <Typography sx={{ fontSize: 10, color: "#ccc", textAlign: "center" }}>No Client<br />Logo</Typography>
-                )}
-              </Box>
-              {isStudioMode && (
-                <Box className="logo-overlay" component="label" sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, bgcolor: "rgba(0,0,0,0.6)", borderRadius: "47px", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s", cursor: "pointer", border: "5px solid transparent" }}>
-                  <CloudUpload sx={{ color: "white", fontSize: 32 }} />
-                  <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
-                </Box>
-              )}
-              {isStudioMode && localLogo && (
-                <Box className="logo-controls" sx={{ position: "absolute", bottom: -24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 0.5, opacity: 0, transition: "opacity 0.2s" }}>
-                  <Button
-                    size="small"
-                    onClick={() => dispatch(setClientLogoFit("fit"))}
-                    variant={clientLogoFit === "fit" ? "contained" : "outlined"}
-                    sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fit" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fit" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
-                  >Fit</Button>
-                  <Button
-                    size="small"
-                    onClick={() => dispatch(setClientLogoFit("fill"))}
-                    variant={clientLogoFit === "fill" ? "contained" : "outlined"}
-                    sx={{ minWidth: 0, px: 1, py: 0, fontSize: 10, borderRadius: "4px", borderColor: "#f3a833", color: clientLogoFit === "fill" ? "#fff" : "#f3a833", bgcolor: clientLogoFit === "fill" ? "#f3a833" : "transparent", "&:hover": { bgcolor: "#f3a833", color: "#fff" } }}
-                  >Fill</Button>
-                </Box>
-              )}
-            </Box>
 
             {/* Client Details */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: "3px" }}>
