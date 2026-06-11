@@ -8,11 +8,11 @@
 
 export const COVER_BG = "/newBg.png";
 export const LOGO = "/download.jpg";
-export const HEADER_IMG = "/new-header.png";
+export const HEADER_IMG = "/header.png";
 export const FOOTER_IMG = "/footer.png";
 export const CONTACT_PAGE = "/proposal-contact.png";
 export const HT_LOGO = "/ht-logo.png";
-export const ARTBOARD_1 = "/Artboard 1.jpg";
+export const ARTBOARD_1 = "/Artboard1.jpg";
 export const ARTBOARD_2 = "/Artboard 2.jpg";
 export const ARTBOARD_3 = "/Artboard 3.jpg";
 export const ARTBOARD_4 = "/Artboard 4.jpg";

@@ -12,11 +12,11 @@ const OUTPUT_FILE = path.join(__dirname, "..", "src", "utils", "pdfImageAssets.j
 const IMAGE_FILES = [
   { varName: "COVER_BG",        filename: "newBg.png" },
   { varName: "LOGO",            filename: "download.jpg" },
-  { varName: "HEADER_IMG",      filename: "new-header.png" },
+  { varName: "HEADER_IMG",      filename: "header.png" },
   { varName: "FOOTER_IMG",      filename: "footer.png" },
   { varName: "CONTACT_PAGE",    filename: "proposal-contact.png" },
   { varName: "HT_LOGO",         filename: "ht-logo.png" },
-  { varName: "ARTBOARD_1",      filename: "Artboard 1.jpg" },
+  { varName: "ARTBOARD_1",      filename: "Artboard1.jpg" },
   { varName: "ARTBOARD_2",      filename: "Artboard 2.jpg" },
   { varName: "ARTBOARD_3",      filename: "Artboard 3.jpg" },
   { varName: "ARTBOARD_4",      filename: "Artboard 4.jpg" },

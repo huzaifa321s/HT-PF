@@ -25,6 +25,7 @@ const ALLOWED_FILES = new Set([
   "proposal-contact.png",
   "ht-logo.png",
   "Artboard 1.jpg",
+  "Artboard1.jpg",
   "Artboard 2.jpg",
   "Artboard 3.jpg",
   "Artboard 4.jpg",
