@@ -11,7 +11,7 @@ const OUTPUT_FILE = path.join(__dirname, "..", "src", "utils", "pdfImageAssets.j
 
 const IMAGE_FILES = [
   { varName: "COVER_BG",        filename: "newBg.png" },
-  { varName: "LOGO",            filename: "download.jpg" },
+  { varName: "LOGO",            filename: "ht-logo.png" },
   { varName: "HEADER_IMG",      filename: "header.png" },
   { varName: "FOOTER_IMG",      filename: "footer.png" },
   { varName: "CONTACT_PAGE",    filename: "proposal-contact.png" },
