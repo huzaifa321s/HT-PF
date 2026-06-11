@@ -150,17 +150,17 @@ const organizeIntoPages = (standalonePkgs, gridPkgs) => {
   return pages;
 };
 
-const PackageVisualBox = ({ 
-  pkg, 
-  isGrid, 
-  onUpdate, 
-  onAddItem, 
-  onUpdateItem, 
-  onAlignChange, 
-  onDeleteItem, 
-  onDelete, 
-  onColorChange, 
-  isStudioMode, 
+const PackageVisualBox = ({
+  pkg,
+  isGrid,
+  onUpdate,
+  onAddItem,
+  onUpdateItem,
+  onAlignChange,
+  onDeleteItem,
+  onDelete,
+  onColorChange,
+  isStudioMode,
   itemOffset = 0,
   totalPkgs = 1
 }) => {
@@ -318,7 +318,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
   const debouncedUpdate = useCallback(debounce((action, val) => dispatch(action(val)), 500), [dispatch]);
   const handleInput = (action, e) => debouncedUpdate(action, e.currentTarget.textContent);
-  
+
   const debouncedUpdateContent = useCallback(debounce((id, val) => dispatch(updateElementContent({ id, content: val })), 500), [dispatch]);
 
   const handleAddMenu = (action) => {
@@ -341,18 +341,18 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
   return (
     <Box sx={{ position: "relative", width: "100%", maxWidth: "800px", height: exactContainerHeight, margin: "0 auto", fontFamily: "'Liberation Serif', Times, serif" }}>
-      
+
       {/* Background Pages with Cloned Headers */}
       <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none" }}>
         {Array.from({ length: pages.length }).map((_, i) => (
           <Box key={i} sx={{ position: "absolute", top: i * (1131 + gap), left: 0, right: 0, height: 1131, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             {/* Header */}
-            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, overflow: "hidden" }}>
-              <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1 }}>
+              <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
             {/* Footer */}
-            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, overflow: "hidden" }}>
-              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
+            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1 }}>
+              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
             </Box>
           </Box>
         ))}
@@ -368,7 +368,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
           // Calculate sizes based on vertical rows count on this page
           const totalPkgs = page.standalone.length + Math.ceil(page.grid.length / 2);
-          
+
           let pageTitleSize = 22;
           let pageTitleMb = "10px";
           let headingSize = 30;

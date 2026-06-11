@@ -187,7 +187,7 @@ const ProposalPage = () => {
       // 6. Load packages dynamically on client side
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
-      const { convertImagesToBase64, restoreOriginalImages, ensureAllImagesConverted } = await import("@/utils/imageToBase64");
+      const { convertImagesToBase64, restoreOriginalImages, ensureAllImagesConverted, ensureAllAssetsConverted } = await import("@/utils/imageToBase64");
 
       const PAGE_PX_HEIGHT = 1131;
       const PAGE_PX_WIDTH = 800;
@@ -203,7 +203,7 @@ const ProposalPage = () => {
       const originalSources = await convertImagesToBase64(container);
       
       let attempts = 0;
-      while (!ensureAllImagesConverted(container) && attempts < 10) {
+      while (!ensureAllAssetsConverted(container) && attempts < 10) {
         await new Promise((r) => setTimeout(r, 200));
         attempts++;
       }

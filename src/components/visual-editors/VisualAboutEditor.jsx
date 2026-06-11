@@ -33,23 +33,23 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
       if (!containerRef.current) return;
       const parentRect = containerRef.current.parentElement.getBoundingClientRect();
       const rect = containerRef.current.getBoundingClientRect();
-      
+
       // Calculate Width
       const newWidthPx = e.clientX - parentRect.left;
       let newWidthPercent = (newWidthPx / parentRect.width) * 100;
       newWidthPercent = Math.max(20, Math.min(100, newWidthPercent));
-      
+
       // Calculate Height
       const newHeightPx = e.clientY - rect.top;
       const newHeight = Math.max(100, newHeightPx); // Min 100px height
-      
+
       setLocalWidth(newWidthPercent);
       setLocalHeight(`${newHeight}px`);
       onDimensionsChange(element.id, Math.round(newWidthPercent), Math.round(newHeight));
     };
-    
+
     const handleMouseUp = () => setIsResizing(false);
-    
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
     return () => {
@@ -61,7 +61,7 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
   return (
     <Box sx={{ width: "100%", position: "relative", my: "18px" }}>
       <Box ref={containerRef} sx={{ position: "relative", width: `${localWidth}%`, mx: "auto" }}>
-        
+
         {element.content ? (
           <img src={resolveImageUrl(element.content)} alt="Block" style={{ width: "100%", height: localHeight, display: "block", objectFit: "fill" }} />
         ) : (
@@ -136,12 +136,12 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
   // Keep Redux in sync when brandName changes and title is default
   useEffect(() => {
     if (brandName) {
-      const isDefaultOrSynced = !page3.title || 
-                                page3.title === "About Humantek" || 
-                                page3.title === "Proposal for Humantek" || 
-                                page3.title.startsWith("About ") ||
-                                page3.title.startsWith("Proposal for ");
-                                
+      const isDefaultOrSynced = !page3.title ||
+        page3.title === "About Humantek" ||
+        page3.title === "Proposal for Humantek" ||
+        page3.title.startsWith("About ") ||
+        page3.title.startsWith("Proposal for ");
+
       // Only dispatch if it's actually changing to avoid infinite loops
       const newTitle = `Proposal for ${brandName}`;
       if (isDefaultOrSynced && page3.title !== newTitle) {
@@ -172,7 +172,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
   const debouncedUpdateSubtitle = useCallback(debounce((val) => dispatch(updateSubtitle(val)), 500), [dispatch]);
   const debouncedUpdateElement = useCallback(debounce((id, val) => dispatch(editElementContent({ id, content: val }))), [dispatch]);
   const debouncedUpdateWidth = useCallback(debounce((id, val) => dispatch(editElementContent({ id, width: `${val}%` }))), [dispatch]);
-  
+
   const handleTitleInput = (e) => debouncedUpdateTitle(e.currentTarget.textContent);
   const handleSubtitleInput = (e) => debouncedUpdateSubtitle(e.currentTarget.textContent);
   const handleElementInput = (id, e) => debouncedUpdateElement(id, e.currentTarget.textContent);
@@ -211,7 +211,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      
+
       {isOverflowing && isStudioMode && (
         <Alert severity="warning" sx={{ width: "100%", maxWidth: "800px", mb: 2, borderRadius: '10px' }}>
           <strong>Page Overflow Warning:</strong> Your content exceeds a single A4 page. Please remove text or reduce image size to fit perfectly.
@@ -224,142 +224,142 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
             position: "relative", width: "100%", height: "1131px",
             backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
             fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", pt: "100px", pb: "90px", px: "60px",
-            overflow: "hidden" 
+            overflow: "hidden"
           }}
         >
-        {/* Header Overlay */}
-        <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
-          <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-        </Box>
-
-        {/* Footer Overlay */}
-        <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
-          <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
-        </Box>
-        {isStudioMode && (
-          <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
-            <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
-              <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
-            </Typography>
+          {/* Header Overlay */}
+          <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+            <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
           </Box>
-        )}
 
-        <Box ref={contentRef} sx={{ width: "100%", position: "relative", zIndex: 2 }}>
+          {/* Footer Overlay */}
+          <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+            <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
+          </Box>
+          {isStudioMode && (
+            <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>
+              <Typography variant="caption" sx={{ bgcolor: "rgba(0,0,0,0.5)", color: "white", px: 1, py: 0.5, borderRadius: '10px' }}>
+                <Edit sx={{ fontSize: 12, mr: 0.5, verticalAlign: "middle" }} /> Click text to edit
+              </Typography>
+            </Box>
+          )}
+
+          <Box ref={contentRef} sx={{ width: "100%", position: "relative", zIndex: 2 }}>
 
 
-          <Box sx={{ position: "relative", width: "100%", textAlign: "center", "&:hover .title-actions": { opacity: 1 } }}>
-            {/* Form Field badge — studio mode only */}
-            {isStudioMode && (
-              <Chip
-                icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
-                label="Form Field"
-                size="small"
+            <Box sx={{ position: "relative", width: "100%", textAlign: "center", "&:hover .title-actions": { opacity: 1 } }}>
+              {/* Form Field badge — studio mode only */}
+              {isStudioMode && (
+                <Chip
+                  icon={<LinkIcon sx={{ fontSize: "12px !important", color: "#60a5fa !important" }} />}
+                  label="Form Field"
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    top: -14,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    bgcolor: "rgba(96,165,250,0.1)",
+                    color: "#60a5fa",
+                    fontWeight: 600,
+                    border: "1px solid rgba(96,165,250,0.3)",
+                    fontSize: "10px",
+                    height: 20,
+                    zIndex: 2,
+                  }}
+                />
+              )}
+              <EditableText
+                value={derivedTitle}
+                fallback="Proposal for Humantek"
+                isStudioMode={isStudioMode}
+                onInput={handleTitleInput}
                 sx={{
-                  position: "absolute",
-                  top: -14,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  bgcolor: "rgba(96,165,250,0.1)",
-                  color: "#60a5fa",
-                  fontWeight: 600,
-                  border: "1px solid rgba(96,165,250,0.3)",
-                  fontSize: "10px",
-                  height: 20,
-                  zIndex: 2,
+                  fontSize: 28, fontWeight: "bold", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                  textAlign: "center",
+                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                }}
+              />
+            </Box>
+
+            {page3.subtitle !== undefined && (
+              <EditableText
+                value={page3.subtitle}
+                isStudioMode={isStudioMode}
+                onInput={handleSubtitleInput}
+                sx={{
+                  fontSize: 20, fontWeight: "bold", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
                 }}
               />
             )}
-            <EditableText
-              value={derivedTitle}
-              fallback="Proposal for Humantek"
-              isStudioMode={isStudioMode}
-              onInput={handleTitleInput}
-              sx={{
-                fontSize: 28, fontWeight: "bold", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                textAlign: "center",
-                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
-              }}
-            />
-          </Box>
 
-          {page3.subtitle !== undefined && (
-            <EditableText
-              value={page3.subtitle}
-              isStudioMode={isStudioMode}
-              onInput={handleSubtitleInput}
-              sx={{
-                fontSize: 20, fontWeight: "bold", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
-              }}
-            />
-          )}
+            <Box sx={{ flexGrow: 1 }}>
+              {elements.length > 0 ? elements.map((element, idx) => (
+                <Box key={element.id} sx={{ mb: 2, position: "relative", "&:hover .element-actions": { opacity: 1 } }}>
 
-          <Box sx={{ flexGrow: 1 }}>
-            {elements.length > 0 ? elements.map((element, idx) => (
-              <Box key={element.id} sx={{ mb: 2, position: "relative", "&:hover .element-actions": { opacity: 1 } }}>
-                
-                {isStudioMode && element.type !== "image" && (
-                  <Box className="element-actions" sx={{ position: "absolute", top: 0, left: -40, opacity: 0, transition: "opacity 0.2s" }}>
-                    <Tooltip title="Delete Block">
-                      <IconButton size="small" color="error" onClick={() => {
-                        dispatch(deleteElement(element.id));
-                        dispatch(showToast({
-                          message: "Block deleted",
-                          severity: "info",
-                          undoAction: restoreElement({ element, index: idx })
-                        }));
-                      }}>
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                )}
+                  {isStudioMode && element.type !== "image" && (
+                    <Box className="element-actions" sx={{ position: "absolute", top: 0, left: -40, opacity: 0, transition: "opacity 0.2s" }}>
+                      <Tooltip title="Delete Block">
+                        <IconButton size="small" color="error" onClick={() => {
+                          dispatch(deleteElement(element.id));
+                          dispatch(showToast({
+                            message: "Block deleted",
+                            severity: "info",
+                            undoAction: restoreElement({ element, index: idx })
+                          }));
+                        }}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  )}
 
-                {element.type === "text" && (
-                  <EditableText
-                    value={element.content}
-                    isStudioMode={isStudioMode}
-                    onInput={(e) => debouncedUpdateElement(element.id, e.currentTarget.textContent)}
-                    sx={{
-                      fontSize: 14, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
-                      border: isStudioMode ? "1px dashed transparent" : "none",
-                      "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: '10px' } : {}
-                    }}
-                  />
-                )}
+                  {element.type === "text" && (
+                    <EditableText
+                      value={element.content}
+                      isStudioMode={isStudioMode}
+                      onInput={(e) => debouncedUpdateElement(element.id, e.currentTarget.textContent)}
+                      sx={{
+                        fontSize: 14, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
+                        border: isStudioMode ? "1px dashed transparent" : "none",
+                        "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: '10px' } : {}
+                      }}
+                    />
+                  )}
 
-                {element.type === "image" && (
-                  <ImageResizer 
-                    element={element} 
-                    isStudioMode={isStudioMode} 
-                    onDimensionsChange={handleDimensionsChange} 
-                    onUpload={handleImageUpload} 
-                  />
-                )}
-              </Box>
-            )) : (
-              <Typography sx={{ fontSize: 12, lineHeight: 1.8, color: "#333333", textAlign: "justify" }}>
-                Welcome to Humantek – Your trusted partner in digital transformation and IT excellence.
-              </Typography>
-            )}
+                  {element.type === "image" && (
+                    <ImageResizer
+                      element={element}
+                      isStudioMode={isStudioMode}
+                      onDimensionsChange={handleDimensionsChange}
+                      onUpload={handleImageUpload}
+                    />
+                  )}
+                </Box>
+              )) : (
+                <Typography sx={{ fontSize: 12, lineHeight: 1.8, color: "#333333", textAlign: "justify" }}>
+                  Welcome to Humantek – Your trusted partner in digital transformation and IT excellence.
+                </Typography>
+              )}
+            </Box>
           </Box>
         </Box>
-      </Box>
         {/* Floating Add buttons on the right side of the page container */}
         {isStudioMode && (
           <Box sx={{ position: "absolute", bottom: "120px", left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>
             {textElementsCount < 2 && (
-              <Button 
-                variant="outlined" 
-                startIcon={<Add />} 
-                onClick={handleAddTextElement} 
+              <Button
+                variant="outlined"
+                startIcon={<Add />}
+                onClick={handleAddTextElement}
                 disabled={isOverflowing}
                 sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414", "&.Mui-disabled": { borderColor: "#ccc" } }}
               >
                 {isOverflowing ? "Page is Full" : "Add Text Block"}
               </Button>
             )}
-            
+
             {!hasImage && (
               <Button variant="outlined" component="label" startIcon={<ImageIcon />} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
                 Add Image Block

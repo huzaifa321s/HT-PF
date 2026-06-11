@@ -299,10 +299,10 @@ const BulkAddDialog = ({ open, onClose, table, dispatch }) => {
 // ─── Smart Content Parser (No AI — fully client-side intelligent parsing) ────
 const TYPE_META = {
   heading: { label: "Heading", color: "#a78bfa", bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.3)" },
-  title:   { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)", border: "rgba(243,168,51,0.3)" },
+  title: { label: "Section Title", color: "#f3a833", bg: "rgba(243,168,51,0.15)", border: "rgba(243,168,51,0.3)" },
   bullets: { label: "Bullet List", color: "#22c55e", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)" },
-  numbered:{ label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)" },
-  plain:   { label: "Plain Text", color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
+  numbered: { label: "Numbered List", color: "#38bdf8", bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)" },
+  plain: { label: "Plain Text", color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
 };
 
 // ── 1. Heading keyword dictionary (proposal-specific + general) ──────────────
@@ -448,9 +448,9 @@ const scoreAsHeading = (line, prevLine = "") => {
 
 // ── 4. Detect bullet list ────────────────────────────────────────────────────
 const BULLET_PATTERN = /^[•\-\*–>○●▪▸►◆■]/;
-const NUM_PATTERN    = /^(\d+[.):]|[a-z][.):]|[IVX]+[.):])\s/i;
+const NUM_PATTERN = /^(\d+[.):]|[a-z][.):]|[IVX]+[.):])\s/i;
 
-const isBulletLine   = (line) => BULLET_PATTERN.test(line.trim());
+const isBulletLine = (line) => BULLET_PATTERN.test(line.trim());
 const isNumberedLine = (line) => NUM_PATTERN.test(line.trim());
 
 // ── 5. Convert plain-text list lines to HTML ─────────────────────────────────
@@ -523,10 +523,10 @@ const formatLinesToHtml = (lines) => {
 // Also flushes when transitioning between list blocks and plain paragraphs.
 const splitIntoBlocks = (text) => {
   const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const rawLines   = normalized.split('\n');
+  const rawLines = normalized.split('\n');
 
   const blocks = [];
-  let current  = [];
+  let current = [];
 
   const flush = () => {
     const joined = current.join('\n').trim();
@@ -583,14 +583,14 @@ const splitIntoBlocks = (text) => {
 const classifyBlock = (block, idx) => {
   if (!block.trim()) return null;
 
-  const lines      = block.split('\n').map(l => l.trim()).filter(Boolean);
-  const firstLine  = lines[0];
-  const restLines  = lines.slice(1);
-  const hScore     = scoreAsHeading(firstLine);
+  const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+  const firstLine = lines[0];
+  const restLines = lines.slice(1);
+  const hScore = scoreAsHeading(firstLine);
 
   // ── Markdown heading (#)
   if (/^#{1,4}\s/.test(firstLine)) {
-    const title   = firstLine.replace(/^#+\s*/, '').replace(/:$/, '').trim();
+    const title = firstLine.replace(/^#+\s*/, '').replace(/:$/, '').trim();
     const content = restLines.length ? formatLinesToHtml(restLines) : '';
     // If it's a top heading (# or ##) with no content → heading type
     if (/^#{1,2}\s/.test(firstLine) && !restLines.length) {
@@ -611,7 +611,7 @@ const classifyBlock = (block, idx) => {
     const content = formatLinesToHtml(restLines);
 
     // Check if the rest is purely a list
-    const allBullets  = restLines.every(isBulletLine);
+    const allBullets = restLines.every(isBulletLine);
     const allNumbered = restLines.every(isNumberedLine);
 
     let type = 'title';
@@ -633,7 +633,7 @@ const classifyBlock = (block, idx) => {
 
   // ── Mixed: first line short (could be implied title), rest = list or text
   if (restLines.length > 0 && firstLine.length < 80 && !/[.!?]$/.test(firstLine)) {
-    const allBullets  = restLines.every(isBulletLine);
+    const allBullets = restLines.every(isBulletLine);
     const allNumbered = restLines.every(isNumberedLine);
     const content = formatLinesToHtml(restLines);
 
@@ -961,8 +961,10 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
               { label: 'HTML', color: '#f87171' },
               { label: 'Keywords', color: '#fb923c' },
             ].map(h => (
-              <Box key={h.label} sx={{ px: 0.9, py: 0.2, borderRadius: '6px', fontSize: 10, fontWeight: 600,
-                border: `1px solid ${h.color}44`, color: h.color, bgcolor: `${h.color}11` }}>
+              <Box key={h.label} sx={{
+                px: 0.9, py: 0.2, borderRadius: '6px', fontSize: 10, fontWeight: 600,
+                border: `1px solid ${h.color}44`, color: h.color, bgcolor: `${h.color}11`
+              }}>
                 {h.label}
               </Box>
             ))}
@@ -988,8 +990,10 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
             <Typography variant="caption" sx={{ color: "#888", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Detected Sections</Typography>
             {parsed && sections.length > 0 && Object.entries(typeCounts).map(([type, count]) => (
               <Chip key={type} label={`${count} ${TYPE_META[type]?.label || type}`} size="small"
-                sx={{ bgcolor: TYPE_META[type]?.bg, color: TYPE_META[type]?.color,
-                  border: `1px solid ${TYPE_META[type]?.border}`, fontSize: 10, height: 20 }} />
+                sx={{
+                  bgcolor: TYPE_META[type]?.bg, color: TYPE_META[type]?.color,
+                  border: `1px solid ${TYPE_META[type]?.border}`, fontSize: 10, height: 20
+                }} />
             ))}
           </Box>
 
@@ -1014,9 +1018,11 @@ const SmartPasteDialog = ({ open, onClose, dispatch }) => {
                 const previewContent = sec.content ? sec.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
                 return (
                   <Box key={sec._id}
-                    sx={{ bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: '10px',
+                    sx={{
+                      bgcolor: "#141414", border: `1px solid ${meta.border}`, borderRadius: '10px',
                       p: 1.5, position: "relative", "&:hover .sp-del": { opacity: 1 },
-                      borderLeft: `3px solid ${meta.color}` }}>
+                      borderLeft: `3px solid ${meta.color}`
+                    }}>
                     {/* Type Selector Row */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mb: 1, flexWrap: "wrap" }}>
                       {TYPES.map((t) => {

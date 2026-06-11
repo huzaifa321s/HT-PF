@@ -204,3 +204,16 @@ export function ensureAllImagesConverted(container) {
   const imgs = Array.from(container.querySelectorAll("img"));
   return imgs.every((img) => img.getAttribute("src")?.startsWith("data:"));
 }
+
+// New helper to ensure both <img> and CSS background images are converted to data URLs
+export function ensureAllAssetsConverted(container) {
+  // Check img tags
+  const imgsOk = ensureAllImagesConverted(container);
+  // Check elements with background-image style that are not data URLs
+  const bgEls = Array.from(container.querySelectorAll("*"))
+    .filter((el) => {
+      const bg = el.style.backgroundImage;
+      return bg && bg !== "none" && !bg.includes("data:");
+    });
+  return imgsOk && bgEls.length === 0;
+}

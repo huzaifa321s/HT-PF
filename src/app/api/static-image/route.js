@@ -1,5 +1,6 @@
 /**
- * Server-side API route: /api/static-image?file=newBg.png
+ * Server-side API route: /api/static-image?file=
+ * 
  *
  * Reads a whitelisted image from the public/ directory and returns it
  * as a base64 data URL JSON response.
