@@ -182,12 +182,12 @@ export default function ProposalStudio() {
       // in the LIVE DOM before html2canvas captures. This guarantees zero network requests
       // during capture, fixing the blank image issue caused by html2canvas's hidden iframe
       // racing against network fetches.
-      const { convertImagesToBase64, restoreOriginalImages, ensureAllImagesConverted } = await import("../../utils/imageToBase64");
+      const { convertImagesToBase64, restoreOriginalImages, ensureAllImagesConverted, ensureAllAssetsConverted } = await import("../../utils/imageToBase64");
       const originalSources = await convertImagesToBase64(container);
       // Ensure all <img> tags have been replaced with data URLs before capture
       // Wait briefly and re-check if any image still has a non‑data URL (race condition)
       let attempts = 0;
-      while (!ensureAllImagesConverted(container) && attempts < 10) {
+      while (!ensureAllAssetsConverted(container) && attempts < 10) {
         await new Promise((r) => setTimeout(r, 200)); // 200 ms back‑off
         attempts++;
       }
