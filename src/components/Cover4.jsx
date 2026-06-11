@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 50,
     zIndex: 10,
+    overflow: "hidden",
   },
   footer: {
     position: "absolute",
@@ -44,6 +45,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 60,
+    overflow: "hidden",
   },
   divider: {
     height: 1,
@@ -440,7 +442,16 @@ const PdfPricingPage = ({
             {pageIdx === 0 && <PdfTracker section="Pricing" />}
             {/* Fixed Header */}
             <View fixed style={styles.header}>
-              <Image src={HEADER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Image
+                src={HEADER_IMG}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: 120, // 595.28 width / 4.96 ratio = 120 height
+                }}
+              />
             </View>
 
             {/* First Page Only Content */}
@@ -476,7 +487,16 @@ const PdfPricingPage = ({
 
             {/* Fixed Footer */}
             <View fixed style={styles.footer}>
-              <Image src={FOOTER_IMG} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Image
+                src={FOOTER_IMG}
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  height: 120, // 595.28 width / 4.96 ratio = 120 height
+                }}
+              />
             </View>
             {showLabels && (
               <View style={styles.labelContainer} fixed>

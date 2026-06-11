@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 50,
     zIndex: 10,
+    overflow: "hidden",
   },
 
   dividerLine: {
@@ -93,6 +94,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   footerText: {
     color: "#FFFFFF",
@@ -185,9 +187,8 @@ const PdfPage3Document = ({
                 top: 0,
                 left: 0,
                 width: "100%",
-                height: "100%",
-                objectFit: "cover", // poora area cover kare
-                zIndex: 0, // background me rahe
+                height: 120, // 595.28 width / 4.96 ratio = 120 height
+                zIndex: 0,
               }}
             />
           </View>
@@ -222,11 +223,10 @@ const PdfPage3Document = ({
               src={FOOTER_IMG}
               style={{
                 position: "absolute",
-                top: 0,
+                bottom: 0,
                 left: 0,
                 width: "100%",
-                height: "100%",
-                objectFit: "cover",
+                height: 120, // 595.28 width / 4.96 ratio = 120 height
                 zIndex: 0,
               }}
             />

@@ -228,13 +228,13 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
           }}
         >
         {/* Header Overlay */}
-        <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none" }}>
-          <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+        <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+          <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
         </Box>
 
         {/* Footer Overlay */}
-        <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none" }}>
-          <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+        <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+          <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
         </Box>
         {isStudioMode && (
           <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 50 }}>

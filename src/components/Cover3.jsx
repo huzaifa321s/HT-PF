@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 50,
     zIndex: 10,
+    overflow: "hidden",
   },
 
   footer: {
@@ -45,6 +46,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 60,
     zIndex: 10,
+    overflow: "hidden",
   },
 
   divider: {
@@ -354,7 +356,13 @@ const PdfPageDocument2 = ({
         <View fixed style={styles.header}>
           <Image
             src={HEADER_IMG}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: 120, // 595.28 width / 4.96 ratio = 120 height
+            }}
           />
         </View>
         {orderedSections.length > 0 ? (
@@ -372,7 +380,13 @@ const PdfPageDocument2 = ({
         <View fixed style={styles.footer}>
           <Image
             src={FOOTER_IMG}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              height: 120, // 595.28 width / 4.96 ratio = 120 height
+            }}
           />
         </View>
         {showLabels && (
@@ -391,7 +405,13 @@ const PdfPageDocument2 = ({
           <View fixed style={styles.header}>
             <Image
               src={HEADER_IMG}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: 120, // 595.28 width / 4.96 ratio = 120 height
+              }}
             />
           </View>
           {tables.map((table) => table?.rows?.length > 0 && renderTable(table))}
@@ -402,7 +422,13 @@ const PdfPageDocument2 = ({
           <View fixed style={styles.footer}>
             <Image
               src={FOOTER_IMG}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                width: "100%",
+                height: 120, // 595.28 width / 4.96 ratio = 120 height
+              }}
             />
           </View>
           <Tracker />

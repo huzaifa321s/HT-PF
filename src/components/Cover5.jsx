@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: 50,
     zIndex: 10,
+    overflow: "hidden",
   },
 
   // Logo & Title Area
@@ -102,6 +103,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   sectionDivider: {
     // We want the border to align with the text, which starts at ~30px from left (25px for number + 5px margin).
@@ -220,8 +222,7 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms, showLabels =
                   top: 0,
                   left: 0,
                   width: "100%",
-                  height: "100%",
-                  objectFit: "cover", // poora area cover kare
+                  height: 120, // 595.28 width / 4.96 ratio = 120 height
                   zIndex: 0, // background me rahe
                 }}
               />
@@ -277,11 +278,10 @@ const PdfPaymentTermsCoverPage = ({ title = "Payment Terms", terms, showLabels =
                 src={FOOTER_IMG}
                 style={{
                   position: "absolute",
-                  top: 0,
+                  bottom: 0,
                   left: 0,
                   width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
+                  height: 120, // 595.28 width / 4.96 ratio = 120 height
                   zIndex: 0,
                 }}
               />

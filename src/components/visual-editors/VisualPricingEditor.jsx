@@ -347,12 +347,12 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
         {Array.from({ length: pages.length }).map((_, i) => (
           <Box key={i} sx={{ position: "absolute", top: i * (1131 + gap), left: 0, right: 0, height: 1131, backgroundColor: "#ffffff", boxShadow: "0 10px 40px rgba(0,0,0,0.8)" }}>
             {/* Header */}
-            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1 }}>
-              <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+            <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "50px", zIndex: 1, overflow: "hidden" }}>
+              <img src={HEADER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
             </Box>
             {/* Footer */}
-            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1 }}>
-              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+            <Box sx={{ position: "absolute", top: 1071, left: 0, right: 0, height: "60px", zIndex: 1, overflow: "hidden" }}>
+              <img src={FOOTER_IMG} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
             </Box>
           </Box>
         ))}
