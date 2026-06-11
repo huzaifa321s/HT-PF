@@ -147,44 +147,34 @@ const styles = StyleSheet.create({
 
 // ====================== SMART PAGE SPLIT BY HEIGHT ======================
 const splitTermsByHeight = (terms) => {
-  const MAX_PAGE_HEIGHT = 650; // Maximum content height per page
-  const TITLE_HEIGHT = 60; // Title + margin
-  const TERM_BASE_HEIGHT = 45; // Base height for each term
-  const LOGO_HEIGHT = 60; // Logo container height
+  const MAX_PAGE_HEIGHT = 680;
+  const TITLE_HEIGHT = 63;
+  const TERM_BASE_HEIGHT = 45;
 
   const pages = [];
   let currentPage = [];
-  let currentHeight = TITLE_HEIGHT; // Start with title height
+  let currentHeight = TITLE_HEIGHT;
 
   terms.forEach((term, index) => {
-    // Calculate term height based on text length
-    const lines = Math.ceil(term.length / 70); // ~70 chars per line
+    const lines = Math.ceil(term.length / 75) || 1;
     const termHeight = TERM_BASE_HEIGHT + (lines - 1) * 25;
 
-    // Check if adding this term would exceed page height
-    if (
-      currentHeight + termHeight > MAX_PAGE_HEIGHT &&
-      currentPage.length > 0
-    ) {
+    if (currentHeight + termHeight > MAX_PAGE_HEIGHT && currentPage.length > 0) {
       pages.push([...currentPage]);
       currentPage = [];
-      currentHeight = TITLE_HEIGHT; // Reset for new page
+      currentHeight = 30; // Continuation overhead
     }
 
     currentPage.push(term);
     currentHeight += termHeight;
   });
 
-  // Push last page if it has content
   if (currentPage.length > 0) {
     pages.push(currentPage);
   }
-
-  // If no terms, create empty page
   if (pages.length === 0) {
     pages.push([]);
   }
-
   return pages;
 };
 // ====================== COVER PAGE ======================

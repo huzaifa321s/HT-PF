@@ -195,6 +195,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
               label="Form Field"
               size="small"
               sx={{
+
                 position: "absolute",
                 top: -20,
                 left: 0,

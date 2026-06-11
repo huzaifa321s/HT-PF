@@ -9,26 +9,27 @@ import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 
-const PAGE_CONTENT_HEIGHT = 850;
+const PAGE_CONTENT_HEIGHT = 900;
+const TITLE_OVERHEAD = 85;
+const TERM_BASE_HEIGHT = 60;
 
 const estimateTermHeight = (term) => {
-  const charsPerLine = 80;
+  const charsPerLine = 75;
   const lines = Math.ceil(term.length / charsPerLine) || 1;
-  return lines * 25 + 45; // 25px per line + 45px for paddings/border
+  return (lines - 1) * 33 + TERM_BASE_HEIGHT;
 };
 
 const splitTermsByHeight = (terms) => {
-
   const pages = [];
   let currentPage = [];
-  let currentHeight = 150; // Initial overhead for title
+  let currentHeight = TITLE_OVERHEAD;
 
   terms.forEach((term, index) => {
     const termH = estimateTermHeight(term);
     if (currentHeight + termH > PAGE_CONTENT_HEIGHT && currentPage.length > 0) {
       pages.push(currentPage);
       currentPage = [];
-      currentHeight = 50; // Smaller overhead for continuation page
+      currentHeight = 40; // Overhead for continuation page
     }
     currentPage.push({ term, globalIndex: index });
     currentHeight += termH;
