@@ -228,7 +228,7 @@ export default function ProposalStudio() {
           windowWidth: PAGE_PX_WIDTH,
           windowHeight: container.scrollHeight,
           imageTimeout: 15000,
-          onclone: (clonedDoc) => {
+          onclone: async (clonedDoc) => {
             const clonedBody = clonedDoc.body;
             clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
             clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
@@ -239,6 +239,25 @@ export default function ProposalStudio() {
               clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
               clonedContainer.style.transform = "none";
             }
+
+            // Critical: decode all images inside the CLONED document.
+            // html2canvas clones the DOM into a hidden iframe; images there
+            // need to be decoded independently of the original DOM.
+            const clonedImgs = Array.from(clonedDoc.querySelectorAll('img'));
+            await Promise.all(
+              clonedImgs.map(async (img) => {
+                if (!img.complete || img.naturalWidth === 0) {
+                  await new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 10000);
+                  });
+                }
+                if (typeof img.decode === 'function') {
+                  try { await img.decode(); } catch (_) {}
+                }
+              })
+            );
           }
         });
       } finally {
