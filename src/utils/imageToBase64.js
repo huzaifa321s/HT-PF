@@ -156,11 +156,12 @@ export async function convertImagesToBase64(element) {
   await Promise.all(
     allEls.map(async (el) => {
       const bg = el.style.backgroundImage;
+      // If no inline background, fallback to computed style (handles CSS classes)
+      const computedBg = window.getComputedStyle(el).backgroundImage;
+      const bgImage = bg && bg !== "none" ? bg : computedBg;
       // Skip: empty, none, or already a data URL
-      if (!bg || bg === "none") return;
-      if (bg.includes("data:")) return;
-
-      const url = extractBgUrl(bg);
+      if (!bgImage || bgImage === "none" || bgImage.includes("data:")) return;
+      const url = extractBgUrl(bgImage);
       if (!url) return;
 
       const dataUrl = await fetchAsDataUrl(url);
