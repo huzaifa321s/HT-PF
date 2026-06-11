@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     top: 45,
     left: 50,
   },
-  logo: { width: 90, height: 90 },
+  logo: { width: 150, height: 150 },
   mainContainer: {
     position: "absolute",
     top: 350,
