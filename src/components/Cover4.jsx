@@ -180,46 +180,35 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   totalBadge: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
-    backgroundColor: "#1a1a1a",
-    borderWidth: 1,
-    borderColor: "#FF8C00",
-    borderRadius: 30,
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    gap: 12,
-  },
-  totalIconWrapper: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: "rgba(255, 140, 0, 0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  totalIconText: {
-    color: "#FF8C00",
-    fontSize: 16,
-    fontWeight: "bold",
+    backgroundColor: "#141414",
+    borderWidth: 2,
+    borderColor: "#e0e0e0",
+    borderRadius: 16,
+    paddingHorizontal: 35,
+    paddingVertical: 12,
+    width: 260,
   },
   totalTextWrapper: {
     flexDirection: "column",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   totalLabel: {
-    fontSize: 7.5,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#aaaaaa",
     letterSpacing: 1.2,
     textTransform: "uppercase",
+    textAlign: "center",
   },
   totalValue: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#FF8C00",
+    color: "#ffffff",
     fontFamily: "Unbounded",
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: "center",
   },
 });
 
@@ -543,9 +532,6 @@ const PdfPricingPage = ({
             {pageIdx === pages.length - 1 && showTotal !== false && (
               <View style={styles.totalSectionContainer}>
                 <View style={styles.totalBadge}>
-                  <View style={styles.totalIconWrapper}>
-                    <Text style={styles.totalIconText}>$</Text>
-                  </View>
                   <View style={styles.totalTextWrapper}>
                     <Text style={styles.totalLabel}>{totalLabel}</Text>
                     <Text style={styles.totalValue}>{totalValue}</Text>

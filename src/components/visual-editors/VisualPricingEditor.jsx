@@ -569,14 +569,15 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   <Box
                     sx={{
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      bgcolor: "#1a1a1a",
-                      border: "1px solid #FF8C00",
-                      borderRadius: "30px",
-                      px: 4,
-                      py: 1,
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-                      gap: 2,
+                      bgcolor: "#ffffff",
+                      border: "2px solid #e0e0e0",
+                      borderRadius: "16px",
+                      px: 5,
+                      py: 2,
+                      width: "300px",
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
                       position: "relative",
                       "&:hover .total-actions": { opacity: 1 }
                     }}
@@ -618,24 +619,21 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                       </Box>
                     )}
 
-                    {/* Icon */}
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(255, 140, 0, 0.1)", borderRadius: "50%", p: 0.75 }}>
-                      <AttachMoney sx={{ color: "#FF8C00", fontSize: 20 }} />
-                    </Box>
-
                     {/* Text Info */}
-                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <EditableText
                         value={pricingData.totalLabel || "TOTAL PLAN INVESTMENT"}
                         fallback="TOTAL PLAN INVESTMENT"
                         isStudioMode={isStudioMode}
                         onInput={(e) => dispatch(updateTotalLabel(e.currentTarget.textContent))}
                         sx={{
-                          fontSize: "10px",
+                          fontSize: "12px",
                           fontWeight: "bold",
-                          color: "#aaaaaa",
+                          color: "#666666",
                           letterSpacing: 1.2,
                           textTransform: "uppercase",
+                          textAlign: "center",
+                          mb: 1,
                           outline: "none",
                           border: isStudioMode ? "1px dashed transparent" : "none",
                           "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
@@ -647,10 +645,11 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                         isStudioMode={isStudioMode}
                         onInput={(e) => dispatch(updateTotalValue(e.currentTarget.textContent))}
                         sx={{
-                          fontSize: "18px",
+                          fontSize: "22px",
                           fontWeight: "bold",
-                          color: "#FF8C00",
+                          color: "#1a1a1a",
                           fontFamily: "'Unbounded', sans-serif",
+                          textAlign: "center",
                           outline: "none",
                           border: isStudioMode ? "1px dashed transparent" : "none",
                           "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
