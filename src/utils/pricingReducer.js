@@ -19,6 +19,9 @@ const modeDefaults = {
   gridPackages: [],
   currentPages: 1,
   includeInPdf: true,
+  showTotal: true,
+  totalLabel: 'TOTAL PLAN INVESTMENT',
+  totalValue: '$ 0',
 }
 
 const initialState = {
@@ -47,6 +50,18 @@ const pricingSlice = createSlice({
     updateSubheading: (state, action) => {
       const mode = state.currentMode;
       state[mode].subheading = action.payload;
+    },
+    toggleShowTotal: (state) => {
+      const mode = state.currentMode;
+      state[mode].showTotal = !state[mode].showTotal;
+    },
+    updateTotalLabel: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].totalLabel = action.payload;
+    },
+    updateTotalValue: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].totalValue = action.payload;
     },
 
     // ========== GRID PACKAGES ==========
@@ -310,6 +325,9 @@ export const {
   updatePageTitle,
   updateHeading,
   updateSubheading,
+  toggleShowTotal,
+  updateTotalLabel,
+  updateTotalValue,
   addGridPackage,
   updateGridPackage,
   updateGridPackageItem,

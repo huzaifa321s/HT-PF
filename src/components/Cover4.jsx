@@ -170,6 +170,57 @@ const styles = StyleSheet.create({
     // fontWeight: "bold",
     textTransform: "uppercase",
   },
+  totalSectionContainer: {
+    position: "absolute",
+    bottom: 95,
+    left: 50,
+    right: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  totalBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
+    borderWidth: 1,
+    borderColor: "#FF8C00",
+    borderRadius: 30,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    gap: 12,
+  },
+  totalIconWrapper: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(255, 140, 0, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  totalIconText: {
+    color: "#FF8C00",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  totalTextWrapper: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  totalLabel: {
+    fontSize: 7.5,
+    fontWeight: "bold",
+    color: "#aaaaaa",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  totalValue: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#FF8C00",
+    fontFamily: "Unbounded",
+    marginTop: 2,
+  },
 });
 
 // ======================== HEIGHT ESTIMATION ========================
@@ -372,6 +423,9 @@ const PdfPricingPage = ({
   gridPackages = [],
   showLabels = false,
   globalCurrency = "$",
+  showTotal = true,
+  totalLabel = "TOTAL PLAN INVESTMENT",
+  totalValue = "$ 0",
 }) => {
   const standalonePkgs = elements.filter(e => e.type === "package");
   const textElements = elements.filter(e => e.type !== "package");
@@ -484,6 +538,21 @@ const PdfPricingPage = ({
                 </View>
               );
             })}
+
+            {/* Concept 1 Total Badge at Bottom Center */}
+            {pageIdx === pages.length - 1 && showTotal !== false && (
+              <View style={styles.totalSectionContainer}>
+                <View style={styles.totalBadge}>
+                  <View style={styles.totalIconWrapper}>
+                    <Text style={styles.totalIconText}>$</Text>
+                  </View>
+                  <View style={styles.totalTextWrapper}>
+                    <Text style={styles.totalLabel}>{totalLabel}</Text>
+                    <Text style={styles.totalValue}>{totalValue}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
 
             {/* Fixed Footer */}
             <View fixed style={styles.footer}>

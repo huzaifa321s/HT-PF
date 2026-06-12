@@ -80,6 +80,9 @@ const CombinedPdfDocument = ({
           gridPackages={pricingPage?.gridPackages}
           showLabels={showLabels}
           globalCurrency="$"
+          showTotal={pricingPage?.showTotal}
+          totalLabel={pricingPage?.totalLabel}
+          totalValue={pricingPage?.totalValue}
         />
       )}
 

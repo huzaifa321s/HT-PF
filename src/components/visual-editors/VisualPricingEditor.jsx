@@ -25,12 +25,16 @@ import {
   restoreGridPackage,
   restoreGridPackageItem,
   restoreElement,
-  restoreStandalonePackageItem
+  restoreStandalonePackageItem,
+  toggleShowTotal,
+  updateTotalLabel,
+  updateTotalValue,
 } from "../../utils/pricingReducer";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
+import { AttachMoney } from "@mui/icons-material";
 
 const COLORS = ["#FFD700", "#FFA500", "#FF6347", "#FF4500", "#DC143C", "#32CD32", "#1E90FF", "#9932CC", "#00CED1", "#FF69B4", "#000000"];
 
@@ -547,6 +551,116 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                   </Box>
                 );
               })}
+
+              {/* Concept 1 Total Section (Centered at Bottom of Last Page) */}
+              {pageIdx === pages.length - 1 && pricingData.showTotal !== false && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: "100px",
+                    left: "50px",
+                    right: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      bgcolor: "#1a1a1a",
+                      border: "1px solid #FF8C00",
+                      borderRadius: "30px",
+                      px: 4,
+                      py: 1,
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                      gap: 2,
+                      position: "relative",
+                      "&:hover .total-actions": { opacity: 1 }
+                    }}
+                  >
+                    {isStudioMode && (
+                      <Box
+                        className="total-actions"
+                        sx={{
+                          position: "absolute",
+                          top: -28,
+                          right: 15,
+                          opacity: 0,
+                          transition: "opacity 0.2s",
+                          display: "flex",
+                          gap: 1,
+                          zIndex: 10,
+                          bgcolor: "rgba(20, 20, 20, 0.8)",
+                          borderRadius: "6px",
+                          p: 0.5
+                        }}
+                      >
+                        <Tooltip title="Hide Total Section">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              dispatch(toggleShowTotal());
+                              dispatch(showToast({
+                                message: "Total section hidden",
+                                severity: "info",
+                                undoAction: toggleShowTotal()
+                              }));
+                            }}
+                            sx={{ p: 0.25, color: "#ef4444" }}
+                          >
+                            <Delete sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
+
+                    {/* Icon */}
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(255, 140, 0, 0.1)", borderRadius: "50%", p: 0.75 }}>
+                      <AttachMoney sx={{ color: "#FF8C00", fontSize: 20 }} />
+                    </Box>
+
+                    {/* Text Info */}
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                      <EditableText
+                        value={pricingData.totalLabel || "TOTAL PLAN INVESTMENT"}
+                        fallback="TOTAL PLAN INVESTMENT"
+                        isStudioMode={isStudioMode}
+                        onInput={(e) => dispatch(updateTotalLabel(e.currentTarget.textContent))}
+                        sx={{
+                          fontSize: "10px",
+                          fontWeight: "bold",
+                          color: "#aaaaaa",
+                          letterSpacing: 1.2,
+                          textTransform: "uppercase",
+                          outline: "none",
+                          border: isStudioMode ? "1px dashed transparent" : "none",
+                          "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
+                        }}
+                      />
+                      <EditableText
+                        value={pricingData.totalValue || "$ 0"}
+                        fallback="$ 0"
+                        isStudioMode={isStudioMode}
+                        onInput={(e) => dispatch(updateTotalValue(e.currentTarget.textContent))}
+                        sx={{
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          color: "#FF8C00",
+                          fontFamily: "'Unbounded', sans-serif",
+                          outline: "none",
+                          border: isStudioMode ? "1px dashed transparent" : "none",
+                          "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
               {/* Floating Add Content Block button on the right side of the last page */}
               {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
                 <Box sx={{ position: "absolute", bottom: "80px", left: "100%", ml: "20px", zIndex: 100, pointerEvents: "auto" }}>
@@ -565,6 +679,9 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
         <MenuItem onClick={() => handleAddMenu(addElement({ type: "text" }))}>Text Block</MenuItem>
         <MenuItem onClick={() => handleAddMenu(addElement({ type: "package" }))}>Standalone Package</MenuItem>
         <MenuItem onClick={() => handleAddMenu(addGridPackage())}>Grid Package (2 per row)</MenuItem>
+        {pricingData.showTotal === false && (
+          <MenuItem onClick={() => handleAddMenu(toggleShowTotal())}>Add Total Section</MenuItem>
+        )}
       </Menu>
 
     </Box>
