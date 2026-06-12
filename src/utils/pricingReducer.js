@@ -22,6 +22,9 @@ const modeDefaults = {
   showTotal: true,
   totalLabel: 'TOTAL PLAN INVESTMENT',
   totalValue: '$ 0',
+  totalSize: 'medium',
+  totalAlign: 'center',
+  totalBottom: 100,
 }
 
 const initialState = {
@@ -62,6 +65,18 @@ const pricingSlice = createSlice({
     updateTotalValue: (state, action) => {
       const mode = state.currentMode;
       state[mode].totalValue = action.payload;
+    },
+    updateTotalSize: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].totalSize = action.payload;
+    },
+    updateTotalAlign: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].totalAlign = action.payload;
+    },
+    updateTotalBottom: (state, action) => {
+      const mode = state.currentMode;
+      state[mode].totalBottom = Number(action.payload) || 100;
     },
 
     // ========== GRID PACKAGES ==========
@@ -328,6 +343,9 @@ export const {
   toggleShowTotal,
   updateTotalLabel,
   updateTotalValue,
+  updateTotalSize,
+  updateTotalAlign,
+  updateTotalBottom,
   addGridPackage,
   updateGridPackage,
   updateGridPackageItem,

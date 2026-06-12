@@ -83,6 +83,9 @@ const CombinedPdfDocument = ({
           showTotal={pricingPage?.showTotal}
           totalLabel={pricingPage?.totalLabel}
           totalValue={pricingPage?.totalValue}
+          totalSize={pricingPage?.totalSize}
+          totalAlign={pricingPage?.totalAlign}
+          totalBottom={pricingPage?.totalBottom}
         />
       )}
 

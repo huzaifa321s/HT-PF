@@ -2,7 +2,7 @@
 import React, { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, Button, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
-import { Add, Delete, Edit, ColorLens } from "@mui/icons-material";
+import { Add, Delete, Edit, ColorLens, Settings } from "@mui/icons-material";
 import {
   updatePageTitle,
   updateHeading,
@@ -29,6 +29,9 @@ import {
   toggleShowTotal,
   updateTotalLabel,
   updateTotalValue,
+  updateTotalSize,
+  updateTotalAlign,
+  updateTotalBottom,
 } from "../../utils/pricingReducer";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
@@ -37,6 +40,30 @@ import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 import { AttachMoney } from "@mui/icons-material";
 
 const COLORS = ["#FFD700", "#FFA500", "#FF6347", "#FF4500", "#DC143C", "#32CD32", "#1E90FF", "#9932CC", "#00CED1", "#FF69B4", "#000000"];
+
+const SIZE_PRESETS = {
+  small: {
+    width: "240px",
+    py: 1.5,
+    px: 3,
+    labelSize: "10px",
+    valueSize: "18px",
+  },
+  medium: {
+    width: "300px",
+    py: 2,
+    px: 5,
+    labelSize: "12px",
+    valueSize: "22px",
+  },
+  large: {
+    width: "380px",
+    py: 2.5,
+    px: 7,
+    labelSize: "14px",
+    valueSize: "28px",
+  },
+};
 
 const PAGE_MARGIN_TOP = 100;
 const PAGE_MARGIN_BOTTOM = 80;
@@ -319,6 +346,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
   const standalonePkgs = elements.filter(e => e.type === "package");
 
   const [addAnchor, setAddAnchor] = useState(null);
+  const [settingsAnchor, setSettingsAnchor] = useState(null);
 
   const debouncedUpdate = useCallback(debounce((action, val) => dispatch(action(val)), 500), [dispatch]);
   const handleInput = (action, e) => debouncedUpdate(action, e.currentTarget.textContent);
@@ -553,112 +581,130 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
               })}
 
               {/* Concept 1 Total Section (Centered at Bottom of Last Page) */}
-              {pageIdx === pages.length - 1 && pricingData.showTotal !== false && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    bottom: "100px",
-                    left: "50px",
-                    right: "50px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 10,
-                  }}
-                >
+              {pageIdx === pages.length - 1 && pricingData.showTotal !== false && (() => {
+                const totalAlign = pricingData.totalAlign || "center";
+                const totalSize = pricingData.totalSize || "medium";
+                const totalBottom = pricingData.totalBottom !== undefined ? pricingData.totalBottom : 100;
+                const preset = SIZE_PRESETS[totalSize] || SIZE_PRESETS.medium;
+
+                return (
                   <Box
                     sx={{
+                      position: "absolute",
+                      bottom: `${totalBottom}px`,
+                      left: "50px",
+                      right: "50px",
                       display: "flex",
-                      flexDirection: "column",
+                      justifyContent: totalAlign === "left" ? "flex-start" : totalAlign === "right" ? "flex-end" : "center",
                       alignItems: "center",
-                      bgcolor: "#ffffff",
-                      border: "2px solid #e0e0e0",
-                      borderRadius: "16px",
-                      px: 5,
-                      py: 2,
-                      width: "300px",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-                      position: "relative",
-                      "&:hover .total-actions": { opacity: 1 }
+                      zIndex: 10,
                     }}
                   >
-                    {isStudioMode && (
-                      <Box
-                        className="total-actions"
-                        sx={{
-                          position: "absolute",
-                          top: -28,
-                          right: 15,
-                          opacity: 0,
-                          transition: "opacity 0.2s",
-                          display: "flex",
-                          gap: 1,
-                          zIndex: 10,
-                          bgcolor: "rgba(20, 20, 20, 0.8)",
-                          borderRadius: "6px",
-                          p: 0.5
-                        }}
-                      >
-                        <Tooltip title="Hide Total Section">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => {
-                              dispatch(toggleShowTotal());
-                              dispatch(showToast({
-                                message: "Total section hidden",
-                                severity: "info",
-                                undoAction: toggleShowTotal()
-                              }));
-                            }}
-                            sx={{ p: 0.25, color: "#ef4444" }}
-                          >
-                            <Delete sx={{ fontSize: 14 }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    )}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        bgcolor: "#ffffff",
+                        border: "2px solid #e0e0e0",
+                        borderRadius: "16px",
+                        px: preset.px,
+                        py: preset.py,
+                        width: preset.width,
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                        position: "relative",
+                        "&:hover .total-actions": { opacity: 1 }
+                      }}
+                    >
+                      {isStudioMode && (
+                        <Box
+                          className="total-actions"
+                          sx={{
+                            position: "absolute",
+                            top: -28,
+                            right: 15,
+                            opacity: 0,
+                            transition: "opacity 0.2s",
+                            display: "flex",
+                            gap: 1,
+                            zIndex: 10,
+                            bgcolor: "rgba(20, 20, 20, 0.8)",
+                            borderRadius: "6px",
+                            p: 0.5
+                          }}
+                        >
+                          <Tooltip title="Settings">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => setSettingsAnchor(e.currentTarget)}
+                              sx={{ p: 0.25, color: "#ffffff" }}
+                            >
+                              <Settings sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Hide Total Section">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                dispatch(toggleShowTotal());
+                                dispatch(showToast({
+                                  message: "Total section hidden",
+                                  severity: "info",
+                                  undoAction: toggleShowTotal()
+                                }));
+                              }}
+                              sx={{ p: 0.25, color: "#ef4444" }}
+                            >
+                              <Delete sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      )}
 
-                    {/* Text Info */}
-                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                      <EditableText
-                        value={pricingData.totalLabel || "TOTAL PLAN INVESTMENT"}
-                        fallback="TOTAL PLAN INVESTMENT"
-                        isStudioMode={isStudioMode}
-                        onInput={(e) => dispatch(updateTotalLabel(e.currentTarget.textContent))}
-                        sx={{
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                          color: "#666666",
-                          letterSpacing: 1.2,
-                          textTransform: "uppercase",
-                          textAlign: "center",
-                          mb: 1,
-                          outline: "none",
-                          border: isStudioMode ? "1px dashed transparent" : "none",
-                          "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
-                        }}
-                      />
-                      <EditableText
-                        value={pricingData.totalValue || "$ 0"}
-                        fallback="$ 0"
-                        isStudioMode={isStudioMode}
-                        onInput={(e) => dispatch(updateTotalValue(e.currentTarget.textContent))}
-                        sx={{
-                          fontSize: "22px",
-                          fontWeight: "bold",
-                          color: "#1a1a1a",
-                          fontFamily: "'Unbounded', sans-serif",
-                          textAlign: "center",
-                          outline: "none",
-                          border: isStudioMode ? "1px dashed transparent" : "none",
-                          "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
-                        }}
-                      />
+                      {/* Text Info */}
+                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                        <EditableText
+                          value={pricingData.totalLabel || "TOTAL PLAN INVESTMENT"}
+                          fallback="TOTAL PLAN INVESTMENT"
+                          isStudioMode={isStudioMode}
+                          onInput={(e) => dispatch(updateTotalLabel(e.currentTarget.textContent))}
+                          sx={{
+                            fontSize: preset.labelSize,
+                            fontWeight: "bold",
+                            color: "#666666",
+                            letterSpacing: 1.2,
+                            textTransform: "uppercase",
+                            textAlign: "center",
+                            mb: 1,
+                            outline: "none",
+                            width: "100%",
+                            border: isStudioMode ? "1px dashed transparent" : "none",
+                            "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
+                          }}
+                        />
+                        <EditableText
+                          value={pricingData.totalValue || "$ 0"}
+                          fallback="$ 0"
+                          isStudioMode={isStudioMode}
+                          onInput={(e) => dispatch(updateTotalValue(e.currentTarget.textContent))}
+                          sx={{
+                            fontSize: preset.valueSize,
+                            fontWeight: "bold",
+                            color: "#1a1a1a",
+                            fontFamily: "'Unbounded', sans-serif",
+                            textAlign: "center",
+                            outline: "none",
+                            width: "100%",
+                            border: isStudioMode ? "1px dashed transparent" : "none",
+                            "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {}
+                          }}
+                        />
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              )}
+                );
+              })()}
 
               {/* Floating Add Content Block button on the right side of the last page */}
               {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
@@ -681,6 +727,128 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
         {pricingData.showTotal === false && (
           <MenuItem onClick={() => handleAddMenu(toggleShowTotal())}>Add Total Section</MenuItem>
         )}
+      </Menu>
+
+      <Menu
+        anchorEl={settingsAnchor}
+        open={Boolean(settingsAnchor)}
+        onClose={() => setSettingsAnchor(null)}
+        sx={{ pointerEvents: "auto" }}
+      >
+        <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: "bold", color: "#666" }}>
+          Alignment
+        </Typography>
+        <MenuItem
+          selected={pricingData.totalAlign === "left"}
+          onClick={() => {
+            dispatch(updateTotalAlign("left"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Left
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalAlign === "center"}
+          onClick={() => {
+            dispatch(updateTotalAlign("center"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Center
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalAlign === "right"}
+          onClick={() => {
+            dispatch(updateTotalAlign("right"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Right
+        </MenuItem>
+
+        <Box sx={{ my: 1, borderBottom: "1px solid #e0e0e0" }} />
+
+        <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: "bold", color: "#666" }}>
+          Size
+        </Typography>
+        <MenuItem
+          selected={pricingData.totalSize === "small"}
+          onClick={() => {
+            dispatch(updateTotalSize("small"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Small
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalSize === "medium"}
+          onClick={() => {
+            dispatch(updateTotalSize("medium"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Medium
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalSize === "large"}
+          onClick={() => {
+            dispatch(updateTotalSize("large"));
+            setSettingsAnchor(null);
+          }}
+        >
+          Large
+        </MenuItem>
+
+        <Box sx={{ my: 1, borderBottom: "1px solid #e0e0e0" }} />
+
+        <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: "bold", color: "#666" }}>
+          Bottom Spacing
+        </Typography>
+        <MenuItem
+          selected={pricingData.totalBottom === 60}
+          onClick={() => {
+            dispatch(updateTotalBottom(60));
+            setSettingsAnchor(null);
+          }}
+        >
+          Low (60px)
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalBottom === 80}
+          onClick={() => {
+            dispatch(updateTotalBottom(80));
+            setSettingsAnchor(null);
+          }}
+        >
+          Medium Low (80px)
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalBottom === 100}
+          onClick={() => {
+            dispatch(updateTotalBottom(100));
+            setSettingsAnchor(null);
+          }}
+        >
+          Normal (100px)
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalBottom === 120}
+          onClick={() => {
+            dispatch(updateTotalBottom(120));
+            setSettingsAnchor(null);
+          }}
+        >
+          High (120px)
+        </MenuItem>
+        <MenuItem
+          selected={pricingData.totalBottom === 140}
+          onClick={() => {
+            dispatch(updateTotalBottom(140));
+            setSettingsAnchor(null);
+          }}
+        >
+          Extra High (140px)
+        </MenuItem>
       </Menu>
 
     </Box>

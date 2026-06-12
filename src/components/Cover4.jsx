@@ -20,6 +20,30 @@ const MIN_PACKAGE_HEIGHT = 320;
 const ITEM_HEIGHT = 22;
 const BASE_PACKAGE_HEIGHT = 200; // Title + subtitle + price + "What's included" + paddings
 
+const PDF_SIZE_PRESETS = {
+  small: {
+    width: 180,
+    paddingVertical: 8,
+    paddingHorizontal: 25,
+    labelFontSize: 8,
+    valueFontSize: 12,
+  },
+  medium: {
+    width: 225,
+    paddingVertical: 12,
+    paddingHorizontal: 35,
+    labelFontSize: 9,
+    valueFontSize: 16,
+  },
+  large: {
+    width: 285,
+    paddingVertical: 16,
+    paddingHorizontal: 45,
+    labelFontSize: 11,
+    valueFontSize: 20,
+  },
+};
+
 // ======================== STYLES ========================
 const styles = StyleSheet.create({
   page: {
@@ -415,6 +439,9 @@ const PdfPricingPage = ({
   showTotal = true,
   totalLabel = "TOTAL PLAN INVESTMENT",
   totalValue = "$ 0",
+  totalSize = "medium",
+  totalAlign = "center",
+  totalBottom = 100,
 }) => {
   const standalonePkgs = elements.filter(e => e.type === "package");
   const textElements = elements.filter(e => e.type !== "package");
@@ -529,16 +556,30 @@ const PdfPricingPage = ({
             })}
 
             {/* Concept 1 Total Badge at Bottom Center */}
-            {pageIdx === pages.length - 1 && showTotal !== false && (
-              <View style={styles.totalSectionContainer}>
-                <View style={styles.totalBadge}>
-                  <View style={styles.totalTextWrapper}>
-                    <Text style={styles.totalLabel}>{totalLabel}</Text>
-                    <Text style={styles.totalValue}>{totalValue}</Text>
+            {pageIdx === pages.length - 1 && showTotal !== false && (() => {
+              const sizeKey = totalSize || "medium";
+              const preset = PDF_SIZE_PRESETS[sizeKey] || PDF_SIZE_PRESETS.medium;
+              const alignVal = totalAlign || "center";
+              const bottomVal = Math.round((totalBottom !== undefined ? totalBottom : 100) * 0.75);
+
+              return (
+                <View style={[styles.totalSectionContainer, {
+                  bottom: bottomVal,
+                  alignItems: alignVal === "left" ? "flex-start" : alignVal === "right" ? "flex-end" : "center",
+                }]}>
+                  <View style={[styles.totalBadge, {
+                    width: preset.width,
+                    paddingVertical: preset.paddingVertical,
+                    paddingHorizontal: preset.paddingHorizontal,
+                  }]}>
+                    <View style={styles.totalTextWrapper}>
+                      <Text style={[styles.totalLabel, { fontSize: preset.labelFontSize }]}>{totalLabel}</Text>
+                      <Text style={[styles.totalValue, { fontSize: preset.valueFontSize }]}>{totalValue}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            )}
+              );
+            })()}
 
             {/* Fixed Footer */}
             <View fixed style={styles.footer}>
