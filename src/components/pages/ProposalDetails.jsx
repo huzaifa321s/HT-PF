@@ -35,6 +35,18 @@ import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "../../utils/axiosInstance";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { showToast } from "../../utils/toastSlice";
+import { updateField } from "../../utils/proposalSlice";
+import { setDBData, setMode1 } from "../../utils/page1Slice";
+import { setDBDataP2, setMode } from "../../utils/page2Slice";
+import { setDBDataP3, setMode2 } from "../../utils/page3Slice";
+import { setDBDataPricing, setMode3 } from "../../utils/pricingReducer";
+import { setDBTerms, setMode4 } from "../../utils/paymentTermsPageSlice";
+import dynamic from "next/dynamic";
+import { Backdrop, CircularProgress } from "@mui/material";
+
+const UnifiedPdfEditor = dynamic(() => import("../UnifiedPDFEditor"), { ssr: false });
 
 const ProposalDetails = () => {
     const { id } = useParams();
@@ -43,6 +55,9 @@ const ProposalDetails = () => {
     const [proposal, setProposal] = useState({});
     const [pdfUrl, setPdfUrl] = useState("");
     const [showPdf, setShowPdf] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [downloadingProposal, setDownloadingProposal] = useState(null);
+    const dispatch = useDispatch();
 
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
@@ -185,6 +200,253 @@ const ProposalDetails = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const generatePdfOnTheFly = async (forceDownload = false) => {
+        try {
+            setIsGeneratingPdf(true);
+
+            // 1. Seed Redux store with proposal metadata and page details
+            dispatch(updateField({ field: "clientName", value: proposal.clientName }));
+            dispatch(updateField({ field: "date", value: proposal.date }));
+            dispatch(updateField({ field: "additionalCosts", value: proposal.additionalCosts }));
+            dispatch(updateField({ field: "chargeAmount", value: proposal.chargeAmount }));
+            dispatch(updateField({ field: "advancePercent", value: proposal.advancePercent }));
+            dispatch(updateField({ field: "brandName", value: proposal.brandName }));
+
+            if (proposal.pdfPages?.page1) dispatch(setDBData(proposal.pdfPages.page1));
+            if (proposal.pdfPages?.page3) dispatch(setDBDataP2(proposal.pdfPages.page3));
+            if (proposal.pdfPages?.page2) dispatch(setDBDataP3(proposal.pdfPages.page2));
+            if (proposal.pdfPages?.pricingPage) dispatch(setDBDataPricing(proposal.pdfPages.pricingPage));
+            if (proposal.pdfPages?.paymentTerms) dispatch(setDBTerms(proposal.pdfPages.paymentTerms));
+
+            dispatch(setMode("edit"));
+            dispatch(setMode1("edit"));
+            dispatch(setMode2("edit"));
+            dispatch(setMode3("edit"));
+            dispatch(setMode4("edit"));
+
+            // 2. Mount offscreen editor
+            setDownloadingProposal(proposal);
+
+            // 3. Wait for mount & styles
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
+            const container = document.getElementById("pdf-export-container");
+            if (!container) throw new Error("Could not find the offscreen PDF container");
+
+            const html2canvas = (await import("html2canvas-pro")).default;
+            const { jsPDF } = await import("jspdf");
+            const { convertImagesToBase64, restoreOriginalImages, ensureAllAssetsConverted } = await import("../../utils/imageToBase64");
+
+            const PAGE_PX_HEIGHT = 1131;
+            const PAGE_PX_WIDTH = 800;
+
+            const origWidth = container.style.width;
+            const origMaxWidth = container.style.maxWidth;
+            container.style.width = `${PAGE_PX_WIDTH}px`;
+            container.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+
+            await new Promise(r => setTimeout(r, 100));
+
+            const originalSources = await convertImagesToBase64(container);
+
+            let attempts = 0;
+            while (!ensureAllAssetsConverted(container) && attempts < 10) {
+                await new Promise((r) => setTimeout(r, 200));
+                attempts++;
+            }
+
+            await new Promise(r => setTimeout(r, 200));
+
+            const preloadAllImages = async (cont) => {
+                const imgs = Array.from(cont.querySelectorAll('img'));
+                await Promise.all(
+                    imgs.map(async (img) => {
+                        if (img.src && !img.src.startsWith('data:')) {
+                            await new Promise((resolve) => {
+                                const temp = new Image();
+                                temp.crossOrigin = 'anonymous';
+                                temp.onload = resolve;
+                                temp.onerror = resolve;
+                                temp.src = img.src;
+                            });
+                        }
+                        if (!img.complete || img.naturalWidth === 0) {
+                            await new Promise((resolve) => {
+                                img.onload = resolve;
+                                img.onerror = resolve;
+                                setTimeout(resolve, 8000);
+                            });
+                        }
+                        if (typeof img.decode === 'function') {
+                            try { await img.decode(); } catch (_) { }
+                        }
+                    })
+                );
+                await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+            };
+
+            await preloadAllImages(container);
+            await new Promise(r => setTimeout(r, 600));
+
+            let fullCanvas;
+            try {
+                fullCanvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0,
+                    backgroundColor: "#ffffff",
+                    width: PAGE_PX_WIDTH,
+                    height: container.scrollHeight,
+                    windowWidth: PAGE_PX_WIDTH,
+                    windowHeight: container.scrollHeight,
+                    imageTimeout: 15000,
+                    onclone: async (clonedDoc) => {
+                        const clonedBody = clonedDoc.body;
+                        clonedBody.style.width = `${PAGE_PX_WIDTH}px`;
+                        clonedBody.style.minWidth = `${PAGE_PX_WIDTH}px`;
+
+                        const clonedContainer = clonedDoc.getElementById("pdf-export-container");
+                        if (clonedContainer) {
+                            clonedContainer.style.width = `${PAGE_PX_WIDTH}px`;
+                            clonedContainer.style.maxWidth = `${PAGE_PX_WIDTH}px`;
+                            clonedContainer.style.transform = "none";
+                        }
+
+                        const clonedImgs = Array.from(clonedDoc.querySelectorAll('img'));
+                        await Promise.all(
+                            clonedImgs.map(async (img) => {
+                                if (!img.complete || img.naturalWidth === 0) {
+                                    await new Promise((resolve) => {
+                                        img.onload = resolve;
+                                        img.onerror = resolve;
+                                        setTimeout(resolve, 10000);
+                                    });
+                                }
+                                if (typeof img.decode === 'function') {
+                                    try { await img.decode(); } catch (_) { }
+                                }
+                            })
+                        );
+                    }
+                });
+            } finally {
+                container.style.width = origWidth;
+                container.style.maxWidth = origMaxWidth;
+                restoreOriginalImages(originalSources);
+            }
+
+            const SCALE = 2;
+            const pageCanvasHeight = PAGE_PX_HEIGHT * SCALE;
+            const pageCanvasWidth = PAGE_PX_WIDTH * SCALE;
+            const totalPages = Math.max(1, Math.round(fullCanvas.height / pageCanvasHeight));
+
+            const PDF_W = 595.28;
+            const PDF_H = 841.89;
+
+            const pdfDoc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+
+            for (let i = 0; i < totalPages; i++) {
+                const sliceY = i * pageCanvasHeight;
+                const sliceHeight = Math.min(pageCanvasHeight, fullCanvas.height - sliceY);
+                if (sliceHeight <= 0) break;
+
+                const pageCanvas = document.createElement("canvas");
+                pageCanvas.width = pageCanvasWidth;
+                pageCanvas.height = sliceHeight;
+
+                const ctx = pageCanvas.getContext("2d");
+                ctx.drawImage(
+                    fullCanvas,
+                    0, sliceY,
+                    pageCanvasWidth, sliceHeight,
+                    0, 0,
+                    pageCanvasWidth, sliceHeight
+                );
+
+                const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+                const imgH = (sliceHeight / pageCanvasWidth) * PDF_W;
+
+                if (i > 0) pdfDoc.addPage();
+                pdfDoc.addImage(imgData, "JPEG", 0, 0, PDF_W, Math.min(imgH, PDF_H));
+            }
+
+            const brandName = proposal.brandName?.trim() || "Client";
+            const fileName = `${brandName} Proposal.pdf`;
+
+            if (forceDownload) {
+                pdfDoc.save(fileName);
+            }
+
+            const blob = pdfDoc.output("blob");
+            const formDataUpload = new FormData();
+            formDataUpload.append("pdfFile", blob, fileName);
+            formDataUpload.append("proposalId", id);
+
+            const uploadRes = await axiosInstance.post(
+                `/api/proposals/upload-pdf`,
+                formDataUpload,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+
+            if (uploadRes.data.success) {
+                const newPdfUrl = uploadRes.data.filePath;
+                await axiosInstance.put(
+                    `/api/proposals/update-proposal/${id}`,
+                    {
+                        pdfPath: newPdfUrl,
+                    }
+                );
+                setPdfUrl(newPdfUrl);
+                dispatch(showToast({ message: "PDF generated and saved successfully!", severity: "success" }));
+                return newPdfUrl;
+            } else {
+                throw new Error("PDF upload failed");
+            }
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            dispatch(showToast({ message: "Failed to generate PDF: " + error.message, severity: "error" }));
+        } finally {
+            setIsGeneratingPdf(false);
+            setDownloadingProposal(null);
+        }
+    };
+
+    const handlePreview = async () => {
+        if (pdfUrl) {
+            setShowPdf(true);
+            return;
+        }
+
+        try {
+            const generatedUrl = await generatePdfOnTheFly();
+            if (generatedUrl) {
+                setShowPdf(true);
+            }
+        } catch (error) {
+            console.error("Preview PDF generation failed:", error);
+        }
+    };
+
+    const handleDownloadClick = async () => {
+        if (pdfUrl) {
+            handleDownload();
+            return;
+        }
+
+        try {
+            await generatePdfOnTheFly(true);
+        } catch (error) {
+            console.error("Download PDF generation failed:", error);
+        }
     };
 
     return (
@@ -392,8 +654,8 @@ const ProposalDetails = () => {
                                 variant="contained"
                                 size="large"
                                 startIcon={<Visibility />}
-                                onClick={() => setShowPdf(true)}
-                                disabled={!pdfUrl}
+                                onClick={handlePreview}
+                                disabled={isLoading}
                                 sx={{
                                     background: colorScheme.gradient,
                                     px: 5,
@@ -419,8 +681,8 @@ const ProposalDetails = () => {
                                 variant="outlined"
                                 size="large"
                                 startIcon={<Download />}
-                                onClick={handleDownload}
-                                disabled={!pdfUrl}
+                                onClick={handleDownloadClick}
+                                disabled={isLoading}
                                 sx={{
                                     borderColor: "#f3a833",
                                     color: "#f3a833",
@@ -501,6 +763,45 @@ const ProposalDetails = () => {
                     </DialogContent>
                 </Dialog>
             </Container>
+
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 101, display: 'flex', flexDirection: 'column', gap: 2 }}
+                open={isGeneratingPdf}
+            >
+                <CircularProgress color="inherit" size={60} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Generating PDF Document...
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    Please wait, rendering pages and assets
+                </Typography>
+            </Backdrop>
+
+            {/* Offscreen PDF Renderer */}
+            {downloadingProposal && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        left: "-9999px",
+                        top: "-9999px",
+                        width: "800px",
+                        height: "auto",
+                        overflow: "visible",
+                        zIndex: -9999,
+                    }}
+                >
+                    <div id="pdf-export-container">
+                        <UnifiedPdfEditor
+                            pdfPages={downloadingProposal.pdfPages}
+                            mode="edit-doc"
+                            clientName={downloadingProposal.clientName || "Client"}
+                            date={downloadingProposal.date || new Date().toISOString()}
+                            isStudioMode={false}
+                            zoomLevel={100}
+                        />
+                    </div>
+                </Box>
+            )}
         </Box>
     );
 };
