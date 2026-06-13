@@ -189,14 +189,32 @@ const ProposalDetails = () => {
         </Paper>
     );
 
+    // ✅ Build a Google Drive direct download URL from a view/webViewLink
+    const getDriveDownloadUrl = (url) => {
+        if (!url) return "";
+        // Google Drive view link: https://drive.google.com/file/d/FILE_ID/view?...
+        const match = url.match(/\/file\/d\/([^/]+)/);
+        if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+        // Fallback (old Vercel Blob URLs)
+        return url.includes("?") ? `${url}&download=1` : `${url}?download=1`;
+    };
+
+    // ✅ Build a Google Drive embeddable preview URL
+    const getDrivePreviewUrl = (url) => {
+        if (!url) return "";
+        // Google Drive view link → preview link
+        const match = url.match(/\/file\/d\/([^/]+)/);
+        if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
+        // Fallback (Vercel Blob or other URLs)
+        return url;
+    };
+
     const handleDownload = () => {
         if (!pdfUrl) return;
-        // Force Vercel Blob to serve as an attachment to bypass popup blockers
-        const downloadUrl = pdfUrl.includes("?") ? `${pdfUrl}&download=1` : `${pdfUrl}?download=1`;
-        
+        const downloadUrl = getDriveDownloadUrl(pdfUrl);
         const link = document.createElement("a");
         link.href = downloadUrl;
-        link.setAttribute("download", ""); // Suggest download
+        link.setAttribute("download", "");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -746,11 +764,12 @@ const ProposalDetails = () => {
                         {pdfUrl ? (
                             <Box sx={{ flexGrow: 1, width: "100%", height: "100%" }}>
                                 <iframe
-                                    src={pdfUrl}
+                                    src={getDrivePreviewUrl(pdfUrl)}
                                     width="100%"
                                     height="100%"
                                     title="Proposal PDF"
                                     style={{ border: "none", display: "block" }}
+                                    allow="autoplay"
                                 />
                             </Box>
                         ) : (

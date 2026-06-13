@@ -133,9 +133,16 @@ const ProposalPage = () => {
 
       // If PDF already exists, download it instantly and skip generation!
       if (proposalData.pdfPath) {
-        const downloadUrl = proposalData.pdfPath.includes("?")
-          ? `${proposalData.pdfPath}&download=1`
-          : `${proposalData.pdfPath}?download=1`;
+        // Build proper download URL (Google Drive or fallback)
+        let downloadUrl = proposalData.pdfPath;
+        const driveMatch = proposalData.pdfPath.match(/\/file\/d\/([^/]+)/);
+        if (driveMatch) {
+          downloadUrl = `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+        } else {
+          downloadUrl = proposalData.pdfPath.includes("?")
+            ? `${proposalData.pdfPath}&download=1`
+            : `${proposalData.pdfPath}?download=1`;
+        }
 
         const link = document.createElement("a");
         link.href = downloadUrl;
