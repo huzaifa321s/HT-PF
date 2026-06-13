@@ -169,8 +169,8 @@ export default function DashboardLayout({ children }) {
       }}
     >
       {/* Drawer Header (Project Logo) */}
-      <Box sx={{ px: isCollapsed ? 2 : 2.5, py: isCollapsed ? 2 : 1, display: "flex", flexDirection: "column", alignItems: isCollapsed ? "center" : "flex-start", transition: "all 0.3s ease", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: isCollapsed ? "center" : "space-between", width: "100%", gap: 2 }}>
+      <Box sx={{ px: isCollapsed ? 2 : 2, py: isCollapsed ? 2 : 2.5, display: "flex", flexDirection: "column", alignItems: isCollapsed ? "center" : "flex-start", transition: "all 0.3s ease", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: isCollapsed ? "center" : "space-between", width: "100%", gap: isCollapsed ? 0 : 1.5 }}>
           {isCollapsed ? (
             <Box
               component="img"
@@ -189,12 +189,12 @@ export default function DashboardLayout({ children }) {
           ) : (
             <Box
               component="img"
-              src="/ht-logo.png"
+              src="/ht-logo-cropped.png"
               alt="Humantek Logo"
               sx={{
-                height: 80,
-                width: "auto",
-                maxWidth: "200px",
+                width: "100%",
+                maxWidth: "215px",
+                height: "auto",
                 objectFit: "contain",
                 transition: "all 0.3s ease"
               }}
