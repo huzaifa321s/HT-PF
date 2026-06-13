@@ -22,6 +22,7 @@ import {
   Card,
   InputAdornment,
   useMediaQuery,
+  Tooltip,
 } from "@mui/material";
 import {
   Timeline,
@@ -33,6 +34,7 @@ import {
   Business,
   Description,
   Preview,
+  Edit,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
@@ -382,8 +384,29 @@ const ProposalFormWithStepper = ({
                   value={creds.yourName}
                   error={!!errors.yourName}
                   helperText={errors.yourName?.message}
-                  disabled
-                  sx={inputStyle}
+                  sx={{
+                    ...inputStyle,
+                    "& .MuiInputBase-input": {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      cursor: "default",
+                    },
+                  }}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Edit Profile">
+                          <IconButton
+                            onClick={() => router.push("/profile")}
+                            edge="end"
+                            sx={{ color: colorScheme.primary }}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               )}
             />
@@ -407,8 +430,29 @@ const ProposalFormWithStepper = ({
                   value={creds.yourEmail}
                   error={!!errors.yourEmail}
                   helperText={errors.yourEmail?.message}
-                  disabled
-                  sx={inputStyle}
+                  sx={{
+                    ...inputStyle,
+                    "& .MuiInputBase-input": {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      cursor: "default",
+                    },
+                  }}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Edit Profile">
+                          <IconButton
+                            onClick={() => router.push("/profile")}
+                            edge="end"
+                            sx={{ color: colorScheme.primary }}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               )}
             />

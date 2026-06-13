@@ -20,6 +20,9 @@ import {
   StepLabel,
   StepContent,
   FormHelperText,
+  Tooltip,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 import {
@@ -32,6 +35,7 @@ import {
   Save,
   EditDocument,
   ArrowBackIos,
+  Edit,
 } from "@mui/icons-material";
 import { pdfDetector } from "../../utils/PdfChangeDetector";
 import { store } from "../../utils/store";
@@ -250,6 +254,23 @@ const EditProposal = () => {
     dispatch(setMode3("edit"));
     dispatch(setMode4("edit"));
   }, [dispatch]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axiosInstance.get("/api/get-creds");
+
+        if (res.data?.success && res.data.data) {
+          const { name, email } = res.data.data;
+          setFormData((prev) => ({ ...prev, yourName: name, yourEmail: email }));
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const colorScheme = {
     primary: "#f3a833",
@@ -537,15 +558,57 @@ const EditProposal = () => {
             label="Your Name *"
             fullWidth
             value={formData.yourName}
-            disabled
-            sx={inputStyle}
+            sx={{
+              ...inputStyle,
+              "& .MuiInputBase-input": {
+                color: "rgba(255, 255, 255, 0.6)",
+                cursor: "default",
+              },
+            }}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title="Edit Profile">
+                    <IconButton
+                      onClick={() => router.push("/profile")}
+                      edge="end"
+                      sx={{ color: colorScheme.primary }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             label="Your Email *"
             fullWidth
             value={formData.yourEmail}
-            disabled
-            sx={inputStyle}
+            sx={{
+              ...inputStyle,
+              "& .MuiInputBase-input": {
+                color: "rgba(255, 255, 255, 0.6)",
+                cursor: "default",
+              },
+            }}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title="Edit Profile">
+                    <IconButton
+                      onClick={() => router.push("/profile")}
+                      edge="end"
+                      sx={{ color: colorScheme.primary }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            }}
           />
 
           {sectionHeader(<Business />, "Client Information")}
