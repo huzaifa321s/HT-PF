@@ -88,7 +88,7 @@ Font.register({
 });
 
 // Pages that do NOT show Navbar/Footer or DashboardLayout
-const PUBLIC_PATHS = ["/login", "/admin-login"];
+const PUBLIC_PATHS = ["/", "/login", "/admin-login"];
 
 // Pages that must strictly preserve the old top-navbar/footer UI
 const EDITOR_PATHS = ["/create-proposal", "/edit-proposal"];
