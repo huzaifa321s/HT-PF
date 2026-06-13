@@ -132,8 +132,8 @@ const Login = () => {
             }}
           />
 
-          {/* Company Logo (Centered in left panel) */}
-          <Box sx={{ position: "relative", zIndex: 1, my: "auto", display: "flex", justifyContent: "center", width: "100%" }}>
+          {/* Top Logo */}
+          <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center" }}>
             <Box
               component="img"
               src="/ht-logo-cropped.png"
@@ -145,6 +145,17 @@ const Login = () => {
                 objectFit: "contain"
               }}
             />
+          </Box>
+
+          {/* Center Message */}
+          <Box sx={{ position: "relative", zIndex: 1, maxWidth: 500, my: "auto" }}>
+            <Typography variant="h2" sx={{ color: "#fff", fontWeight: 800, mb: 3, fontSize: "3.5rem", lineHeight: 1.1 }}>
+              Craft Winning <br />
+              <span style={{ color: "#f3a833" }}>Proposals</span> Faster.
+            </Typography>
+            <Typography variant="h6" sx={{ color: "#a0a0a0", fontWeight: 400, lineHeight: 1.6 }}>
+              The ultimate platform to generate, manage, and design professional proposals with pixel-perfect precision.
+            </Typography>
           </Box>
 
           {/* Bottom Info */}
