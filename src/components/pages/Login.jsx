@@ -132,28 +132,19 @@ const Login = () => {
             }}
           />
 
-          {/* Top Logo */}
-          <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 2 }}>
-            <img src="/download.jpg" alt="Humantek Logo" style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(243, 168, 51, 0.5)" }} />
-            <Box>
-              <Typography sx={{ color: "#f3a833", fontSize: 24, fontWeight: 800, letterSpacing: 1, lineHeight: 1.2 }}>
-                HUMANTEK
-              </Typography>
-              <Typography sx={{ color: "#a0a0a0", fontSize: 12, letterSpacing: 2, fontWeight: 600 }}>
-                IT SERVICES & SOLUTIONS
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Center Message */}
-          <Box sx={{ position: "relative", zIndex: 1, maxWidth: 500, my: "auto" }}>
-            <Typography variant="h2" sx={{ color: "#fff", fontWeight: 800, mb: 3, fontSize: "3.5rem", lineHeight: 1.1 }}>
-              Craft Winning <br />
-              <span style={{ color: "#f3a833" }}>Proposals</span> Faster.
-            </Typography>
-            <Typography variant="h6" sx={{ color: "#a0a0a0", fontWeight: 400, lineHeight: 1.6 }}>
-              The ultimate platform to generate, manage, and design professional proposals with pixel-perfect precision.
-            </Typography>
+          {/* Company Logo (Centered in left panel) */}
+          <Box sx={{ position: "relative", zIndex: 1, my: "auto", display: "flex", justifyContent: "center", width: "100%" }}>
+            <Box
+              component="img"
+              src="/ht-logo-cropped.png"
+              alt="Humantek Logo"
+              sx={{
+                width: "100%",
+                maxWidth: "215px",
+                height: "auto",
+                objectFit: "contain"
+              }}
+            />
           </Box>
 
           {/* Bottom Info */}
@@ -183,16 +174,18 @@ const Login = () => {
           
           {/* Mobile Logo */}
           {isMobile && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 6, justifyContent: "center" }}>
-              <img src="/download.jpg" alt="Humantek Logo" style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(243, 168, 51, 0.5)" }} />
-              <Box>
-                <Typography sx={{ color: "#f3a833", fontSize: 20, fontWeight: 800, letterSpacing: 1, lineHeight: 1.2 }}>
-                  HUMANTEK
-                </Typography>
-                <Typography sx={{ color: "#a0a0a0", fontSize: 10, letterSpacing: 2, fontWeight: 600 }}>
-                  IT SERVICES
-                </Typography>
-              </Box>
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 6, width: "100%" }}>
+              <Box
+                component="img"
+                src="/ht-logo-cropped.png"
+                alt="Humantek Logo"
+                sx={{
+                  width: "100%",
+                  maxWidth: "215px",
+                  height: "auto",
+                  objectFit: "contain"
+                }}
+              />
             </Box>
           )}
 
