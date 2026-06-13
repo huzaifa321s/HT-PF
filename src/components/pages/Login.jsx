@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -39,6 +39,18 @@ const Login = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const user = JSON.parse(sessionStorage.getItem("user") || "null");
+    if (token && user) {
+      if (user.role === "admin") {
+        router.replace("/dashboard");
+      } else if (user.role === "agent") {
+        router.replace("/agent-dashboard");
+      }
+    }
+  }, [router]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -62,7 +74,13 @@ const Login = () => {
 
       dispatch(showToast({ message: "Login successful!", severity: "success" }));
       await loadStoreFromBackend(user.id, store.dispatch);
-      router.push("/");
+      if (user.role === "admin") {
+        router.push("/dashboard");
+      } else if (user.role === "agent") {
+        router.push("/agent-dashboard");
+      } else {
+        router.push("/dashboard");
+      }
 
     } catch (err) {
       dispatch(
