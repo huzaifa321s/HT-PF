@@ -171,14 +171,14 @@ export default function DashboardLayout({ children }) {
       {/* Drawer Header (Project Logo) */}
       <Box sx={{ p: isCollapsed ? 2 : 3, pb: 2, display: "flex", flexDirection: "column", alignItems: isCollapsed ? "center" : "flex-start", transition: "all 0.3s ease", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: isCollapsed ? "center" : "space-between", width: "100%", gap: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {isCollapsed ? (
             <Box
               component="img"
-              src="/download.jpg"
+              src="/ht-logo.png"
               alt="Humantek Logo"
               sx={{
-                width: isCollapsed ? 40 : 48,
-                height: isCollapsed ? 40 : 48,
+                width: 40,
+                height: 40,
                 borderRadius: "50%",
                 objectFit: "cover",
                 border: "2px solid rgba(243, 168, 51, 0.5)",
@@ -186,17 +186,19 @@ export default function DashboardLayout({ children }) {
                 transition: "all 0.3s ease"
               }}
             />
-            {!isCollapsed && (
-              <Box>
-                <Typography sx={{ color: "#f3a833", fontSize: "1.2rem", fontWeight: 800, letterSpacing: 1, lineHeight: 1.2 }}>
-                  HUMANTEK
-                </Typography>
-                <Typography sx={{ color: "#a0a0a0", fontSize: "0.6rem", letterSpacing: 1.5, fontWeight: 600 }}>
-                  PROPOSAL STUDIO
-                </Typography>
-              </Box>
-            )}
-          </Box>
+          ) : (
+            <Box
+              component="img"
+              src="/ht-logo.png"
+              alt="Humantek Logo"
+              sx={{
+                height: 48,
+                maxWidth: "180px",
+                objectFit: "contain",
+                transition: "all 0.3s ease"
+              }}
+            />
+          )}
           
           {!isCollapsed && !isMobile && (
             <IconButton onClick={toggleSidebar} sx={{ color: "#f3a833", opacity: 0.5, "&:hover": { opacity: 1 } }} size="small">
