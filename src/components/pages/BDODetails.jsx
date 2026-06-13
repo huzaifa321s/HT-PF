@@ -411,16 +411,6 @@ const BDODetails = () => {
                       {/* Meta chips */}
                       <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
                         <Chip
-                          label="Business Development Officer"
-                          sx={{
-                            bgcolor: "rgba(255,255,255,0.25)",
-                            color: "#fff",
-                            fontWeight: 700,
-                            backdropFilter: "blur(8px)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                          }}
-                        />
-                        <Chip
                           icon={<CalendarToday sx={{ color: "#fff !important", fontSize: "14px !important" }} />}
                           label={`Joined: ${formatTS(data.createdAt)}`}
                           sx={{
