@@ -558,58 +558,35 @@ const EditProposal = () => {
             label="Your Name *"
             fullWidth
             value={formData.yourName}
-            sx={{
-              ...inputStyle,
-              "& .MuiInputBase-input": {
-                color: "rgba(255, 255, 255, 0.6)",
-                cursor: "default",
-              },
-            }}
-            InputProps={{
-              readOnly: true,
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Tooltip title="Edit Profile">
-                    <IconButton
-                      onClick={() => router.push("/profile")}
-                      edge="end"
-                      sx={{ color: colorScheme.primary }}
-                    >
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                </InputAdornment>
-              ),
-            }}
+            disabled
+            sx={inputStyle}
           />
           <TextField
             label="Your Email *"
             fullWidth
             value={formData.yourEmail}
+            disabled
+            sx={inputStyle}
+          />
+          <Button
+            variant="outlined"
+            onClick={() => router.push("/profile")}
+            startIcon={<Edit />}
             sx={{
-              ...inputStyle,
-              "& .MuiInputBase-input": {
-                color: "rgba(255, 255, 255, 0.6)",
-                cursor: "default",
+              mb: 3,
+              borderRadius: 2,
+              borderColor: colorScheme.primary,
+              color: colorScheme.primary,
+              textTransform: "none",
+              fontWeight: 600,
+              "&:hover": {
+                bgcolor: "rgba(243, 168, 51, 0.1)",
+                borderColor: colorScheme.secondary,
               },
             }}
-            InputProps={{
-              readOnly: true,
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Tooltip title="Edit Profile">
-                    <IconButton
-                      onClick={() => router.push("/profile")}
-                      edge="end"
-                      sx={{ color: colorScheme.primary }}
-                    >
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                </InputAdornment>
-              ),
-            }}
-          />
+          >
+            Edit Profile Info
+          </Button>
 
           {sectionHeader(<Business />, "Client Information")}
           <Controller
