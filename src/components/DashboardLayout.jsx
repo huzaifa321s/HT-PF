@@ -174,7 +174,7 @@ export default function DashboardLayout({ children }) {
           {isCollapsed ? (
             <Box
               component="img"
-              src="/ht-logo.png"
+              src="/download.jpg"
               alt="Humantek Logo"
               sx={{
                 width: 40,
@@ -192,8 +192,8 @@ export default function DashboardLayout({ children }) {
               src="/ht-logo.png"
               alt="Humantek Logo"
               sx={{
-                height: 48,
-                maxWidth: "180px",
+                height: 56,
+                width: 200,
                 objectFit: "contain",
                 transition: "all 0.3s ease"
               }}
