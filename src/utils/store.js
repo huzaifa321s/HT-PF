@@ -51,6 +51,18 @@ const historyMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
+// Fallback UUID v4 generator for non-secure contexts (HTTP) or older browsers/webviews
+export const generateUUID = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 // makeStore is called once per client - we build it lazily
 // so that sessionStorage is only accessed in the browser
 const makeStore = () => {
@@ -63,7 +75,7 @@ const makeStore = () => {
 
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const tabId =
-      sessionStorage.getItem("tabId") || crypto.randomUUID();
+      sessionStorage.getItem("tabId") || generateUUID();
     sessionStorage.setItem("tabId", tabId);
     const persistKey = user.id
       ? `root_${user.id}_${tabId}`

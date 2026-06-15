@@ -22,7 +22,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { loadStoreFromBackend, persistor, store } from "../../utils/store";
+import { loadStoreFromBackend, persistor, store, generateUUID } from "../../utils/store";
 import { motion } from "framer-motion";
 
 const Login = () => {
@@ -69,7 +69,7 @@ const Login = () => {
       sessionStorage.setItem("user", JSON.stringify(user));
 
       if (!sessionStorage.getItem("tabId")) {
-        sessionStorage.setItem("tabId", crypto.randomUUID());
+        sessionStorage.setItem("tabId", generateUUID());
       }
 
       dispatch(showToast({ message: "Login successful!", severity: "success" }));
