@@ -1,170 +1,11 @@
-import React from 'react';
-import { Text, View, StyleSheet, Link, Image, Font } from '@react-pdf/renderer';
+import React, { useEffect, useState } from 'react';
+// Dynamic import of @react-pdf/renderer will be handled inside the component
 
 
 // Register Roboto Font for better Unicode support
-Font.register({
-    family: 'Roboto',
-    fonts: [
-        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxM.woff' }, // Regular
-        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOlCnqEu92Fr1MmWUlfBBc9.woff', fontWeight: 700 }, // Bold
-        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOiCnqEu92Fr1Mu51QrEz0.woff', fontStyle: 'italic' }, // Italic
-        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOjCnqEu92Fr1Mu51TzBic6CsE.woff', fontWeight: 700, fontStyle: 'italic' } // Bold Italic
-    ]
-});
+// Font registration will be performed after dynamic import of @react-pdf/renderer
 
-const styles = StyleSheet.create({
-    paragraph: {
-        fontSize: 12.5,
-        lineHeight: 1.6,
-        marginBottom: 8,
-        color: '#4a4a4a',
-        fontFamily: 'Roboto',
-        textAlign: 'left',
-    },
-    heading1: {
-        fontSize: 24,
-        fontWeight: 700,
-        marginTop: 16,
-        marginBottom: 10,
-        color: '#1a1a1a',
-        fontFamily: 'Roboto',
-    },
-    heading2: {
-        fontSize: 18,
-        fontWeight: 700,
-        marginTop: 12,
-        marginBottom: 6,
-        color: '#1a1a1a',
-        fontFamily: 'Roboto',
-    },
-    heading3: {
-        fontSize: 15,
-        fontWeight: 700,
-        marginTop: 10,
-        marginBottom: 4,
-        color: '#1a1a1a',
-        fontFamily: 'Roboto',
-    },
-    heading4: {
-        fontSize: 14,
-        fontWeight: 700,
-        marginTop: 8,
-        marginBottom: 3,
-        color: '#1a1a1a',
-        fontFamily: 'Roboto',
-    },
-    heading5: {
-        fontSize: 13,
-        fontWeight: 700,
-        marginTop: 4,
-        marginBottom: 2,
-        color: '#000000',
-        fontFamily: 'Roboto',
-    },
-    heading6: {
-        fontSize: 12,
-        fontWeight: 700,
-        marginTop: 4,
-        marginBottom: 2,
-        color: '#000000',
-        fontFamily: 'Roboto',
-    },
-    listContainer: {
-        marginBottom: 8,
-        marginLeft: 0,
-    },
-    listItem: {
-        flexDirection: 'row',
-        marginBottom: 4,
-        paddingLeft: 0,
-    },
-    bulletMarker: {
-        width: 15,
-        fontSize: 12.5,
-        marginRight: 5,
-        textAlign: 'right',
-    },
-    numberMarker: {
-        width: 20,
-        fontSize: 12.5,
-        marginRight: 5,
-        fontWeight: 600,
-        textAlign: 'right',
-    },
-    listContent: {
-        flex: 1,
-        fontSize: 12.5,
-        lineHeight: 1.6,
-    },
-    // Indentation Levels
-    indent1: { marginLeft: 30 },
-    indent2: { marginLeft: 60 },
-    indent3: { marginLeft: 90 },
-    indent4: { marginLeft: 120 },
-    indent5: { marginLeft: 150 },
-    indent6: { marginLeft: 180 },
-    indent7: { marginLeft: 210 },
-    indent8: { marginLeft: 240 },
 
-    // Alignment
-    alignCenter: { textAlign: 'center' },
-    alignRight: { textAlign: 'right' },
-    alignJustify: { textAlign: 'justify' },
-
-    bold: {
-        fontWeight: 700,
-        fontFamily: 'Roboto',
-    },
-    italic: {
-        fontStyle: 'italic',
-        fontFamily: 'Roboto',
-    },
-    underline: {
-        textDecoration: 'underline',
-    },
-    strikethrough: {
-        textDecoration: 'line-through',
-    },
-    link: {
-        color: '#06c',
-        textDecoration: 'underline',
-    },
-    code: {
-        fontFamily: 'Courier',
-        fontSize: 9,
-        backgroundColor: '#f0f0f0',
-        padding: 1,
-        borderRadius: 2,
-    },
-    blockquote: {
-        borderLeftWidth: 2,
-        borderLeftColor: '#ccc',
-        paddingLeft: 12,
-        marginLeft: 5,
-        marginBottom: 8,
-        color: '#94a3b8',
-    },
-    codeBlock: {
-        fontFamily: 'Courier',
-        fontSize: 9,
-        backgroundColor: '#f5f5f5',
-        padding: 8,
-        marginBottom: 8,
-        borderRadius: 3,
-        borderWidth: 0.5,
-        borderColor: '#ddd',
-    },
-    image: {
-        maxWidth: '100%',
-        marginBottom: 8,
-    },
-    hr: {
-        borderBottomWidth: 0.5,
-        borderBottomColor: '#eee',
-        marginVertical: 4,
-    },
-});
 
 
 
@@ -173,9 +14,76 @@ const styles = StyleSheet.create({
  * Supports both Quill Delta and HTML formats
  */
 export const RichTextRenderer = ({ content, html, baseStyle = {} }) => {
-    console.log('content ', html)
+    const [pdfComponents, setPdfComponents] = useState(null);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        import('@react-pdf/renderer')
+            .then((mod) => {
+                const { Font } = mod;
+                Font.register({
+                    family: 'Roboto',
+                    fonts: [
+                        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxM.woff' },
+                        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOlCnqEu92Fr1MmWUlfBBc9.woff', fontWeight: 700 },
+                        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOiCnqEu92Fr1Mu51QrEz0.woff', fontStyle: 'italic' },
+                        { src: 'https://fonts.gstatic.com/s/roboto/v20/KFOjCnqEu92Fr1Mu51TzBic6CsE.woff', fontWeight: 700, fontStyle: 'italic' },
+                    ],
+                });
+                setPdfComponents({ Text: mod.Text, View: mod.View, StyleSheet: mod.StyleSheet, Link: mod.Link, Image: mod.Image });
+            })
+            .catch((err) => console.error('Failed to load @react-pdf/renderer:', err));
+    }, []);
+
+    console.log('content ', html);
     const rawContent = content || html;
     if (!rawContent) return null;
+
+    if (!pdfComponents) return null;
+
+    const { Text, View, StyleSheet, Link, Image } = pdfComponents;
+    const styles = StyleSheet.create({
+        paragraph: {
+            fontSize: 12.5,
+            lineHeight: 1.6,
+            marginBottom: 8,
+            color: '#4a4a4a',
+            fontFamily: 'Roboto',
+            textAlign: 'left',
+        },
+        heading1: { fontSize: 24, fontWeight: 700, marginTop: 16, marginBottom: 10, color: '#1a1a1a', fontFamily: 'Roboto' },
+        heading2: { fontSize: 18, fontWeight: 700, marginTop: 12, marginBottom: 6, color: '#1a1a1a', fontFamily: 'Roboto' },
+        heading3: { fontSize: 15, fontWeight: 700, marginTop: 10, marginBottom: 4, color: '#1a1a1a', fontFamily: 'Roboto' },
+        heading4: { fontSize: 14, fontWeight: 700, marginTop: 8, marginBottom: 3, color: '#1a1a1a', fontFamily: 'Roboto' },
+        heading5: { fontSize: 13, fontWeight: 700, marginTop: 4, marginBottom: 2, color: '#000000', fontFamily: 'Roboto' },
+        heading6: { fontSize: 12, fontWeight: 700, marginTop: 4, marginBottom: 2, color: '#000000', fontFamily: 'Roboto' },
+        listContainer: { marginBottom: 8, marginLeft: 0 },
+        listItem: { flexDirection: 'row', marginBottom: 4, paddingLeft: 0 },
+        bulletMarker: { width: 15, fontSize: 12.5, marginRight: 5, textAlign: 'right' },
+        numberMarker: { width: 20, fontSize: 12.5, marginRight: 5, fontWeight: 600, textAlign: 'right' },
+        listContent: { flex: 1, fontSize: 12.5, lineHeight: 1.6 },
+        indent1: { marginLeft: 30 },
+        indent2: { marginLeft: 60 },
+        indent3: { marginLeft: 90 },
+        indent4: { marginLeft: 120 },
+        indent5: { marginLeft: 150 },
+        indent6: { marginLeft: 180 },
+        indent7: { marginLeft: 210 },
+        indent8: { marginLeft: 240 },
+        alignCenter: { textAlign: 'center' },
+        alignRight: { textAlign: 'right' },
+        alignJustify: { textAlign: 'justify' },
+        bold: { fontWeight: 700, fontFamily: 'Roboto' },
+        italic: { fontStyle: 'italic', fontFamily: 'Roboto' },
+        underline: { textDecoration: 'underline' },
+        strikethrough: { textDecoration: 'line-through' },
+        link: { color: '#06c', textDecoration: 'underline' },
+        code: { fontFamily: 'Courier', fontSize: 9, backgroundColor: '#f0f0f0', padding: 1, borderRadius: 2 },
+        blockquote: { borderLeftWidth: 2, borderLeftColor: '#ccc', paddingLeft: 12, marginLeft: 5, marginBottom: 8, color: '#94a3b8' },
+        codeBlock: { fontFamily: 'Courier', fontSize: 9, backgroundColor: '#f5f5f5', padding: 8, marginBottom: 8, borderRadius: 3, borderWidth: 0.5, borderColor: '#ddd' },
+        image: { maxWidth: '100%', marginBottom: 8 },
+        hr: { borderBottomWidth: 0.5, borderBottomColor: '#eee', marginVertical: 4 },
+    });
 
 
     // 1. Render as HTML/Plain Text
