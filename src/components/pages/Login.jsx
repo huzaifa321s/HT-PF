@@ -112,25 +112,7 @@ const Login = () => {
             borderRight: "1px solid rgba(255,255,255,0.05)"
           }}
         >
-          {/* Animated Background Orbs */}
-          <Box
-            component={motion.div}
-            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            sx={{
-              position: "absolute", top: "10%", left: "-10%", width: "40vw", height: "40vw",
-              background: "radial-gradient(circle, #f3a833 0%, rgba(0,0,0,0) 70%)", filter: "blur(80px)", zIndex: 0,
-            }}
-          />
-          <Box
-            component={motion.div}
-            animate={{ scale: [1, 1.5, 1], opacity: [0.05, 0.15, 0.05] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            sx={{
-              position: "absolute", bottom: "-10%", right: "10%", width: "40vw", height: "40vw",
-              background: "radial-gradient(circle, #f3a833 0%, rgba(0,0,0,0) 70%)", filter: "blur(100px)", zIndex: 0,
-            }}
-          />
+
 
           {/* Top Logo */}
           <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center" }}>
