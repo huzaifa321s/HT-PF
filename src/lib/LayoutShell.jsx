@@ -25,6 +25,26 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("LayoutShell ErrorBoundary caught:", error, errorInfo);
+    const isChunkError = error && (
+      error.name === "ChunkLoadError" ||
+      (error.message && (error.message.indexOf("ChunkLoadError") !== -1 || error.message.indexOf("Loading chunk") !== -1))
+    );
+
+    if (isChunkError) {
+      try {
+        const lastReload = sessionStorage.getItem("last_chunk_reload");
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+          sessionStorage.setItem("last_chunk_reload", now.toString());
+          console.warn("ChunkLoadError caught! Auto-reloading page...");
+          window.location.reload();
+          return;
+        }
+      } catch (e) {
+        window.location.reload();
+        return;
+      }
+    }
   }
 
   render() {
