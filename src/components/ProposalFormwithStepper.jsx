@@ -268,7 +268,7 @@ const ProposalFormWithStepper = ({
     const brief = watch("projectBrief")?.trim() || "";
     const charCount = brief.length;
     const MIN_CHARS = 50;
-    const MAX_CHARS = 2000;
+    const MAX_CHARS = 5000;
 
     if (charCount === 0) {
       dispatch(showToast({ message: "Project Brief is required to generate AI content.", severity: "warning" }));
@@ -752,12 +752,12 @@ const ProposalFormWithStepper = ({
               defaultValue=""
               rules={{
                 minLength: { value: 50, message: "Brief must be at least 50 characters" },
-                maxLength: { value: 2000, message: "Brief must not exceed 2,000 characters" },
+                maxLength: { value: 5000, message: "Brief must not exceed 5,000 characters" },
               }}
               render={({ field, fieldState }) => {
                 const charCount = (field.value || "").length;
                 const MIN = 50;
-                const MAX = 2000;
+                const MAX = 5000;
                 const tooShort = charCount > 0 && charCount < MIN;
                 const tooLong = charCount > MAX;
                 const isValid = charCount >= MIN && charCount <= MAX;
@@ -782,7 +782,7 @@ const ProposalFormWithStepper = ({
                         {tooLong && `✕ ${charCount - MAX} character${charCount - MAX === 1 ? '' : 's'} over limit`}
                       </Box>
                       <Box sx={{ fontSize: "11px", fontWeight: 600, color: tooLong ? "#f43f5e" : charCount >= MIN ? "#10b981" : "#64748b" }}>
-                        {charCount} / 2,000
+                        {charCount} / 5,000
                       </Box>
                     </Box>
                   </>
