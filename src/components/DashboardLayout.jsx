@@ -283,7 +283,40 @@ export default function DashboardLayout({ children }) {
     </Box>
   );
 
-  if (!mounted) return null; // Avoid hydration mismatch
+  // During SSR/hydration, show a dark skeleton instead of blank null.
+  // Returning null here = black screen for the entire mount phase.
+  if (!mounted) {
+    return (
+      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#000000" }}>
+        {/* Sidebar skeleton */}
+        <Box
+          sx={{
+            width: expandedDrawerWidth,
+            bgcolor: "#0a0a0a",
+            borderRight: "1px solid rgba(243,168,51,0.1)",
+            flexShrink: 0,
+            display: { xs: "none", md: "flex" },
+            flexDirection: "column",
+            p: 2,
+            gap: 1,
+          }}
+        >
+          <Box sx={{ height: 56, bgcolor: "rgba(255,255,255,0.04)", borderRadius: 2, mb: 2 }} />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Box key={i} sx={{ height: 44, bgcolor: "rgba(255,255,255,0.03)", borderRadius: 2 }} />
+          ))}
+        </Box>
+        {/* Main area skeleton */}
+        <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+          <Box sx={{ height: 64, bgcolor: "rgba(0,0,0,0.8)", borderBottom: "1px solid rgba(243,168,51,0.2)" }} />
+          <Box sx={{ flexGrow: 1, p: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ height: 120, bgcolor: "rgba(255,255,255,0.03)", borderRadius: 3 }} />
+            <Box sx={{ height: 200, bgcolor: "rgba(255,255,255,0.02)", borderRadius: 3 }} />
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   if (isStudio) {
     return <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>{children}</Box>;

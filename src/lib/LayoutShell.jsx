@@ -11,81 +11,84 @@ import { useLoading } from "@/context/LoadingContext";
 import { setLoaderCallbacks } from "@/utils/axiosInstance";
 import { Font } from "@react-pdf/renderer";
 
-// Register fonts for @react-pdf/renderer (must be client-side)
-Font.register({
-  family: "Liberation Serif",
-  fonts: [
-    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
-    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
-    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
-    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
-    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
-  ],
-});
-
-Font.register({
-  family: "Helvetica",
-  fonts: [
-    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
-    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
-    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
-    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
-    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
-  ],
-});
-
-Font.register({
-  family: "Oswald",
-  fonts: [
-    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
-  ],
-});
-
-Font.register({
-  family: "Unbounded",
-  fonts: [
-    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
-    { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
-    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
-    { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
-  ],
-});
-
-Font.register({
-  family: "Degular",
-  fonts: [
-    { src: "/fonts/Degular-Thin.otf", fontWeight: 100 },
-    { src: "/fonts/Degular-Light.otf", fontWeight: 300 },
-    { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
-    { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
-    { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
-    { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
-    { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
-  ],
-});
-
-Font.register({
-  family: "DegularDisplay",
-  fonts: [
-    { src: "/fonts/DegularDisplay-Thin.otf", fontWeight: 100 },
-    { src: "/fonts/DegularDisplay-Light.otf", fontWeight: 300 },
-    { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
-    { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
-    { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
-    { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
-    { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
-  ],
-});
+// Register fonts for @react-pdf/renderer — wrapped in try/catch so SSR
+// evaluation on Hostinger never throws and causes a blank screen.
+if (typeof window !== "undefined") {
+  try {
+    Font.register({
+      family: "Liberation Serif",
+      fonts: [
+        { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+        { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+        { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+        { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+        { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
+      ],
+    });
+    Font.register({
+      family: "Helvetica",
+      fonts: [
+        { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+        { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+        { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+        { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+        { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
+      ],
+    });
+    Font.register({
+      family: "Oswald",
+      fonts: [
+        { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
+      ],
+    });
+    Font.register({
+      family: "Unbounded",
+      fonts: [
+        { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
+        { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
+        { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 800 },
+        { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
+      ],
+    });
+    Font.register({
+      family: "Degular",
+      fonts: [
+        { src: "/fonts/Degular-Thin.otf", fontWeight: 100 },
+        { src: "/fonts/Degular-Light.otf", fontWeight: 300 },
+        { src: "/fonts/Degular-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/Degular-Medium.otf", fontWeight: 500 },
+        { src: "/fonts/Degular-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/Degular-Bold.otf", fontWeight: 700 },
+        { src: "/fonts/Degular-Black.otf", fontWeight: 900 },
+        { src: "/fonts/Degular-RegularItalic.otf", fontWeight: 400, fontStyle: "italic" },
+        { src: "/fonts/Degular-BoldItalic.otf", fontWeight: 700, fontStyle: "italic" },
+      ],
+    });
+    Font.register({
+      family: "DegularDisplay",
+      fonts: [
+        { src: "/fonts/DegularDisplay-Thin.otf", fontWeight: 100 },
+        { src: "/fonts/DegularDisplay-Light.otf", fontWeight: 300 },
+        { src: "/fonts/DegularDisplay-Regular.otf", fontWeight: 400 },
+        { src: "/fonts/DegularDisplay-Medium.otf", fontWeight: 500 },
+        { src: "/fonts/DegularDisplay-Semibold.otf", fontWeight: 600 },
+        { src: "/fonts/DegularDisplay-Bold.otf", fontWeight: 700 },
+        { src: "/fonts/DegularDisplay-Black.otf", fontWeight: 900 },
+      ],
+    });
+  } catch (e) {
+    // Font registration failed (SSR or missing file) — safe to ignore
+    console.warn("Font.register failed:", e);
+  }
+}
 
 // Pages that do NOT show Navbar/Footer or DashboardLayout
 const PUBLIC_PATHS = ["/", "/login", "/admin-login"];
