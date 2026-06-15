@@ -74,7 +74,14 @@ const ProposalFormWithStepper = ({
   const dispatch = useDispatch();
   const router = useRouter(); // Initialize navigate
 
-  const userStr = typeof window !== "undefined" ? sessionStorage.getItem("user") : null;
+  let userStr = null;
+  if (typeof window !== "undefined") {
+    try {
+      userStr = sessionStorage.getItem("user");
+    } catch (e) {
+      console.warn("sessionStorage access failed in ProposalFormWithStepper:", e);
+    }
+  }
   const user = userStr ? JSON.parse(userStr) : {};
   const clientEmailValue = watch("clientEmail");
   const [debouncedClientEmail] = useDebounce(clientEmailValue, 600);

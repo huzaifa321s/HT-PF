@@ -32,10 +32,14 @@ const Footer = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const user =
-    typeof window !== "undefined"
-      ? JSON.parse(sessionStorage.getItem("user") || "null")
-      : null;
+  let user = null;
+  if (typeof window !== "undefined") {
+    try {
+      user = JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch (e) {
+      console.warn("sessionStorage access failed in Footer:", e);
+    }
+  }
   const role = user?.role || "agent";
   const pathname = usePathname();
 

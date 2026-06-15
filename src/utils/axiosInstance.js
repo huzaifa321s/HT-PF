@@ -20,8 +20,14 @@ axiosInstance.interceptors.request.use(
     if (!config.skipLoader && loaderCallbacks?.showLoader) {
       loaderCallbacks.showLoader();
     }
-    const token =
-      typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
+    let token = null;
+    if (typeof window !== "undefined") {
+      try {
+        token = sessionStorage.getItem("token");
+      } catch (e) {
+        console.warn("sessionStorage access failed in axiosInstance request interceptor:", e);
+      }
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

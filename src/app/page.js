@@ -9,7 +9,12 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user") || "null");
+    let user = null;
+    try {
+      user = JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch (e) {
+      console.warn("sessionStorage access failed in RootPage:", e);
+    }
     if (!user) {
       router.replace("/login");
     } else if (user.role === "admin") {

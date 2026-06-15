@@ -74,7 +74,12 @@ const ProposalPage = () => {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
-  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  let user = {};
+  try {
+    user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  } catch (e) {
+    console.warn("sessionStorage access failed in ProposalPage:", e);
+  }
   const isAdmin = user.role === "admin";
 
   const [proposals, setProposals] = useState([]);

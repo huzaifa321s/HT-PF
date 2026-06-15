@@ -34,7 +34,12 @@ const AgentDashboard = ({ onNavigate }) => {
     else router.push(path);
   };
 
-  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  let user = {};
+  try {
+    user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  } catch (e) {
+    console.warn("sessionStorage access failed in AgentDashboard:", e);
+  }
 
   // Styles from ProposalFormwithStepper
   const colorScheme = {

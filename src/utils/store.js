@@ -70,13 +70,24 @@ const makeStore = () => {
   let persistConfig;
 
   if (typeof window !== "undefined") {
-    const storageSession =
-      require("redux-persist/lib/storage/session").default;
+    let storageSession;
+    try {
+      storageSession = require("redux-persist/lib/storage/session").default;
+    } catch (e) {
+      console.warn("redux-persist session storage import failed:", e);
+    }
 
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    const tabId =
-      sessionStorage.getItem("tabId") || generateUUID();
-    sessionStorage.setItem("tabId", tabId);
+    let user = {};
+    let tabId = "";
+    try {
+      user = JSON.parse(sessionStorage.getItem("user") || "{}");
+      tabId = sessionStorage.getItem("tabId") || generateUUID();
+      sessionStorage.setItem("tabId", tabId);
+    } catch (e) {
+      console.warn("sessionStorage access failed inside makeStore:", e);
+      tabId = generateUUID();
+    }
+
     const persistKey = user.id
       ? `root_${user.id}_${tabId}`
       : `root_guest_${tabId}`;
@@ -94,7 +105,14 @@ const makeStore = () => {
       ],
     };
 
-    const persistedReducer = persistReducer(persistConfig, rootReducer);
+    let persistedReducer = rootReducer;
+    if (storageSession) {
+      try {
+        persistedReducer = persistReducer(persistConfig, rootReducer);
+      } catch (e) {
+        console.error("Failed to create persisted reducer:", e);
+      }
+    }
 
     const store = configureStore({
       reducer: persistedReducer,
@@ -102,7 +120,13 @@ const makeStore = () => {
         getDefaultMiddleware({ serializableCheck: false }).concat(historyMiddleware),
     });
 
-    store.persistor = persistStore(store);
+    if (storageSession) {
+      try {
+        store.persistor = persistStore(store);
+      } catch (e) {
+        console.error("Failed to create persistor:", e);
+      }
+    }
     return store;
   }
 

@@ -37,23 +37,11 @@ const darkTheme = createTheme({
 });
 
 export default function Providers({ children }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Provider store={store}>
-        {mounted && persistor ? (
-          <PersistGate loading={null} persistor={persistor}>
-            <LoadingProvider>{children}</LoadingProvider>
-          </PersistGate>
-        ) : (
-          <LoadingProvider>{children}</LoadingProvider>
-        )}
+        <LoadingProvider>{children}</LoadingProvider>
       </Provider>
     </ThemeProvider>
   );

@@ -59,7 +59,12 @@ const ProposalDetails = () => {
     const [downloadingProposal, setDownloadingProposal] = useState(null);
     const dispatch = useDispatch();
 
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    let user = {};
+    try {
+        user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    } catch (e) {
+        console.warn("sessionStorage access failed in ProposalDetails:", e);
+    }
 
     useEffect(() => {
         const fetchProposal = async () => {
