@@ -420,21 +420,7 @@ export default function ProposalStudio() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", bgcolor: "#0a0a0a" }}>
-        <CircularProgress size={60} sx={{ color: "#f3a833" }} />
-      </Box>
-    );
-  }
-
-  if (!formData) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", bgcolor: "#0a0a0a" }}>
-        <Typography variant="h5" color="error">Proposal not found.</Typography>
-      </Box>
-    );
-  }
+  // No full screen blocking loaders - UI layout renders immediately and states handle it inside the viewport
 
   return (
     <Box sx={{ height: "100vh", bgcolor: "#0a0a0a", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -502,7 +488,8 @@ export default function ProposalStudio() {
 
           <button
             onClick={() => setIsStudioMode(!isStudioMode)}
-            className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium flex items-center space-x-1 transition-colors ${isStudioMode ? 'bg-[#f3a833]/20 text-[#f3a833]' : 'bg-[#141414] text-slate-400 hover:bg-[#1f1f1f]'}`}
+            disabled={loading}
+            className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium flex items-center space-x-1 transition-colors ${loading ? 'opacity-50 cursor-not-allowed bg-[#141414] text-slate-500' : isStudioMode ? 'bg-[#f3a833]/20 text-[#f3a833]' : 'bg-[#141414] text-slate-400 hover:bg-[#1f1f1f]'}`}
           >
             <Settings className="w-4 h-4" />
             <span>Studio Mode: {isStudioMode ? 'ON' : 'OFF'}</span>
@@ -511,10 +498,12 @@ export default function ProposalStudio() {
           <Button
             variant="outlined"
             onClick={() => setAiDrawerOpen(true)}
+            disabled={loading}
             startIcon={<AutoAwesome />}
             sx={{
               color: "#c084fc",
               borderColor: "rgba(192, 132, 252, 0.5)",
+              "&.Mui-disabled": { color: "rgba(192, 132, 252, 0.3)", borderColor: "rgba(192, 132, 252, 0.15)" },
               "&:hover": { borderColor: "#c084fc", bgcolor: "rgba(192, 132, 252, 0.1)" },
               fontWeight: 700,
               textTransform: "none",
@@ -527,9 +516,11 @@ export default function ProposalStudio() {
           <Button
             variant="contained"
             onClick={() => setDrawerOpen(true)}
+            disabled={saving || loading}
             startIcon={<Download />}
             sx={{
               bgcolor: "#10b981",
+              "&.Mui-disabled": { bgcolor: "rgba(16, 185, 129, 0.2)", color: "rgba(255, 255, 255, 0.3)" },
               "&:hover": { bgcolor: "#059669" },
               fontWeight: 700,
               textTransform: "none",
@@ -544,14 +535,28 @@ export default function ProposalStudio() {
 
       {/* Editor Area */}
       <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-        <UnifiedPdfEditor
-          pdfPages={formData?.pdfPages}
-          mode={id === "new" ? "doc" : "edit-doc"}
-          clientName={formData?.clientName || "Client"}
-          date={formData?.date || new Date().toISOString()}
-          isStudioMode={isStudioMode}
-          zoomLevel={zoomLevel}
-        />
+        {loading ? (
+          <Box sx={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center", alignItems: "center", bgcolor: "#0d0d0d", gap: 3 }}>
+            <CircularProgress size={50} sx={{ color: "#f3a833" }} />
+            <Typography variant="body2" sx={{ color: "#94a3b8", fontWeight: 500, letterSpacing: 0.5 }}>
+              Loading Proposal Studio & preparing canvas...
+            </Typography>
+          </Box>
+        ) : !formData ? (
+          <Box sx={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center", alignItems: "center", bgcolor: "#0d0d0d", gap: 2 }}>
+            <Typography variant="h5" color="error" sx={{ fontWeight: 700 }}>Proposal Not Found</Typography>
+            <Typography variant="body2" sx={{ color: "#94a3b8" }}>The proposal you are trying to access does not exist or has been deleted.</Typography>
+          </Box>
+        ) : (
+          <UnifiedPdfEditor
+            pdfPages={formData?.pdfPages}
+            mode={id === "new" ? "doc" : "edit-doc"}
+            clientName={formData?.clientName || "Client"}
+            date={formData?.date || new Date().toISOString()}
+            isStudioMode={isStudioMode}
+            zoomLevel={zoomLevel}
+          />
+        )}
       </Box>
 
       {/* Right Drawer for PDF Generation */}

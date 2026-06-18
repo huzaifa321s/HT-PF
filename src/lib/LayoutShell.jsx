@@ -205,9 +205,16 @@ export default function LayoutShell({ children }) {
     setLoaderCallbacks(showLoader, hideLoader);
   }, [showLoader, hideLoader]);
 
-  // Register PDF fonts on first client mount (lazy, never SSR)
+  // Register PDF fonts on first client mount (lazy, never SSR, deferred to free up initial bandwidth)
   useEffect(() => {
-    registerPdfFonts();
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        window.requestIdleCallback(() => registerPdfFonts());
+      } else {
+        registerPdfFonts();
+      }
+    }, 3000); // 3-second delay
+    return () => clearTimeout(timer);
   }, []);
 
   if (isPublic) {

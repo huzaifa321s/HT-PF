@@ -9,6 +9,7 @@ export const setLoaderCallbacks = (showLoader, hideLoader) => {
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:5000",
+  timeout: 20000, // 20 seconds timeout to prevent hanging on internet issues
   headers: {
     "Content-Type": "application/json",
   },
