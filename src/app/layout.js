@@ -19,11 +19,19 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Catch chunk loading errors and reload the page automatically
+                // Catch chunk loading and resource loading errors and reload the page automatically
                 window.addEventListener('error', function(e) {
                   if (e.message && (e.message.indexOf('ChunkLoadError') !== -1 || e.message.indexOf('Loading chunk') !== -1)) {
                     console.warn('ChunkLoadError detected! Reloading page...');
                     window.location.reload();
+                    return;
+                  }
+                  if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+                    var url = e.target.src || e.target.href;
+                    if (url && (url.indexOf('/_next/static/') !== -1 || url.indexOf('uhcc7lgorwf.css') !== -1)) {
+                      console.warn('Next.js static resource failed to load (404)! Reloading page...');
+                      window.location.reload();
+                    }
                   }
                 }, true);
                 window.addEventListener('unhandledrejection', function(e) {
