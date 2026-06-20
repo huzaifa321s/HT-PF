@@ -10,12 +10,21 @@ const nextConfig = {
   // Add empty turbopack config to silence the warning since we use a custom webpack config
   turbopack: {},
 
+  // 👇 ADD THIS REWRITES BLOCK 👇
+  async rewrites() {
+    return [
+      {
+        source: '/backend-api/:path*',
+        destination: 'https://proposal.web3guys.com/:path*', 
+      },
+    ];
+  },
+  // 👆 END OF REWRITES BLOCK 👆
+
   async headers() {
     return [
       {
         // Apply CORS + Cross-Origin-Resource-Policy to ALL routes.
-        // Cross-Origin-Resource-Policy: cross-origin is critical for html2canvas —
-        // without it browsers block canvas pixel reads even for same-origin images.
         source: "/:path*",
         headers: [
           {
