@@ -19,6 +19,24 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
+                // Safeguard against string "undefined" in storage causing crashes
+                if (typeof window !== 'undefined') {
+                  if (window.sessionStorage) {
+                    var origGetItem = window.sessionStorage.getItem;
+                    window.sessionStorage.getItem = function(key) {
+                      var val = origGetItem.call(window.sessionStorage, key);
+                      return val === 'undefined' ? null : val;
+                    };
+                  }
+                  if (window.localStorage) {
+                    var origLocalGetItem = window.localStorage.getItem;
+                    window.localStorage.getItem = function(key) {
+                      var val = origLocalGetItem.call(window.localStorage, key);
+                      return val === 'undefined' ? null : val;
+                    };
+                  }
+                }
+
                 // Catch chunk loading and resource loading errors and reload the page automatically
                 window.addEventListener('error', function(e) {
                   if (e.message && (e.message.indexOf('ChunkLoadError') !== -1 || e.message.indexOf('Loading chunk') !== -1)) {
