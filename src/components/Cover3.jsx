@@ -59,8 +59,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#1a1a1a",
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 0,
+    marginBottom: 6,
     textAlign: "left",
   },
 
@@ -135,16 +135,11 @@ const styles = StyleSheet.create({
     // fontStyle: "italic",
     textAlign: "start",
   },
-  sectionHeading: {
+  sectionHeadingText: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#000",
-    marginTop: 28,
-    marginBottom: 12,
     textAlign: "left",
-    paddingBottom: 6,
-    borderBottomWidth: 1.5,
-    borderBottomColor: "#000",
   },
   labelContainer: {
     position: "absolute",
@@ -242,13 +237,29 @@ const PdfPageDocument2 = ({
       const nextHeight = nextSec ? estimateSectionHeight(nextSec) : 100;
       const mpa = Math.min(200, Math.max(120, nextHeight + 10));
 
+      const hasBorder = !sec.hideBorder;
+      const borderColor = sec.color || "#000000";
+
       return (
-        <View key={key} style={{ marginBottom: 18, marginTop: 8 }} minPresenceAhead={mpa}>
+        <View
+          key={key}
+          style={[
+            {
+              marginTop: idx === 0 ? 10 : 32,
+              marginBottom: 16,
+              paddingBottom: 6,
+            },
+            hasBorder && {
+              borderBottomWidth: 1.5,
+              borderBottomColor: borderColor,
+            }
+          ]}
+          minPresenceAhead={mpa}
+        >
           <Text style={[
-            styles.sectionHeading,
+            styles.sectionHeadingText,
             sec.titleAlign && { textAlign: sec.titleAlign },
-            sec.color && { color: sec.color, borderBottomColor: sec.color },
-            sec.hideBorder && { borderBottomWidth: 0 }
+            sec.color && { color: sec.color }
           ]}>
             {sec.title}
           </Text>
@@ -257,10 +268,12 @@ const PdfPageDocument2 = ({
     }
 
     return (
-      <View key={key} style={{ marginBottom: 14 }}>
+      <View key={key} style={{ marginBottom: 18 }}>
         {sec.title && <Text style={styles.sectionTitle}>{sec.title}</Text>}
         {sec.content?.trim() && <RichTextRenderer html={sec.content} />}
-        {!isLast && <View style={[styles.divider, { marginTop: 16, marginBottom: 0 }]} />}
+        {!isLast && orderedSections[idx + 1]?.type !== "heading" && (
+          <View style={[styles.divider, { marginTop: 16, marginBottom: 0 }]} />
+        )}
       </View>
     );
   };
