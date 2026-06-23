@@ -10,8 +10,9 @@ import {
   Slide,
   CircularProgress,
   Tooltip,
+  Box,
 } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../utils/toastSlice";
 import axiosInstance from "../../utils/axiosInstance";
@@ -30,20 +31,20 @@ const DeleteConfirmModal = ({
   fetchProposals,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [isHovered, setIsHovered] = useState({}); // For button hover states
   const dispatch = useDispatch();
 
-  const handleDelete = async () => {
+  const handleTrash = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.delete(
-        `/api/proposals/delete-proposal/${id}`
+      // Soft-delete: move to trash (NOT permanent delete)
+      const res = await axiosInstance.patch(
+        `/api/proposals/trash/${id}`
       );
 
       if (res.data.success) {
         dispatch(
           showToast({
-            message: "✅ Proposal deleted successfully!",
+            message: "🗑️ Proposal moved to trash. You can restore it anytime.",
             severity: "success",
           })
         );
@@ -60,7 +61,7 @@ const DeleteConfirmModal = ({
       } else {
         dispatch(
           showToast({
-            message: "❌ Failed to delete proposal.",
+            message: "❌ Failed to move proposal to trash.",
             severity: "error",
           })
         );
@@ -69,7 +70,7 @@ const DeleteConfirmModal = ({
       console.error(error);
       dispatch(
         showToast({
-          message: "⚠️ Server error while deleting proposal.",
+          message: "⚠️ Server error while moving proposal to trash.",
           severity: "error",
         })
       );
@@ -80,7 +81,6 @@ const DeleteConfirmModal = ({
 
   return (
     <>
-      {/* Confirmation Dialog */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -93,7 +93,8 @@ const DeleteConfirmModal = ({
             borderRadius: 3,
             boxShadow: "0 20px 40px rgba(0,0,0,0.8)",
             p: 1,
-            background: "linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)",
+            background: "linear-gradient(135deg, #141414 0%, #1a1a1a 100%)",
+            border: "1px solid rgba(243, 168, 51, 0.2)",
             position: "relative",
             overflow: "hidden",
             "&::before": {
@@ -102,7 +103,7 @@ const DeleteConfirmModal = ({
               top: 0,
               left: 0,
               right: 0,
-              height: "6px",
+              height: "4px",
               background:
                 "linear-gradient(90deg, #f3a833 0%, #f59e0b 50%, #fbbf24 100%)",
               backgroundSize: "200% 100%",
@@ -126,21 +127,38 @@ const DeleteConfirmModal = ({
             WebkitTextFillColor: "transparent",
           }}
         >
-          Confirm Deletion
+          Move to Trash?
         </DialogTitle>
 
-        <DialogContent sx={{ textAlign: "center", py: 2 }}>
+        <DialogContent sx={{ textAlign: "center", py: 2.5 }}>
+          {/* Trash icon visual */}
+          <Box
+            sx={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "rgba(243, 168, 51, 0.08)",
+              border: "2px solid rgba(243, 168, 51, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mx: "auto",
+              mb: 2,
+            }}
+          >
+            <DeleteOutlineIcon sx={{ fontSize: 36, color: "#f3a833" }} />
+          </Box>
           <Typography
             variant="body1"
-            sx={{ color: "#94a3b8", mb: 1 }}
+            sx={{ color: "#f8fafc", mb: 1, fontWeight: 600 }}
           >
-            Are you sure you want to delete this proposal?
+            Move this proposal to Trash?
           </Typography>
           <Typography
             variant="body2"
-            sx={{ fontWeight: 600, color: "#f44336" }}
+            sx={{ color: "#94a3b8" }}
           >
-            This action cannot be undone.
+            It will be safely stored in the Trash. You can restore it anytime or permanently delete it from there.
           </Typography>
         </DialogContent>
 
@@ -152,79 +170,67 @@ const DeleteConfirmModal = ({
             gap: 1.5,
           }}
         >
-          <Tooltip title="Cancel and close the dialog" arrow>
+          <Tooltip title="Cancel — keep proposal" arrow>
             <Button
               onClick={handleClose}
               variant="outlined"
               sx={{
                 px: 3,
-                py: 1.5,
+                py: 1.2,
                 borderRadius: 3,
                 textTransform: "none",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 fontWeight: 600,
-                borderColor: "#f3a833",
-                color: "#f3a833",
+                borderColor: "rgba(255,255,255,0.15)",
+                color: "#94a3b8",
                 "&:hover": {
-                  borderColor: "#eab308",
-                  color: "#eab308",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 8px 24px rgba(243, 168, 51, 0.3)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  color: "#f8fafc",
+                  background: "rgba(255,255,255,0.05)",
                 },
-                transition: "all 0.3s ease",
+                transition: "all 0.2s ease",
               }}
-              onMouseEnter={() =>
-                setIsHovered({ ...isHovered, cancel: true })
-              }
-              onMouseLeave={() =>
-                setIsHovered({ ...isHovered, cancel: false })
-              }
             >
               Cancel
             </Button>
           </Tooltip>
-          <Tooltip title="Permanently delete the proposal" arrow>
+
+          <Tooltip title="Move to Trash (can be restored)" arrow>
             <Button
-              onClick={handleDelete}
+              onClick={handleTrash}
               variant="contained"
               disabled={loading}
-              sx={{
-                px: 3,
-                py: 1.5,
-                borderRadius: 3,
-                textTransform: "none",
-                fontSize: "1rem",
-                fontWeight: 600,
-                background:
-                  "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
-                boxShadow: "0 8px 24px rgba(244, 67, 54, 0.4)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #e53935 0%, #c62828 100%)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 32px rgba(244, 67, 54, 0.5)",
-                },
-                "&:disabled": {
-                  background:
-                    "linear-gradient(135deg, #ccc 0%, #999 100%)",
-                },
-                transition: "all 0.3s ease",
-              }}
               startIcon={
                 loading ? (
-                  <CircularProgress size={20} sx={{ color: "#fff" }} />
+                  <CircularProgress size={18} sx={{ color: "#fff" }} />
                 ) : (
-                  <DeleteIcon />
+                  <DeleteOutlineIcon />
                 )
               }
-              onMouseEnter={() =>
-                setIsHovered({ ...isHovered, delete: true })
-              }
-              onMouseLeave={() =>
-                setIsHovered({ ...isHovered, delete: false })
-              }
+              sx={{
+                px: 3,
+                py: 1.2,
+                borderRadius: 3,
+                textTransform: "none",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                background:
+                  "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+                boxShadow: "0 8px 24px rgba(243, 168, 51, 0.3)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #eab308 0%, #d97706 100%)",
+                  boxShadow: "0 12px 32px rgba(243, 168, 51, 0.45)",
+                  transform: "translateY(-1px)",
+                },
+                "&:disabled": {
+                  background: "linear-gradient(135deg, #555 0%, #333 100%)",
+                  boxShadow: "none",
+                },
+                transition: "all 0.2s ease",
+              }}
             >
-              {loading ? "Deleting..." : "Delete"}
+              {loading ? "Moving..." : "Move to Trash"}
             </Button>
           </Tooltip>
         </DialogActions>

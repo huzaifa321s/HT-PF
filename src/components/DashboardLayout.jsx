@@ -37,6 +37,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { usePathname, useRouter } from "next/navigation";
 import axiosInstance from "../utils/axiosInstance";
 
@@ -147,6 +148,11 @@ export default function DashboardLayout({ children }) {
           },
         ]
       : []),
+    {
+      label: "Trash",
+      path: "/trash",
+      icon: <DeleteOutlineIcon />,
+    },
     {
       label: "Documentation",
       path: "/docs",

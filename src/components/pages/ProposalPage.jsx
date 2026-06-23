@@ -1052,7 +1052,7 @@ const ProposalPage = () => {
                                     <DownloadIcon sx={{ color: '#4caf50', fontSize: 20 }} />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="Delete" arrow>
+                                <Tooltip title="Move to Trash" arrow>
                                   <IconButton
                                     onClick={() => handleDelete(proposal._id, proposals.length)}
                                     sx={{
