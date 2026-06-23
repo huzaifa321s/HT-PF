@@ -1366,7 +1366,7 @@ const SectionToolbar = ({ contentRef }) => {
 };
 
 // ─── Section Item ─────────────────────────────────────────────────────────────
-const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbnail, absoluteTop, onHeightChange, handleInput, dispatch }) => {
+const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStudioMode, isThumbnail, absoluteTop, onHeightChange, handleInput, dispatch }) => {
   const ref = useRef(null);
   const contentRef = useRef(null);
   const [typeAnchor, setTypeAnchor] = useState(null);
@@ -1682,14 +1682,15 @@ const SectionItem = React.memo(({ section, index, isLast, isStudioMode, isThumbn
         />
       )}
 
-      {!isLast && !isHeading && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "28px" }} />}
+      {!isLast && !isHeading && nextSectionType !== "heading" && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "28px" }} />}
     </Box>
   );
 }, (prev, next) =>
   prev.section === next.section &&
   prev.absoluteTop === next.absoluteTop &&
   prev.isStudioMode === next.isStudioMode &&
-  prev.isLast === next.isLast
+  prev.isLast === next.isLast &&
+  prev.nextSectionType === next.nextSectionType
 );
 
 
@@ -1913,6 +1914,7 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
             section={section}
             index={index}
             isLast={index === orderedSections.length - 1}
+            nextSectionType={orderedSections[index + 1]?.type}
             isStudioMode={isStudioMode}
             isThumbnail={isThumbnail}
             absoluteTop={absoluteTops[section.id] ?? TOP_PADDING}
