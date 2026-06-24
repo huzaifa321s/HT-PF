@@ -23,6 +23,7 @@ const ALLOWED_FILES = new Set([
   "footer.png",
   "header.png",
   "about-HT.png",
+  "IMG_0751-1.png",
   "proposal-contact.jpg",
   "ht-logo.png",
   "Artboard 1.jpg",

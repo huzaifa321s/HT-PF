@@ -21,7 +21,7 @@ const modeDefaults = {
     {
       id: 'image-1',
       type: 'image',
-      content: '/about-HT.png',
+      content: '/IMG_0751-1.png',
       dimensions: { width: '85%', height: '100%' },
     },
   ],
@@ -71,7 +71,7 @@ const page3Slice = createSlice({
         newEl.desc = desc || 'Section description goes here...';
       }
       else if (type === 'image') {
-        newEl.content = content || '/about-HT.png';
+        newEl.content = content || '/IMG_0751-1.png';
         newEl.dimensions = { width: '100%', height: '300px' };
       }
 
