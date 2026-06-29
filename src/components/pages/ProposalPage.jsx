@@ -871,206 +871,339 @@ const ProposalPage = () => {
               </Box>
             ) : (
               <>
-                {/* Table */}
-                <TableContainer
-                  sx={{
-                    borderRadius: 3,
-                    overflowX: 'auto',
-                    "&::-webkit-scrollbar": { height: 6 },
-                    "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "rgba(243, 168, 51,0.2)",
-                      borderRadius: 10,
-                    },
-                  }}
-                >
-                  <Table sx={{ minWidth: 800 }}>
-                    <TableHead>
-                      <TableRow sx={{ background: "linear-gradient(135deg, rgba(243, 168, 51, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)" }}>
-                        {headers.map((header) => (
-                          <TableCell
-                            key={header}
-                            sx={{
-                              fontWeight: "700",
-                              fontSize: "0.95rem",
-                              py: 3,
-                              color: "#f8fafc",
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              minWidth: header === "Title" ? 200 : header === "Actions" ? 220 : 120,
-                            }}
-                            align={header === "Actions" ? "center" : "left"}
-                          >
-                            {header}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <AnimatePresence>
-                        {proposals.map((proposal) => (
-                          <TableRow
-                            key={proposal._id}
-                            component={motion.tr}
-                            variants={tableRowVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            layout
-                            hover
-                            sx={{
-                              "&:hover": {
-                                bgcolor: "rgba(243, 168, 51,0.04)",
-                                '& .action-buttons': {
-                                  opacity: 1,
-                                },
-                              },
-                              transition: "all 0.2s ease",
-                              borderBottom: '1px solid rgba(0,0,0,0.06)',
-                            }}
-                          >
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                {!isMobile && <Avatar
-                                  sx={{
-                                    width: 40,
-                                    height: 40,
-                                    background: 'linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {proposal.projectTitle.charAt(0).toUpperCase()}
-                                </Avatar>}
-                                <Typography fontWeight={600} sx={{ fontSize: isMobile ? '0.75rem' : '0.95rem' }}>
-                                  {proposal.projectTitle}
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                                {proposal.clientName}
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell>
-                              <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                                {proposal.clientEmail || "N/A"}
-                              </Typography>
-                            </TableCell>
-
+                {isMobile ? (
+                  <Stack spacing={2}>
+                    <AnimatePresence>
+                      {proposals.map((proposal) => (
+                        <Card
+                          key={proposal._id}
+                          component={motion.div}
+                          variants={tableRowVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          layout
+                          sx={{
+                            background: "rgba(20, 20, 20, 0.6)",
+                            border: "1px solid rgba(243, 168, 51, 0.15)",
+                            borderRadius: 3,
+                            p: 2.5,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 1.5,
+                          }}
+                        >
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <Typography variant="h6" fontWeight={700} sx={{ color: "#f8fafc", fontSize: "1rem" }}>
+                              {proposal.projectTitle}
+                            </Typography>
+                          </Box>
+                          
+                          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+                          
+                          <Stack spacing={1}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                              <Typography variant="body2" sx={{ color: "#64748b" }}>Client Name:</Typography>
+                              <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1" }}>{proposal.clientName}</Typography>
+                            </Box>
+                            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                              <Typography variant="body2" sx={{ color: "#64748b" }}>Client Email:</Typography>
+                              <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1", wordBreak: "break-all" }}>{proposal.clientEmail || "N/A"}</Typography>
+                            </Box>
                             {isAdmin && (
-                              <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Chip
-                                    avatar={
-                                      <Avatar
-                                        sx={{
-                                          bgcolor: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
-                                          width: 24,
-                                          height: 24,
-                                          fontSize: "0.75rem",
-                                        }}
-                                      >
-                                        {proposal.createdBy?.name?.charAt(0)?.toUpperCase() || "?"}
-                                      </Avatar>
-                                    }
-                                    label={proposal.createdBy?._id === user?.id ? "You" : proposal.createdBy?.name || "Unknown"}
-                                    size="small"
-                                    sx={{
-                                      fontWeight: 600,
-                                      bgcolor: proposal.createdBy?._id === user?.id
-                                        ? alpha('#f3a833', 0.1)
-                                        : alpha('#f59e0b', 0.1),
-                                      color: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
-                                    }}
-                                  />
-                                  {proposal.createdBy?._id && proposal.createdBy?._id !== user?.id && (
-                                    <Tooltip title="View BDO" arrow>
-                                      <IconButton
-                                        size="small"
-                                        onClick={() => router.push(`/admin/bdo/${proposal.createdBy?._id}`)}
-                                        sx={{
-                                          ml: 0.5,
-                                          bgcolor: alpha('#f3a833', 0.1),
-                                          '&:hover': { bgcolor: alpha('#f3a833', 0.2) },
-                                        }}
-                                      >
-                                        <VisibilityIcon sx={{ color: '#f3a833', fontSize: 18 }} />
-                                      </IconButton>
-                                    </Tooltip>
-                                  )}
-                                </Box>
-                              </TableCell>
+                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <Typography variant="body2" sx={{ color: "#64748b" }}>Created By:</Typography>
+                                <Chip
+                                  avatar={
+                                    <Avatar
+                                      sx={{
+                                        bgcolor: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
+                                        width: 20,
+                                        height: 20,
+                                        fontSize: "0.65rem",
+                                      }}
+                                    >
+                                      {proposal.createdBy?.name?.charAt(0)?.toUpperCase() || "?"}
+                                    </Avatar>
+                                  }
+                                  label={proposal.createdBy?._id === user?.id ? "You" : proposal.createdBy?.name || "Unknown"}
+                                  size="small"
+                                  sx={{
+                                    fontWeight: 600,
+                                    fontSize: "0.75rem",
+                                    bgcolor: proposal.createdBy?._id === user?.id
+                                      ? alpha('#f3a833', 0.1)
+                                      : alpha('#f59e0b', 0.1),
+                                    color: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
+                                  }}
+                                />
+                              </Box>
                             )}
-
-                            <TableCell>
-                              <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                              <Typography variant="body2" sx={{ color: "#64748b" }}>Created Date:</Typography>
+                              <Typography variant="body2" sx={{ color: "#cbd5e1" }}>
                                 {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
                               </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Stack
-                                direction="row"
-                                spacing={0.5}
-                                justifyContent="center"
-                                className="action-buttons"
+                            </Box>
+                          </Stack>
+
+                          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                          <Stack direction="row" spacing={1} justifyContent="flex-end">
+                            <Tooltip title="View Details" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleView(proposal._id)}
                                 sx={{
-                                  opacity: isMobile ? 1 : 0.7,
-                                  transition: 'opacity 0.2s ease',
+                                  bgcolor: alpha('#2196f3', 0.1),
+                                  '&:hover': { bgcolor: alpha('#2196f3', 0.2) },
                                 }}
                               >
-                                <Tooltip title="View Details" arrow>
-                                  <IconButton
-                                    onClick={() => handleView(proposal._id)}
-                                    sx={{
-                                      bgcolor: alpha('#2196f3', 0.1),
-                                      '&:hover': { bgcolor: alpha('#2196f3', 0.2) },
-                                    }}
-                                  >
-                                    <VisibilityIcon sx={{ color: '#2196f3', fontSize: 20 }} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Edit" arrow>
-                                  <IconButton
-                                    onClick={() => handleEdit(proposal._id)}
-                                    sx={{
-                                      bgcolor: alpha('#f3a833', 0.1),
-                                      '&:hover': { bgcolor: alpha('#f3a833', 0.2) },
-                                    }}
-                                  >
-                                    <EditIcon sx={{ color: "#f3a833", fontSize: 20 }} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Download PDF" arrow>
-                                  <IconButton
-                                    onClick={() => handleDownload(proposal._id)}
-                                    sx={{
-                                      bgcolor: alpha('#4caf50', 0.1),
-                                      '&:hover': { bgcolor: alpha('#4caf50', 0.2) },
-                                    }}
-                                  >
-                                    <DownloadIcon sx={{ color: '#4caf50', fontSize: 20 }} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Move to Trash" arrow>
-                                  <IconButton
-                                    onClick={() => handleDelete(proposal._id, proposals.length)}
-                                    sx={{
-                                      bgcolor: alpha('#f44336', 0.1),
-                                      '&:hover': { bgcolor: alpha('#f44336', 0.2) },
-                                    }}
-                                  >
-                                    <DeleteIcon sx={{ color: '#f44336', fontSize: 20 }} />
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
+                                <VisibilityIcon sx={{ color: '#2196f3', fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleEdit(proposal._id)}
+                                sx={{
+                                  bgcolor: alpha('#f3a833', 0.1),
+                                  '&:hover': { bgcolor: alpha('#f3a833', 0.2) },
+                                }}
+                              >
+                                <EditIcon sx={{ color: "#f3a833", fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Download PDF" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDownload(proposal._id)}
+                                sx={{
+                                  bgcolor: alpha('#4caf50', 0.1),
+                                  '&:hover': { bgcolor: alpha('#4caf50', 0.2) },
+                                }}
+                              >
+                                <DownloadIcon sx={{ color: '#4caf50', fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Move to Trash" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDelete(proposal._id, proposals.length)}
+                                sx={{
+                                  bgcolor: alpha('#f44336', 0.1),
+                                  '&:hover': { bgcolor: alpha('#f44336', 0.2) },
+                                }}
+                              >
+                                <DeleteIcon sx={{ color: '#f44336', fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </Card>
+                      ))}
+                    </AnimatePresence>
+                  </Stack>
+                ) : (
+                  <TableContainer
+                    sx={{
+                      borderRadius: 3,
+                      overflowX: 'auto',
+                      "&::-webkit-scrollbar": { height: 6 },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(243, 168, 51,0.2)",
+                        borderRadius: 10,
+                      },
+                    }}
+                  >
+                    <Table sx={{ minWidth: 800 }}>
+                      <TableHead>
+                        <TableRow sx={{ background: "linear-gradient(135deg, rgba(243, 168, 51, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)" }}>
+                          {headers.map((header) => (
+                            <TableCell
+                              key={header}
+                              sx={{
+                                fontWeight: "700",
+                                fontSize: "0.95rem",
+                                py: 3,
+                                color: "#f8fafc",
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                minWidth: header === "Title" ? 200 : header === "Actions" ? 220 : 120,
+                              }}
+                              align={header === "Actions" ? "center" : "left"}
+                            >
+                              {header}
                             </TableCell>
-                          </TableRow>
-                        ))}
-                      </AnimatePresence>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <AnimatePresence>
+                          {proposals.map((proposal) => (
+                            <TableRow
+                              key={proposal._id}
+                              component={motion.tr}
+                              variants={tableRowVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              layout
+                              hover
+                              sx={{
+                                "&:hover": {
+                                  bgcolor: "rgba(243, 168, 51,0.04)",
+                                  '& .action-buttons': {
+                                    opacity: 1,
+                                  },
+                                },
+                                transition: "all 0.2s ease",
+                                borderBottom: '1px solid rgba(0,0,0,0.06)',
+                              }}
+                            >
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  {!isMobile && <Avatar
+                                    sx={{
+                                      width: 40,
+                                      height: 40,
+                                      background: 'linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)',
+                                      fontSize: '0.9rem',
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {proposal.projectTitle.charAt(0).toUpperCase()}
+                                  </Avatar>}
+                                  <Typography fontWeight={600} sx={{ fontSize: isMobile ? '0.75rem' : '0.95rem' }}>
+                                    {proposal.projectTitle}
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                                  {proposal.clientName}
+                                </Typography>
+                              </TableCell>
+
+                              <TableCell>
+                                <Typography sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                                  {proposal.clientEmail || "N/A"}
+                                </Typography>
+                              </TableCell>
+
+                              {isAdmin && (
+                                <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Chip
+                                      avatar={
+                                        <Avatar
+                                          sx={{
+                                            bgcolor: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
+                                            width: 24,
+                                            height: 24,
+                                            fontSize: "0.75rem",
+                                          }}
+                                        >
+                                          {proposal.createdBy?.name?.charAt(0)?.toUpperCase() || "?"}
+                                        </Avatar>
+                                      }
+                                      label={proposal.createdBy?._id === user?.id ? "You" : proposal.createdBy?.name || "Unknown"}
+                                      size="small"
+                                      sx={{
+                                        fontWeight: 600,
+                                        bgcolor: proposal.createdBy?._id === user?.id
+                                          ? alpha('#f3a833', 0.1)
+                                          : alpha('#f59e0b', 0.1),
+                                        color: proposal.createdBy?._id === user?.id ? '#f3a833' : '#f59e0b',
+                                      }}
+                                    />
+                                    {proposal.createdBy?._id && proposal.createdBy?._id !== user?.id && (
+                                      <Tooltip title="View BDO" arrow>
+                                        <IconButton
+                                          size="small"
+                                          onClick={() => router.push(`/admin/bdo/${proposal.createdBy?._id}`)}
+                                          sx={{
+                                            ml: 0.5,
+                                            bgcolor: alpha('#f3a833', 0.1),
+                                            '&:hover': { bgcolor: alpha('#f3a833', 0.2) },
+                                          }}
+                                        >
+                                          <VisibilityIcon sx={{ color: '#f3a833', fontSize: 18 }} />
+                                        </IconButton>
+                                      </Tooltip>
+                                    )}
+                                  </Box>
+                                </TableCell>
+                              )}
+
+                              <TableCell>
+                                <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
+                                  {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Stack
+                                  direction="row"
+                                  spacing={0.5}
+                                  justifyContent="center"
+                                  className="action-buttons"
+                                  sx={{
+                                    opacity: isMobile ? 1 : 0.7,
+                                    transition: 'opacity 0.2s ease',
+                                  }}
+                                >
+                                  <Tooltip title="View Details" arrow>
+                                    <IconButton
+                                      onClick={() => handleView(proposal._id)}
+                                      sx={{
+                                        bgcolor: alpha('#2196f3', 0.1),
+                                        '&:hover': { bgcolor: alpha('#2196f3', 0.2) },
+                                      }}
+                                    >
+                                      <VisibilityIcon sx={{ color: '#2196f3', fontSize: 20 }} />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Edit" arrow>
+                                    <IconButton
+                                      onClick={() => handleEdit(proposal._id)}
+                                      sx={{
+                                        bgcolor: alpha('#f3a833', 0.1),
+                                        '&:hover': { bgcolor: alpha('#f3a833', 0.2) },
+                                      }}
+                                    >
+                                      <EditIcon sx={{ color: "#f3a833", fontSize: 20 }} />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Download PDF" arrow>
+                                    <IconButton
+                                      onClick={() => handleDownload(proposal._id)}
+                                      sx={{
+                                        bgcolor: alpha('#4caf50', 0.1),
+                                        '&:hover': { bgcolor: alpha('#4caf50', 0.2) },
+                                      }}
+                                    >
+                                      <DownloadIcon sx={{ color: '#4caf50', fontSize: 20 }} />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Move to Trash" arrow>
+                                    <IconButton
+                                      onClick={() => handleDelete(proposal._id, proposals.length)}
+                                      sx={{
+                                        bgcolor: alpha('#f44336', 0.1),
+                                        '&:hover': { bgcolor: alpha('#f44336', 0.2) },
+                                      }}
+                                    >
+                                      <DeleteIcon sx={{ color: '#f44336', fontSize: 20 }} />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </AnimatePresence>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (

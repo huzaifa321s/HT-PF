@@ -936,8 +936,10 @@ const EditProposal = () => {
           animate="visible"
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 2,
             mb: 5,
             px: { xs: 2, sm: 3 },
             width: "100%",
@@ -957,7 +959,6 @@ const EditProposal = () => {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.85rem",
-              mb: { xs: 2, sm: 0 },
               background: "rgba(20, 20, 20, 0.8)",
               border: "1px solid rgba(243, 168, 51, 0.2)",
               px: 2,
@@ -983,19 +984,18 @@ const EditProposal = () => {
             sx={{
               textAlign: 'center',
               fontWeight: 800,
-              fontSize: { xs: "1.8rem", sm: "2.2rem" },
+              fontSize: { xs: "1.5rem", sm: "2.2rem" },
               background: colorScheme.gradient,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               letterSpacing: "-0.5px",
               pointerEvents: "none",
-              whiteSpace: "nowrap",
             }}
           >
             Edit Proposal
           </Typography>
 
-          <Box sx={{ width: { xs: 100, sm: 120 }, height: 40 }} />
+          <Box sx={{ width: { xs: 0, sm: 120 }, display: { xs: "none", sm: "block" }, height: 40 }} />
         </Box>
 
         {loading ? (

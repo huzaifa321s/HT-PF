@@ -64,7 +64,13 @@ export default function EditorSidebar({
 
   useEffect(() => {
     const saved = localStorage.getItem("editorSidebarCollapsed");
-    if (saved !== null) setIsCollapsed(saved === "true");
+    if (saved !== null) {
+      setIsCollapsed(saved === "true");
+    } else {
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setIsCollapsed(true);
+      }
+    }
   }, []);
 
   const toggleSidebar = () => {
@@ -83,7 +89,7 @@ export default function EditorSidebar({
       {/* Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-2.5 top-10 bg-[#0a0a0a] border border-[#f3a833]/30 text-[#f3a833] hover:border-[#f3a833]/80 hover:bg-[#f3a833]/10 hover:scale-110 shadow-[0_0_10px_rgba(243,168,51,0.15)] rounded-full p-0.5 z-50 transition-all duration-300 hidden md:flex items-center justify-center"
+        className="absolute -right-2.5 top-10 bg-[#0a0a0a] border border-[#f3a833]/30 text-[#f3a833] hover:border-[#f3a833]/80 hover:bg-[#f3a833]/10 hover:scale-110 shadow-[0_0_10px_rgba(243,168,51,0.15)] rounded-full p-0.5 z-50 transition-all duration-300 flex items-center justify-center"
       >
         {isCollapsed ? (
           <ChevronRight className="w-3.5 h-3.5" />

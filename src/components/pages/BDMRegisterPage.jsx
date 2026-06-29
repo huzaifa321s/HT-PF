@@ -29,6 +29,8 @@ import {
     Card,
     CardContent,
     InputAdornment,
+    useMediaQuery,
+    useTheme,
   } from "@mui/material";
 import { motion } from "framer-motion";
 import EditIcon from "@mui/icons-material/Edit";
@@ -43,6 +45,8 @@ import { usePathname, useRouter } from "next/navigation";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const BDMRegisterPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [bdms, setBdms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -648,44 +652,14 @@ const BDMRegisterPage = () => {
                 No BDOs Found
               </Typography>
             </Box>
-          ) : (
-            <>
-              <TableContainer
-                sx={{
-                  overflowX: "auto",
-                  "&::-webkit-scrollbar": { height: 6 },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "rgba(243, 168, 51,0.2)",
-                    borderRadius: 10,
-                  },
-                }}
-              >
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ background: "rgba(243, 168, 51, 0.15)" }}>
-                      {["Name", "Email", "Actions"].map((h) => (
-                        <TableCell
-                          key={h}
-                          sx={{
-                            fontWeight: "bold",
-                            py: 2.5,
-                            color: "#f3a833",
-                            fontSize: "1rem",
-                            minWidth: h === "Actions" ? 150 : 200,
-                          }}
-                          align={h === "Actions" ? "center" : "left"}
-                        >
-                          {h}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
+            ) : (
+              <>
+                {isMobile ? (
+                  <Stack spacing={2}>
                     {bdms.map((bdm, index) => (
-                      <TableRow
-                        component={motion.tr}
+                      <Card
                         key={bdm._id}
-                        hover
+                        component={motion.div}
                         variants={listItemVariants}
                         initial="hidden"
                         animate="visible"
@@ -694,27 +668,36 @@ const BDMRegisterPage = () => {
                           delay: index * 0.03,
                         }}
                         sx={{
-                          "&:hover": {
-                            bgcolor: "rgba(243, 168, 51, 0.1)",
-                            transform: "translateY(-2px)",
-                            transition: "all 0.3s ease",
-                          },
+                          background: "rgba(20, 20, 20, 0.6)",
+                          border: "1px solid rgba(243, 168, 51, 0.15)",
+                          borderRadius: 3,
+                          p: 2.5,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1.5,
                         }}
                       >
-                        <TableCell>
-                          <Typography
-                            fontWeight={500}
-                            sx={{ color: "#f8fafc" }}
-                          >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <Typography variant="h6" fontWeight={700} sx={{ color: "#f8fafc", fontSize: "1rem" }}>
                             {bdm.name}
                           </Typography>
-                        </TableCell>
-                        <TableCell sx={{ color: "#f8fafc" }}>
-                          {bdm.email}
-                        </TableCell>
-                        <TableCell align="center">
+                        </Box>
+                        
+                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                        <Stack spacing={1}>
+                          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                            <Typography variant="body2" sx={{ color: "#64748b" }}>Email:</Typography>
+                            <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1", wordBreak: "break-all" }}>{bdm.email}</Typography>
+                          </Box>
+                        </Stack>
+
+                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Tooltip title="View" arrow>
                             <IconButton
+                              size="small"
                               onClick={() => handleView(bdm._id)}
                               sx={{
                                 "&:hover": {
@@ -724,11 +707,12 @@ const BDMRegisterPage = () => {
                                 },
                               }}
                             >
-                              <VisibilityIcon sx={{ color: "#4caf50" }} />
+                              <VisibilityIcon sx={{ color: "#4caf50", fontSize: 18 }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Edit" arrow>
                             <IconButton
+                              size="small"
                               onClick={() => handleEdit(bdm)}
                               sx={{
                                 "&:hover": {
@@ -738,11 +722,12 @@ const BDMRegisterPage = () => {
                                 },
                               }}
                             >
-                              <EditIcon sx={{ color: "#f3a833" }} />
+                              <EditIcon sx={{ color: "#f3a833", fontSize: 18 }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete" arrow>
                             <IconButton
+                              size="small"
                               onClick={() => handleDelete(bdm._id)}
                               sx={{
                                 "&:hover": {
@@ -752,15 +737,126 @@ const BDMRegisterPage = () => {
                                 },
                               }}
                             >
-                              <DeleteIcon sx={{ color: "#d32f2f" }} />
+                              <DeleteIcon sx={{ color: "#d32f2f", fontSize: 18 }} />
                             </IconButton>
                           </Tooltip>
-                        </TableCell>
-                      </TableRow>
+                        </Stack>
+                      </Card>
                     ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                  </Stack>
+                ) : (
+                  <TableContainer
+                    sx={{
+                      overflowX: "auto",
+                      "&::-webkit-scrollbar": { height: 6 },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(243, 168, 51,0.2)",
+                        borderRadius: 10,
+                      },
+                    }}
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ background: "rgba(243, 168, 51, 0.15)" }}>
+                          {["Name", "Email", "Actions"].map((h) => (
+                            <TableCell
+                              key={h}
+                              sx={{
+                                fontWeight: "bold",
+                                py: 2.5,
+                                color: "#f3a833",
+                                fontSize: "1rem",
+                                minWidth: h === "Actions" ? 150 : 200,
+                              }}
+                              align={h === "Actions" ? "center" : "left"}
+                            >
+                              {h}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {bdms.map((bdm, index) => (
+                          <TableRow
+                            component={motion.tr}
+                            key={bdm._id}
+                            hover
+                            variants={listItemVariants}
+                            initial="hidden"
+                            animate="visible"
+                            transition={{
+                              duration: 0.35,
+                              delay: index * 0.03,
+                            }}
+                            sx={{
+                              "&:hover": {
+                                bgcolor: "rgba(243, 168, 51, 0.1)",
+                                transform: "translateY(-2px)",
+                                transition: "all 0.3s ease",
+                              },
+                            }}
+                          >
+                            <TableCell>
+                              <Typography
+                                fontWeight={500}
+                                sx={{ color: "#f8fafc" }}
+                              >
+                                {bdm.name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ color: "#f8fafc" }}>
+                              {bdm.email}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Tooltip title="View" arrow>
+                                <IconButton
+                                  onClick={() => handleView(bdm._id)}
+                                  sx={{
+                                    "&:hover": {
+                                      bgcolor: "rgba(243, 168, 51, 0.2)",
+                                      transform: "scale(1.1)",
+                                      transition: "all 0.3s ease",
+                                    },
+                                  }}
+                                >
+                                  <VisibilityIcon sx={{ color: "#4caf50" }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit" arrow>
+                                <IconButton
+                                  onClick={() => handleEdit(bdm)}
+                                  sx={{
+                                    "&:hover": {
+                                      bgcolor: "rgba(243, 168, 51, 0.2)",
+                                      transform: "scale(1.1)",
+                                      transition: "all 0.3s ease",
+                                    },
+                                  }}
+                                >
+                                  <EditIcon sx={{ color: "#f3a833" }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete" arrow>
+                                <IconButton
+                                  onClick={() => handleDelete(bdm._id)}
+                                  sx={{
+                                    "&:hover": {
+                                      bgcolor: "rgba(243, 168, 51, 0.2)",
+                                      transform: "scale(1.1)",
+                                      transition: "all 0.3s ease",
+                                    },
+                                  }}
+                                >
+                                  <DeleteIcon sx={{ color: "#d32f2f" }} />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
 
               {/* Pagination */}
               <Box component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} sx={{ display: "flex", justifyContent: "center", mt: 3 }}>

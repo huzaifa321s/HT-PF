@@ -359,117 +359,58 @@ const TrashPage = () => {
               </Box>
             ) : (
               <>
-                <TableContainer
-                  sx={{
-                    borderRadius: 3,
-                    overflowX: "auto",
-                    "&::-webkit-scrollbar": { height: 6 },
-                    "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                      borderRadius: 10,
-                    },
-                  }}
-                >
-                  <Table sx={{ minWidth: 650 }}>
-                    <TableHead>
-                      <TableRow
-                        sx={{
-                          background: "rgba(255,255,255,0.03)",
-                        }}
-                      >
-                        {["Title", "Client", ...(isAdmin ? ["Deleted By"] : []), "Deleted", "Expires In", "Actions"].map(
-                          (header) => (
-                            <TableCell
-                              key={header}
-                              align={header === "Actions" ? "center" : "left"}
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: "0.85rem",
-                                py: 2.5,
-                                color: "#64748b",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.5px",
-                                borderBottom: "1px solid rgba(255,255,255,0.06)",
-                              }}
-                            >
-                              {header}
-                            </TableCell>
-                          )
-                        )}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <AnimatePresence>
-                        {proposals.map((proposal) => {
-                          const daysLeft = getDaysLeft(proposal.deletedAt);
-                          const isExpiringSoon = daysLeft !== null && daysLeft <= 7;
+                {isMobile ? (
+                  <Stack spacing={2}>
+                    <AnimatePresence>
+                      {proposals.map((proposal) => {
+                        const daysLeft = getDaysLeft(proposal.deletedAt);
+                        const isExpiringSoon = daysLeft !== null && daysLeft <= 7;
 
-                          return (
-                            <TableRow
-                              key={proposal._id}
-                              component={motion.tr}
-                              variants={tableRowVariants}
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
-                              layout
-                              sx={{
-                                "&:hover": {
-                                  bgcolor: "rgba(255,255,255,0.02)",
-                                },
-                                borderBottom: "1px solid rgba(255,255,255,0.04)",
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              {/* Title */}
-                              <TableCell>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                                  {!isMobile && (
-                                    <Avatar
-                                      sx={{
-                                        width: 36,
-                                        height: 36,
-                                        background: "rgba(255,255,255,0.06)",
-                                        fontSize: "0.85rem",
-                                        fontWeight: 700,
-                                        color: "#94a3b8",
-                                      }}
-                                    >
-                                      {proposal.projectTitle?.charAt(0)?.toUpperCase() || "?"}
-                                    </Avatar>
-                                  )}
-                                  <Box>
-                                    <Typography
-                                      fontWeight={600}
-                                      sx={{
-                                        fontSize: isMobile ? "0.8rem" : "0.9rem",
-                                        color: "#94a3b8",
-                                        textDecoration: "line-through",
-                                        textDecorationColor: "rgba(148,163,184,0.4)",
-                                      }}
-                                    >
-                                      {proposal.projectTitle}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              </TableCell>
+                        return (
+                          <Card
+                            key={proposal._id}
+                            component={motion.div}
+                            variants={tableRowVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            layout
+                            sx={{
+                              background: "rgba(20, 20, 20, 0.6)",
+                              border: "1px solid rgba(255, 255, 255, 0.06)",
+                              borderRadius: 3,
+                              p: 2.5,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 1.5,
+                            }}
+                          >
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                              <Typography
+                                fontWeight={600}
+                                sx={{
+                                  fontSize: "1rem",
+                                  color: "#94a3b8",
+                                  textDecoration: "line-through",
+                                  textDecorationColor: "rgba(148,163,184,0.4)",
+                                }}
+                              >
+                                {proposal.projectTitle}
+                              </Typography>
+                            </Box>
 
-                              {/* Client */}
-                              <TableCell>
-                                <Typography sx={{ fontSize: "0.9rem", color: "#64748b" }}>
-                                  {proposal.clientName}
-                                </Typography>
-                              </TableCell>
+                            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
 
-                              {/* Deleted By (admin only) */}
+                            <Stack spacing={1}>
+                              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                                <Typography variant="body2" sx={{ color: "#64748b" }}>Client Name:</Typography>
+                                <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1" }}>{proposal.clientName}</Typography>
+                              </Box>
                               {isAdmin && (
-                                <TableCell>
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <Typography variant="body2" sx={{ color: "#64748b" }}>Deleted By:</Typography>
                                   <Chip
-                                    label={
-                                      proposal.deletedBy?.name ||
-                                      proposal.createdBy?.name ||
-                                      "Unknown"
-                                    }
+                                    label={proposal.deletedBy?.name || proposal.createdBy?.name || "Unknown"}
                                     size="small"
                                     sx={{
                                       fontWeight: 600,
@@ -479,23 +420,16 @@ const TrashPage = () => {
                                       border: "1px solid rgba(255,255,255,0.08)",
                                     }}
                                   />
-                                </TableCell>
+                                </Box>
                               )}
-
-                              {/* Deleted At */}
-                              <TableCell>
-                                <Typography sx={{ fontSize: "0.85rem", color: "#64748b" }}>
-                                  {proposal.deletedAt
-                                    ? dayjs(proposal.deletedAt).format("MMM D, YYYY")
-                                    : "N/A"}
+                              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                                <Typography variant="body2" sx={{ color: "#64748b" }}>Deleted At:</Typography>
+                                <Typography variant="body2" sx={{ color: "#cbd5e1" }}>
+                                  {proposal.deletedAt ? dayjs(proposal.deletedAt).format("MMM D, YYYY") : "N/A"}
                                 </Typography>
-                                <Typography sx={{ fontSize: "0.75rem", color: "#475569" }}>
-                                  {proposal.deletedAt ? dayjs(proposal.deletedAt).fromNow() : ""}
-                                </Typography>
-                              </TableCell>
-
-                              {/* Days Until Purge */}
-                              <TableCell>
+                              </Box>
+                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <Typography variant="body2" sx={{ color: "#64748b" }}>Expires In:</Typography>
                                 {daysLeft !== null ? (
                                   <Chip
                                     label={daysLeft === 0 ? "Today" : `${daysLeft}d left`}
@@ -515,59 +449,264 @@ const TrashPage = () => {
                                     }}
                                   />
                                 ) : (
-                                  <Typography sx={{ color: "#475569", fontSize: "0.85rem" }}>
-                                    —
-                                  </Typography>
+                                  <Typography sx={{ color: "#cbd5e1", fontSize: "0.85rem" }}>—</Typography>
                                 )}
-                              </TableCell>
+                              </Box>
+                            </Stack>
 
-                              {/* Actions */}
-                              <TableCell align="center">
-                                <Stack
-                                  direction="row"
-                                  spacing={0.5}
-                                  justifyContent="center"
+                            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+                              <Tooltip title="Restore to active proposals" arrow>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleRestore(proposal._id)}
+                                    disabled={restoringId === proposal._id}
+                                    sx={{
+                                      bgcolor: alpha("#4caf50", 0.1),
+                                      "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
+                                      "&:disabled": { opacity: 0.5 },
+                                    }}
+                                  >
+                                    {restoringId === proposal._id ? (
+                                      <CircularProgress size={16} sx={{ color: "#4caf50" }} />
+                                    ) : (
+                                      <RestoreIcon sx={{ color: "#4caf50", fontSize: 18 }} />
+                                    )}
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+
+                              <Tooltip title="Permanently delete — cannot be undone" arrow>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => openPermDelete(proposal._id)}
+                                  sx={{
+                                    bgcolor: alpha("#f44336", 0.1),
+                                    "&:hover": { bgcolor: alpha("#f44336", 0.2) },
+                                  }}
                                 >
-                                  <Tooltip title="Restore to active proposals" arrow>
-                                    <span>
-                                      <IconButton
-                                        onClick={() => handleRestore(proposal._id)}
-                                        disabled={restoringId === proposal._id}
+                                  <DeleteForeverIcon sx={{ color: "#f44336", fontSize: 18 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </Card>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </Stack>
+                ) : (
+                  <TableContainer
+                    sx={{
+                      borderRadius: 3,
+                      overflowX: "auto",
+                      "&::-webkit-scrollbar": { height: 6 },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                        borderRadius: 10,
+                      },
+                    }}
+                  >
+                    <Table sx={{ minWidth: 650 }}>
+                      <TableHead>
+                        <TableRow
+                          sx={{
+                            background: "rgba(255,255,255,0.03)",
+                          }}
+                        >
+                          {["Title", "Client", ...(isAdmin ? ["Deleted By"] : []), "Deleted", "Expires In", "Actions"].map(
+                            (header) => (
+                              <TableCell
+                                key={header}
+                                align={header === "Actions" ? "center" : "left"}
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: "0.85rem",
+                                  py: 2.5,
+                                  color: "#64748b",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.5px",
+                                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                                }}
+                              >
+                                {header}
+                              </TableCell>
+                            )
+                          )}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <AnimatePresence>
+                          {proposals.map((proposal) => {
+                            const daysLeft = getDaysLeft(proposal.deletedAt);
+                            const isExpiringSoon = daysLeft !== null && daysLeft <= 7;
+
+                            return (
+                              <TableRow
+                                key={proposal._id}
+                                component={motion.tr}
+                                variants={tableRowVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                layout
+                                sx={{
+                                  "&:hover": {
+                                    bgcolor: "rgba(255,255,255,0.02)",
+                                  },
+                                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                                  transition: "all 0.2s ease",
+                                }}
+                              >
+                                {/* Title */}
+                                <TableCell>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                    {!isMobile && (
+                                      <Avatar
                                         sx={{
-                                          bgcolor: alpha("#4caf50", 0.1),
-                                          "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
-                                          "&:disabled": { opacity: 0.5 },
+                                          width: 36,
+                                          height: 36,
+                                          background: "rgba(255,255,255,0.06)",
+                                          fontSize: "0.85rem",
+                                          fontWeight: 700,
+                                          color: "#94a3b8",
                                         }}
                                       >
-                                        {restoringId === proposal._id ? (
-                                          <CircularProgress size={18} sx={{ color: "#4caf50" }} />
-                                        ) : (
-                                          <RestoreIcon sx={{ color: "#4caf50", fontSize: 20 }} />
-                                        )}
-                                      </IconButton>
-                                    </span>
-                                  </Tooltip>
+                                        {proposal.projectTitle?.charAt(0)?.toUpperCase() || "?"}
+                                      </Avatar>
+                                    )}
+                                    <Box>
+                                      <Typography
+                                        fontWeight={600}
+                                        sx={{
+                                          fontSize: isMobile ? "0.8rem" : "0.9rem",
+                                          color: "#94a3b8",
+                                          textDecoration: "line-through",
+                                          textDecorationColor: "rgba(148,163,184,0.4)",
+                                        }}
+                                      >
+                                        {proposal.projectTitle}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </TableCell>
 
-                                  <Tooltip title="Permanently delete — cannot be undone" arrow>
-                                    <IconButton
-                                      onClick={() => openPermDelete(proposal._id)}
+                                {/* Client */}
+                                <TableCell>
+                                  <Typography sx={{ fontSize: "0.9rem", color: "#64748b" }}>
+                                    {proposal.clientName}
+                                  </Typography>
+                                </TableCell>
+
+                                {/* Deleted By (admin only) */}
+                                {isAdmin && (
+                                  <TableCell>
+                                    <Chip
+                                      label={
+                                        proposal.deletedBy?.name ||
+                                        proposal.createdBy?.name ||
+                                        "Unknown"
+                                      }
+                                      size="small"
                                       sx={{
-                                        bgcolor: alpha("#f44336", 0.1),
-                                        "&:hover": { bgcolor: alpha("#f44336", 0.2) },
+                                        fontWeight: 600,
+                                        fontSize: "0.75rem",
+                                        bgcolor: "rgba(255,255,255,0.05)",
+                                        color: "#64748b",
+                                        border: "1px solid rgba(255,255,255,0.08)",
                                       }}
-                                    >
-                                      <DeleteForeverIcon sx={{ color: "#f44336", fontSize: 20 }} />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Stack>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </AnimatePresence>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                                    />
+                                  </TableCell>
+                                )}
+
+                                {/* Deleted At */}
+                                <TableCell>
+                                  <Typography sx={{ fontSize: "0.85rem", color: "#64748b" }}>
+                                    {proposal.deletedAt
+                                      ? dayjs(proposal.deletedAt).format("MMM D, YYYY")
+                                      : "N/A"}
+                                  </Typography>
+                                  <Typography sx={{ fontSize: "0.75rem", color: "#475569" }}>
+                                    {proposal.deletedAt ? dayjs(proposal.deletedAt).fromNow() : ""}
+                                  </Typography>
+                                </TableCell>
+
+                                {/* Days Until Purge */}
+                                <TableCell>
+                                  {daysLeft !== null ? (
+                                    <Chip
+                                      label={daysLeft === 0 ? "Today" : `${daysLeft}d left`}
+                                      size="small"
+                                      sx={{
+                                        fontWeight: 700,
+                                        fontSize: "0.75rem",
+                                        bgcolor: isExpiringSoon
+                                          ? "rgba(244, 67, 54, 0.12)"
+                                          : "rgba(255,255,255,0.05)",
+                                        color: isExpiringSoon ? "#f44336" : "#64748b",
+                                        border: `1px solid ${
+                                          isExpiringSoon
+                                            ? "rgba(244,67,54,0.25)"
+                                            : "rgba(255,255,255,0.08)"
+                                        }`,
+                                      }}
+                                    />
+                                  ) : (
+                                    <Typography sx={{ color: "#475569", fontSize: "0.85rem" }}>
+                                      —
+                                    </Typography>
+                                  )}
+                                </TableCell>
+
+                                {/* Actions */}
+                                <TableCell align="center">
+                                  <Stack
+                                    direction="row"
+                                    spacing={0.5}
+                                    justifyContent="center"
+                                  >
+                                    <Tooltip title="Restore to active proposals" arrow>
+                                      <span>
+                                        <IconButton
+                                          onClick={() => handleRestore(proposal._id)}
+                                          disabled={restoringId === proposal._id}
+                                          sx={{
+                                            bgcolor: alpha("#4caf50", 0.1),
+                                            "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
+                                            "&:disabled": { opacity: 0.5 },
+                                          }}
+                                        >
+                                          {restoringId === proposal._id ? (
+                                            <CircularProgress size={18} sx={{ color: "#4caf50" }} />
+                                          ) : (
+                                            <RestoreIcon sx={{ color: "#4caf50", fontSize: 20 }} />
+                                          )}
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+
+                                    <Tooltip title="Permanently delete — cannot be undone" arrow>
+                                      <IconButton
+                                        onClick={() => openPermDelete(proposal._id)}
+                                        sx={{
+                                          bgcolor: alpha("#f44336", 0.1),
+                                          "&:hover": { bgcolor: alpha("#f44336", 0.2) },
+                                        }}
+                                      >
+                                        <DeleteForeverIcon sx={{ color: "#f44336", fontSize: 20 }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Stack>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </AnimatePresence>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (

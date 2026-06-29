@@ -23,6 +23,22 @@ export default function ProposalStudio() {
   const [formData, setFormData] = useState(null);
   const [isStudioMode, setIsStudioMode] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
+
+  // Auto-fit zoom on mount and window resize for mobile screens
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileScreen = window.innerWidth < 768;
+      if (isMobileScreen) {
+        // Collapsed sidebar is 80px, layout margins/paddings around 32px
+        const availableWidth = window.innerWidth - 80 - 32;
+        const calculatedZoom = Math.min(100, Math.max(30, Math.floor((availableWidth / 800) * 100)));
+        setZoomLevel(calculatedZoom);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   // Toast notifications handled globally via Redux showToast
@@ -427,10 +443,12 @@ export default function ProposalStudio() {
       {/* Top Action Bar */}
       <Box
         sx={{
-          p: 2,
+          p: { xs: 1, sm: 2 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 1,
           borderBottom: "1px solid rgba(243, 168, 51, 0.2)",
           background: "rgba(20, 20, 20, 0.8)",
           backdropFilter: "blur(12px)",
@@ -442,16 +460,16 @@ export default function ProposalStudio() {
         <Button
           onClick={() => router.back()}
           startIcon={<ArrowBackIos />}
-          sx={{ color: "#f8fafc", textTransform: "none" }}
+          sx={{ color: "#f8fafc", textTransform: "none", minWidth: "auto", px: { xs: 1, sm: 2 } }}
         >
           Back
         </Button>
-        <Typography variant="h6" sx={{ color: "#f3a833", fontWeight: 700 }}>
+        <Typography variant="h6" sx={{ color: "#f3a833", fontWeight: 700, display: { xs: "none", md: "block" } }}>
           Proposal Studio
         </Typography>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", ml: "auto" }}>
           {/* Zoom Controls */}
-          <div className="bg-[#0a0a0a]/50 border border-[#f3a833]/20 px-2 py-1 rounded-[10px] flex items-center gap-2 mr-2 shrink-0">
+          <div className="bg-[#0a0a0a]/50 border border-[#f3a833]/20 px-2 py-1 rounded-[10px] hidden md:flex items-center gap-2 mr-2 shrink-0">
             <button
               onClick={() => setZoomLevel(prev => Math.max(20, prev - 10))}
               className="text-slate-400 hover:text-white transition-colors"
@@ -492,7 +510,8 @@ export default function ProposalStudio() {
             className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium flex items-center space-x-1 transition-colors ${loading ? 'opacity-50 cursor-not-allowed bg-[#141414] text-slate-500' : isStudioMode ? 'bg-[#f3a833]/20 text-[#f3a833]' : 'bg-[#141414] text-slate-400 hover:bg-[#1f1f1f]'}`}
           >
             <Settings className="w-4 h-4" />
-            <span>Studio Mode: {isStudioMode ? 'ON' : 'OFF'}</span>
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Studio Mode: </Box>
+            <span>{isStudioMode ? 'ON' : 'OFF'}</span>
           </button>
 
           <Button
@@ -507,10 +526,14 @@ export default function ProposalStudio() {
               "&:hover": { borderColor: "#c084fc", bgcolor: "rgba(192, 132, 252, 0.1)" },
               fontWeight: 700,
               textTransform: "none",
-              borderRadius: 10
+              borderRadius: 10,
+              minWidth: { xs: "auto", sm: "80px" },
+              px: { xs: 1, sm: 2 }
             }}
           >
-            AI Data
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+              AI Data
+            </Box>
           </Button>
 
           <Button
@@ -524,11 +547,17 @@ export default function ProposalStudio() {
               "&:hover": { bgcolor: "#059669" },
               fontWeight: 700,
               textTransform: "none",
-              ml: 2,
-              borderRadius: 10
+              ml: { xs: 0, sm: 2 },
+              borderRadius: 10,
+              px: { xs: 1, sm: 2 }
             }}
           >
-            Review & Generate
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+              Review & Generate
+            </Box>
+            <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+              Generate
+            </Box>
           </Button>
         </Box>
       </Box>

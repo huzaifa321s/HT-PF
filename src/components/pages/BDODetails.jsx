@@ -642,80 +642,161 @@ const BDODetails = () => {
                       </Box>
                     ) : (
                       <>
-                        <TableContainer>
-                          <Table sx={{ minWidth: 700 }}>
-                            <TableHead>
-                              <TableRow sx={{ background: "rgba(243, 168, 51, 0.08)" }}>
-                                {["Title", "Client", "Client Email", "Date", "Actions"].map((h) => (
-                                  <TableCell
-                                    key={h}
-                                    sx={{ fontWeight: 700, color: "#f8fafc", borderBottom: "1px solid rgba(243,168,51,0.15)" }}
-                                  >
-                                    {h}
-                                  </TableCell>
-                                ))}
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              <AnimatePresence>
-                                {proposals.map((proposal) => (
-                                  <TableRow
-                                    key={proposal._id}
-                                    component={motion.tr}
-                                    variants={tableRowVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    layout
-                                    hover
-                                    sx={{ "&:hover": { bgcolor: "rgba(243, 168, 51, 0.06) !important" } }}
-                                  >
-                                    <TableCell sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                                      <Typography fontWeight={600}>{proposal.projectTitle}</Typography>
+                        {isMobile ? (
+                          <Stack spacing={2}>
+                            <AnimatePresence>
+                              {proposals.map((proposal) => (
+                                <Card
+                                  key={proposal._id}
+                                  component={motion.div}
+                                  variants={tableRowVariants}
+                                  initial="hidden"
+                                  animate="visible"
+                                  exit="exit"
+                                  layout
+                                  sx={{
+                                    background: "rgba(20, 20, 20, 0.6)",
+                                    border: "1px solid rgba(243, 168, 51, 0.15)",
+                                    borderRadius: 3,
+                                    p: 2.5,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1.5,
+                                  }}
+                                >
+                                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                    <Typography variant="h6" fontWeight={700} sx={{ color: "#f8fafc", fontSize: "1rem" }}>
+                                      {proposal.projectTitle}
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                                  <Stack spacing={1}>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                                      <Typography variant="body2" sx={{ color: "#64748b" }}>Client Name:</Typography>
+                                      <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1" }}>{proposal.clientName}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                                      <Typography variant="body2" sx={{ color: "#64748b" }}>Client Email:</Typography>
+                                      <Typography variant="body2" fontWeight={500} sx={{ color: "#cbd5e1", wordBreak: "break-all" }}>{proposal.clientEmail || "N/A"}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                                      <Typography variant="body2" sx={{ color: "#64748b" }}>Created Date:</Typography>
+                                      <Typography variant="body2" sx={{ color: "#cbd5e1" }}>
+                                        {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+
+                                  <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.05)" }} />
+
+                                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                    <Tooltip title="View Proposal">
+                                      <IconButton
+                                        onClick={() => handleViewProposal(proposal._id)}
+                                        size="small"
+                                        sx={{
+                                          bgcolor: alpha(colorScheme.primary, 0.1),
+                                          "&:hover": { bgcolor: alpha(colorScheme.primary, 0.2) },
+                                        }}
+                                      >
+                                        <VisibilityIcon fontSize="small" sx={{ color: colorScheme.primary }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Download PDF">
+                                      <IconButton
+                                        onClick={() => handleDownload(proposal._id)}
+                                        size="small"
+                                        sx={{
+                                          bgcolor: alpha("#4caf50", 0.1),
+                                          "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
+                                        }}
+                                      >
+                                        <DownloadIcon fontSize="small" sx={{ color: "#4caf50" }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Stack>
+                                </Card>
+                              ))}
+                            </AnimatePresence>
+                          </Stack>
+                        ) : (
+                          <TableContainer>
+                            <Table sx={{ minWidth: 700 }}>
+                              <TableHead>
+                                <TableRow sx={{ background: "rgba(243, 168, 51, 0.08)" }}>
+                                  {["Title", "Client", "Client Email", "Date", "Actions"].map((h) => (
+                                    <TableCell
+                                      key={h}
+                                      sx={{ fontWeight: 700, color: "#f8fafc", borderBottom: "1px solid rgba(243,168,51,0.15)" }}
+                                    >
+                                      {h}
                                     </TableCell>
-                                    <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                                      {proposal.clientName}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                                      {proposal.clientEmail || "N/A"}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                                      {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
-                                    </TableCell>
-                                    <TableCell sx={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                                      <Stack direction="row" spacing={1}>
-                                        <Tooltip title="View Proposal">
-                                          <IconButton
-                                            onClick={() => handleViewProposal(proposal._id)}
-                                            size="small"
-                                            sx={{
-                                              bgcolor: alpha(colorScheme.primary, 0.1),
-                                              "&:hover": { bgcolor: alpha(colorScheme.primary, 0.2) },
-                                            }}
-                                          >
-                                            <VisibilityIcon fontSize="small" sx={{ color: colorScheme.primary }} />
-                                          </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Download PDF">
-                                          <IconButton
-                                            onClick={() => handleDownload(proposal._id)}
-                                            size="small"
-                                            sx={{
-                                              bgcolor: alpha("#4caf50", 0.1),
-                                              "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
-                                            }}
-                                          >
-                                            <DownloadIcon fontSize="small" sx={{ color: "#4caf50" }} />
-                                          </IconButton>
-                                        </Tooltip>
-                                      </Stack>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </AnimatePresence>
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
+                                  ))}
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                <AnimatePresence>
+                                  {proposals.map((proposal) => (
+                                    <TableRow
+                                      key={proposal._id}
+                                      component={motion.tr}
+                                      variants={tableRowVariants}
+                                      initial="hidden"
+                                      animate="visible"
+                                      exit="exit"
+                                      layout
+                                      hover
+                                      sx={{ "&:hover": { bgcolor: "rgba(243, 168, 51, 0.06) !important" } }}
+                                    >
+                                      <TableCell sx={{ color: "#f8fafc", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        <Typography fontWeight={600}>{proposal.projectTitle}</Typography>
+                                      </TableCell>
+                                      <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        {proposal.clientName}
+                                      </TableCell>
+                                      <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        {proposal.clientEmail || "N/A"}
+                                      </TableCell>
+                                      <TableCell sx={{ color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        {proposal.createdAt ? dayjs(proposal.createdAt).format("MMM D, YYYY") : "N/A"}
+                                      </TableCell>
+                                      <TableCell sx={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        <Stack direction="row" spacing={1}>
+                                          <Tooltip title="View Proposal">
+                                            <IconButton
+                                              onClick={() => handleViewProposal(proposal._id)}
+                                              size="small"
+                                              sx={{
+                                                bgcolor: alpha(colorScheme.primary, 0.1),
+                                                "&:hover": { bgcolor: alpha(colorScheme.primary, 0.2) },
+                                              }}
+                                            >
+                                              <VisibilityIcon fontSize="small" sx={{ color: colorScheme.primary }} />
+                                            </IconButton>
+                                          </Tooltip>
+                                          <Tooltip title="Download PDF">
+                                            <IconButton
+                                              onClick={() => handleDownload(proposal._id)}
+                                              size="small"
+                                              sx={{
+                                                bgcolor: alpha("#4caf50", 0.1),
+                                                "&:hover": { bgcolor: alpha("#4caf50", 0.2) },
+                                              }}
+                                            >
+                                              <DownloadIcon fontSize="small" sx={{ color: "#4caf50" }} />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </Stack>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </AnimatePresence>
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        )}
 
                         {totalPages > 1 && (
                           <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
