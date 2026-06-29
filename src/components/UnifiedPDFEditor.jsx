@@ -5,6 +5,10 @@ import {
   CircularProgress,
   Switch,
   Typography,
+  useMediaQuery,
+  useTheme,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   Settings,
@@ -66,6 +70,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [activePageId, setActivePageId] = useState("Cover Page-0");
   const [pageCounts, setPageCounts] = useState({});
@@ -282,48 +288,74 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
     { name: "Payment Terms", state: paymentTerms?.includeInPdf, action: togglePaymentPageInclusion },
   ];
 
+  const mobileTabPages = useMemo(() => {
+    const list = [];
+    pages.forEach((page) => {
+      const isVisible = visiblePages.some((vp) => vp.name === page.name);
+      if (!isVisible) return;
+      const count = pageCounts[page.name] || 1;
+      for (let i = 0; i < count; i++) {
+        const uniqueId = `${page.name}-${i}`;
+        list.push({
+          id: uniqueId,
+          label: count > 1 ? `${page.name} (${i + 1})` : page.name,
+        });
+      }
+    });
+    return list;
+  }, [pages, visiblePages, pageCounts]);
+
+  const activePageIndex = useMemo(() => {
+    const idx = mobileTabPages.findIndex((p) => p.id === activePageId);
+    return idx !== -1 ? idx : 0;
+  }, [mobileTabPages, activePageId]);
+
   return (
-    <div className="h-full flex-1 bg-[#0a0a0a] flex flex-col overflow-hidden font-sans">
+    <div className="h-full flex-1 bg-[#0a0a0a] flex flex-col overflow-hidden font-sans relative">
 
 
       <div className="flex flex-1 overflow-hidden">
         
         {/* Sidebar Navigator */}
-        <EditorSidebar 
-          pages={pages}
-          visiblePages={visiblePages}
-          activePageId={activePageId}
-          pageCounts={pageCounts}
-          scrollToSlide={scrollToSlide}
-          pageSettings={pageSettings}
-          dispatch={dispatch}
-        />
+        {!isMobile && (
+          <EditorSidebar 
+            pages={pages}
+            visiblePages={visiblePages}
+            activePageId={activePageId}
+            pageCounts={pageCounts}
+            scrollToSlide={scrollToSlide}
+            pageSettings={pageSettings}
+            dispatch={dispatch}
+          />
+        )}
 
         {/* Main Canvas Area */}
         <div className="flex-1 relative overflow-hidden bg-[#0a0a0a] flex flex-col">
           
           {/* Floating Scroll Buttons on the left side of canvas */}
-          <div className="absolute left-6 bottom-8 z-50 flex flex-col gap-3">
-            <button
-              onClick={scrollToTop}
-              className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
-              title="Go to Top"
-            >
-              <ArrowUpward className="w-3 h-3" />
-            </button>
-            <button
-              onClick={scrollToBottom}
-              className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
-              title="Go to Bottom"
-            >
-              <ArrowDownward className="w-3 h-3" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="absolute left-6 bottom-8 z-50 flex flex-col gap-3">
+              <button
+                onClick={scrollToTop}
+                className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
+                title="Go to Top"
+              >
+                <ArrowUpward className="w-3 h-3" />
+              </button>
+              <button
+                onClick={scrollToBottom}
+                className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
+                title="Go to Bottom"
+              >
+                <ArrowDownward className="w-3 h-3" />
+              </button>
+            </div>
+          )}
 
           <div
             id="canvas-area"
             ref={scrollRef}
-            className="flex-1 overflow-y-auto overflow-x-hidden p-8 flex flex-col items-center custom-scrollbar"
+            className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "p-4 pb-28" : "p-8"} flex flex-col items-center custom-scrollbar`}
             style={{
               scrollBehavior: 'smooth'
             }}
@@ -340,6 +372,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
               <AnimatePresence>
                 {visiblePages.map((page, index) => {
                   const isClonedPageType = ["Additional Info", "Pricing", "Payment Terms"].includes(page.name);
+                  const activePageName = activePageId.split("-")[0];
+                  const isPageHiddenOnMobile = isMobile && isStudioMode && page.name !== activePageName;
                   return (
                     <motion.div
                       id={!isClonedPageType ? `page-${page.name}-0` : undefined}
@@ -349,15 +383,17 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.4 }}
-                      className="w-full flex justify-center relative group pdf-page-container"
+                      className={`w-full flex justify-center relative group pdf-page-container ${isPageHiddenOnMobile ? "hidden" : ""}`}
                       style={{ pageBreakInside: "avoid", pageBreakAfter: "auto" }}
                     >
                     {/* Page Number / Label */}
-                    <div className="absolute -left-12 top-0 bottom-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-slate-600 font-bold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap text-xs">
-                        {page.name}
-                      </span>
-                    </div>
+                    {!isMobile && (
+                      <div className="absolute -left-12 top-0 bottom-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-slate-600 font-bold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap text-xs">
+                          {page.name}
+                        </span>
+                      </div>
+                    )}
 
                     {page.editor ? page.editor() : null}
                   </motion.div>
@@ -369,6 +405,58 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
         </div>
 
       </div>
+
+      {/* Bottom Tabs Navigation for Mobile View */}
+      {isMobile && isStudioMode && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: "rgba(10, 10, 10, 0.95)",
+            borderTop: "1px solid rgba(243, 168, 51, 0.2)",
+            zIndex: 1000,
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 -5px 25px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <Tabs
+            value={activePageIndex}
+            onChange={(e, newIdx) => {
+              const targetPage = mobileTabPages[newIdx];
+              if (targetPage) {
+                scrollToSlide(targetPage.id);
+              }
+            }}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTab-root": {
+                color: "#94a3b8",
+                textTransform: "none",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                py: 1.5,
+                minWidth: 80,
+                minHeight: 48,
+              },
+              "& .Mui-selected": {
+                color: "#f3a833 !important",
+              },
+              "& .MuiTabs-indicator": {
+                backgroundColor: "#f3a833",
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+              },
+            }}
+          >
+            {mobileTabPages.map((tab, idx) => (
+              <Tab key={tab.id} label={tab.label} />
+            ))}
+          </Tabs>
+        </Box>
+      )}
     </div>
   );
 };
