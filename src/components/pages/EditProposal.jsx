@@ -1102,6 +1102,10 @@ const EditProposal = () => {
                           mt: 3,
                           display: "flex",
                           justifyContent: activeStep === 0 ? "flex-end" : "space-between",
+                          flexDirection: isMobile ? "column" : "row",
+                          gap: 2,
+                          alignItems: isMobile ? "stretch" : "center",
+                          width: "100%",
                         }}
                       >
                         {activeStep > 0 && (
@@ -1113,12 +1117,12 @@ const EditProposal = () => {
                             onClick={handleBack}
                             startIcon={<ArrowBack />}
                             variant="outlined"
-                            sx={{ borderRadius: 10 }}
+                            sx={{ borderRadius: 10, width: isMobile ? "100%" : "auto" }}
                           >
                             Back
                           </Button>
                         )}
-                        <Box>
+                        <Box sx={{ width: isMobile ? "100%" : "auto", display: "flex", justifyContent: "flex-end" }}>
                           {index < steps.length - 1 && (
                             <Button
                               component={motion.button}
@@ -1131,6 +1135,7 @@ const EditProposal = () => {
                               sx={{
                                 background: colorScheme.gradient,
                                 borderRadius: 10,
+                                width: isMobile ? "100%" : "auto",
                               }}
                             >
                               Next
@@ -1150,7 +1155,9 @@ const EditProposal = () => {
                                 background: colorScheme.gradient,
                                 borderRadius: 10,
                                 px: 4,
+                                py: 1.5,
                                 fontWeight: 700,
+                                width: isMobile ? "100%" : "auto",
                                 "&:hover": {
                                   background: colorScheme.hoverGradient,
                                   boxShadow: "0 12px 32px rgba(243, 168, 51, 0.4)",

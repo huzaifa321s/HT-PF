@@ -978,9 +978,9 @@ const ProposalFormWithStepper = ({
                           px: 2,
                           display: "flex",
                           justifyContent: activeStep === 0 ? "flex-end" : "space-between",
-                          flexDirection: activeStep === 1 && isSmall ? "column" : "row",
-                          gap: activeStep === 1 && isSmall ? 2 : 0,
-                          alignItems: activeStep === 1 && isSmall ? "flex-start" : "center",
+                          flexDirection: isMobile ? "column" : "row",
+                          gap: isMobile ? 2 : 0,
+                          alignItems: isMobile ? "stretch" : "center",
                         }}
                       >
                         {activeStep > 0 && (
@@ -995,8 +995,7 @@ const ProposalFormWithStepper = ({
                               borderColor: colorScheme.primary,
                               borderRadius: 10,
                               color: colorScheme.primary,
-                              width: activeStep === 1 && isSmall ? "auto" : "auto",
-                              alignSelf: "flex-start",
+                              width: isMobile ? "100%" : "auto",
                               "&:hover": {
                                 borderColor: colorScheme.secondary,
                                 background: `${colorScheme.primary}10`,
@@ -1010,9 +1009,9 @@ const ProposalFormWithStepper = ({
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 1,
-                            flexDirection: activeStep === 1 && isSmall ? "column" : "row",
-                            width: activeStep === 1 && isSmall ? "100%" : "auto",
+                            gap: 1.5,
+                            flexDirection: isMobile ? "column" : "row",
+                            width: isMobile ? "100%" : "auto",
                           }}
                         >
                           {index < steps.length - 1 && (
@@ -1027,7 +1026,7 @@ const ProposalFormWithStepper = ({
                               sx={{
                                 background: colorScheme.gradient,
                                 borderRadius: 10,
-                                width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                width: isMobile ? "100%" : "auto",
                                 "&:hover": {
                                   background: colorScheme.hoverGradient,
                                 },
@@ -1051,7 +1050,7 @@ const ProposalFormWithStepper = ({
                                 px: { xs: 3, sm: 6 },
                                 py: { xs: 1.5, sm: 2 },
                                 fontWeight: 700,
-                                width: activeStep === 1 && isSmall ? "100%" : "auto",
+                                width: isMobile ? "100%" : "auto",
                                 "&:hover": {
                                   background: colorScheme.hoverGradient,
                                   boxShadow: "0 12px 32px rgba(243, 168, 51, 0.4)",
