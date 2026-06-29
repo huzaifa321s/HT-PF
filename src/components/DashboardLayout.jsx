@@ -21,7 +21,9 @@ import {
   Chip,
   alpha,
   Button,
-  Badge
+  Badge,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -328,24 +330,23 @@ export default function DashboardLayout({ children }) {
     return <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>{children}</Box>;
   }
 
+  const activeTabValue = React.useMemo(() => {
+    if (navItems.some(item => item.path === pathname)) return pathname;
+    const prefixMatch = navItems.find((item) => {
+      if (item.path === "/" || item.path === "") return false;
+      return pathname.startsWith(item.path);
+    });
+    if (prefixMatch) return prefixMatch.path;
+    if (pathname.startsWith("/admin/bdo/")) return "/admin/bdms";
+    if (pathname.startsWith("/edit-proposal/")) return role === "admin" ? "/admin/proposals" : "/your-proposals";
+    return navItems[0]?.path || "";
+  }, [navItems, pathname, role]);
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#000000' }}>
       {/* Sidebar / Drawer */}
-      <Box component="nav" sx={{ width: { md: currentDrawerWidth }, flexShrink: { md: 0 }, transition: "width 0.3s ease" }}>
-        {isMobile ? (
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{ keepMounted: true }}
-            sx={{
-              display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: expandedDrawerWidth, border: 'none' },
-            }}
-          >
-            {drawerContent}
-          </Drawer>
-        ) : (
+      {!isMobile && (
+        <Box component="nav" sx={{ width: currentDrawerWidth, flexShrink: 0, transition: "width 0.3s ease" }}>
           <Drawer
             variant="permanent"
             sx={{
@@ -356,15 +357,15 @@ export default function DashboardLayout({ children }) {
           >
             {drawerContent}
           </Drawer>
-        )}
-      </Box>
+        </Box>
+      )}
 
       {/* Main Content Area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          width: { md: `calc(100% - ${currentDrawerWidth}px)` },
+          width: isMobile ? "100%" : `calc(100% - ${currentDrawerWidth}px)`,
           transition: "width 0.3s ease",
           display: 'flex',
           flexDirection: 'column',
@@ -384,13 +385,22 @@ export default function DashboardLayout({ children }) {
           }}
         >
           <Toolbar sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               {isMobile && (
-                <IconButton color="inherit" onClick={handleDrawerToggle} edge="start" sx={{ mr: 2 }}>
-                  <MenuIcon />
-                </IconButton>
+                <Box
+                  component="img"
+                  src="/download.jpg"
+                  alt="Humantek Logo"
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "1px solid rgba(243, 168, 51, 0.5)",
+                  }}
+                />
               )}
-              <Typography variant="h6" fontWeight="700" sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <Typography variant="h6" fontWeight="700" sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}>
                 Dashboard
               </Typography>
             </Box>
@@ -493,10 +503,79 @@ export default function DashboardLayout({ children }) {
         </AppBar>
 
         {/* Page Content */}
-        <Box sx={{ flexGrow: 1, p: isEditor ? 0 : { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column' }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            p: isEditor ? 0 : { xs: 2, md: 4 },
+            pb: isMobile ? "80px" : undefined,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
           {children}
         </Box>
       </Box>
+
+      {/* Bottom Tabs Navigation for Mobile View */}
+      {isMobile && mounted && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: "rgba(10, 10, 10, 0.95)",
+            borderTop: "1px solid rgba(243, 168, 51, 0.2)",
+            zIndex: 1000,
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 -5px 25px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <Tabs
+            value={activeTabValue}
+            onChange={(e, newValue) => {
+              handleNav(newValue);
+            }}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTab-root": {
+                color: "#94a3b8",
+                textTransform: "none",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                py: 1,
+                minWidth: 80,
+                minHeight: 56,
+                "& .MuiSvgIcon-root": {
+                  fontSize: "1.2rem",
+                  mb: 0.5,
+                }
+              },
+              "& .Mui-selected": {
+                color: "#f3a833 !important",
+                "& .MuiSvgIcon-root": {
+                  color: "#f3a833",
+                }
+              },
+              "& .MuiTabs-indicator": {
+                backgroundColor: "#f3a833",
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+              },
+            }}
+          >
+            {navItems.map((tab) => (
+              <Tab
+                key={tab.path}
+                value={tab.path}
+                label={tab.label}
+                icon={tab.icon}
+              />
+            ))}
+          </Tabs>
+        </Box>
+      )}
     </Box>
   );
 }
