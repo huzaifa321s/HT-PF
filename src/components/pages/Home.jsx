@@ -25,9 +25,9 @@ import { motion } from "framer-motion";
 
 const Home = ({ onNavigate }) => {
   const theme = useTheme();
-  const [totalProposals, setTotalProposals] = useState(null); // null = loading
+  const [totalProposals, setTotalProposals] = useState(0);
   const [totalBDMs, setTotalBDMs] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const router = useRouter();
   const handleNav = (path) => {
@@ -36,38 +36,25 @@ const Home = ({ onNavigate }) => {
   };
 
   useEffect(() => {
-    const fetchTotalProposals = async () => {
+    const fetchStats = async () => {
+      setStatsLoading(true);
       try {
-        const response = await axiosInstance.get(
-          "/api/proposals/total-proposals",
-          { skipLoader: true }
-        );
-        setTotalProposals(response.data.data);
+        const [proposalsRes, bdmsRes] = await Promise.all([
+          axiosInstance.get("/api/proposals/total-proposals", { skipLoader: true }),
+          axiosInstance.get("/api/bdms/get-total-bdms", { skipLoader: true })
+        ]);
+        setTotalProposals(proposalsRes.data.data ?? 0);
+        setTotalBDMs(bdmsRes.data.total ?? 0);
       } catch (error) {
-        console.error("Failed to fetch total proposals:", error);
+        console.error("Failed to fetch dashboard stats:", error);
         setTotalProposals("Error");
+        setTotalBDMs("Error");
       } finally {
-        setLoading(false);
+        setStatsLoading(false);
       }
     };
 
-    fetchTotalProposals();
-  }, []);
-
-  useEffect(() => {
-    const fetchBDMCount = async () => {
-      try {
-        const res = await axiosInstance.get("/api/bdms/get-total-bdms", {
-          skipLoader: true,
-        });
-        setTotalBDMs(res.data.total);
-      } catch (error) {
-        console.error("Failed to fetch total BDOs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBDMCount();
+    fetchStats();
   }, []);
 
 
@@ -102,6 +89,7 @@ const Home = ({ onNavigate }) => {
   };
 
   const cardStyle = {
+    width: "100%",
     background: "rgba(20, 20, 20, 0.8)",
     backdropFilter: "blur(20px)",
     border: "1px solid rgba(243, 168, 51, 0.2)",
@@ -207,7 +195,7 @@ const Home = ({ onNavigate }) => {
         {/* Stats Section */}
         <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ mb: 4 }} component={motion.div} variants={containerVariants}>
           {/* Total Proposals Stat */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
             <Paper
               component={motion.div}
               variants={itemVariants}
@@ -218,6 +206,11 @@ const Home = ({ onNavigate }) => {
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                flexGrow: 1,
                 "&::before": {
                   content: '""',
                   position: "absolute",
@@ -229,7 +222,7 @@ const Home = ({ onNavigate }) => {
                 },
               }}
             >
-              {loading ? (
+              {statsLoading ? (
                 <CircularProgress
                   size={40}
                   thickness={5}
@@ -262,7 +255,7 @@ const Home = ({ onNavigate }) => {
           </Grid>
 
           {/* Total BDMs Stat */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
             <Paper
               component={motion.div}
               variants={itemVariants}
@@ -273,6 +266,11 @@ const Home = ({ onNavigate }) => {
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                flexGrow: 1,
                 "&::before": {
                   content: '""',
                   position: "absolute",
@@ -284,7 +282,7 @@ const Home = ({ onNavigate }) => {
                 },
               }}
             >
-              {loading ? (
+              {statsLoading ? (
                 <CircularProgress
                   size={40}
                   thickness={5}
@@ -337,9 +335,9 @@ const Home = ({ onNavigate }) => {
         </Typography>
 
         <Grid container spacing={{ xs: 2.5, md: 3 }} component={motion.div} variants={containerVariants}>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
+          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
                 <Box
                   sx={{
                     width: 60,
@@ -392,9 +390,9 @@ const Home = ({ onNavigate }) => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
+          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
                 <Box
                   sx={{
                     width: 60,
@@ -447,9 +445,9 @@ const Home = ({ onNavigate }) => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
+          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
                 <Box
                   sx={{
                     width: 60,
