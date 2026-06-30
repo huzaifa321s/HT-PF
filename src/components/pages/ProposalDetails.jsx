@@ -42,12 +42,16 @@ const ProposalDetails = () => {
     const [showPdf, setShowPdf] = useState(false);
     const dispatch = useDispatch();
 
-    let user = {};
-    try {
-        user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    } catch (e) {
-        console.warn("sessionStorage access failed in ProposalDetails:", e);
-    }
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        try {
+            const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+            setUser(storedUser);
+        } catch (e) {
+            console.warn("sessionStorage access failed in ProposalDetails:", e);
+        }
+    }, []);
 
     useEffect(() => {
         const fetchProposal = async () => {

@@ -74,13 +74,18 @@ const ProposalPage = () => {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
-  let user = {};
-  try {
-    user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  } catch (e) {
-    console.warn("sessionStorage access failed in ProposalPage:", e);
-  }
-  const isAdmin = user.role === "admin";
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      setUser(storedUser);
+    } catch (e) {
+      console.warn("sessionStorage access failed in ProposalPage:", e);
+    }
+  }, []);
+
+  const isAdmin = user?.role === "admin";
 
   const [proposals, setProposals] = useState([]);
   const [page, setPage] = useState(parseInt(searchParams.get("page")) || 1);
@@ -405,7 +410,7 @@ const ProposalPage = () => {
       };
 
       if (isAdmin && urlView === "mine") {
-        params.createdBy = user.id;
+        params.createdBy = user?.id;
       }
 
       const res = await axiosInstance.get(
@@ -430,7 +435,7 @@ const ProposalPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchParams, isAdmin, user.id]);
+  }, [searchParams, isAdmin, user?.id]);
 
   useEffect(() => {
     fetchProposals();

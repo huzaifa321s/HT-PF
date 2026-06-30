@@ -34,12 +34,16 @@ const AgentDashboard = ({ onNavigate }) => {
     else router.push(path);
   };
 
-  let user = {};
-  try {
-    user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  } catch (e) {
-    console.warn("sessionStorage access failed in AgentDashboard:", e);
-  }
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      setUser(storedUser);
+    } catch (e) {
+      console.warn("sessionStorage access failed in AgentDashboard:", e);
+    }
+  }, []);
 
   // Styles from ProposalFormwithStepper
   const colorScheme = {

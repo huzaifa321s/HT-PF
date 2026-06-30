@@ -54,11 +54,16 @@ const TrashPage = () => {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
-  let user = {};
-  try {
-    user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  } catch (e) {}
-  const isAdmin = user.role === "admin";
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      setUser(storedUser);
+    } catch (e) {}
+  }, []);
+
+  const isAdmin = user?.role === "admin";
 
   const [proposals, setProposals] = useState([]);
   const [page, setPage] = useState(parseInt(searchParams.get("page")) || 1);
