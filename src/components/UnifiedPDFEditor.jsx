@@ -355,21 +355,21 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
         <div className="flex-1 relative overflow-hidden bg-[#0a0a0a] flex flex-col">
           
           {/* Floating Scroll Buttons on the left side of canvas */}
-          {!isMobile && (
-            <div className="absolute left-6 bottom-8 z-50 flex flex-col gap-3">
+          {(!isMobile || !isStudioMode) && (
+            <div className={`absolute z-50 flex flex-col gap-3 ${isMobile ? "left-4 bottom-20" : "left-6 bottom-8"}`}>
               <button
                 onClick={scrollToTop}
-                className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
+                className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[8px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer`}
                 title="Go to Top"
               >
-                <ArrowUpward className="w-3 h-3" />
+                <ArrowUpward className={isMobile ? "w-2.5 h-2.5" : "w-3 h-3"} />
               </button>
               <button
                 onClick={scrollToBottom}
-                className="w-6 h-6 flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[10px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer"
+                className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} flex items-center justify-center bg-[#141414] text-[#f3a833] rounded-[8px] shadow hover:bg-[#f3a833] hover:text-[#0a0a0a] hover:scale-110 transition-all border border-[#f3a833]/20 cursor-pointer`}
                 title="Go to Bottom"
               >
-                <ArrowDownward className="w-3 h-3" />
+                <ArrowDownward className={isMobile ? "w-2.5 h-2.5" : "w-3 h-3"} />
               </button>
             </div>
           )}
