@@ -316,6 +316,14 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
     return idx !== -1 ? idx : 0;
   }, [mobileTabPages, activePageId]);
 
+  const activeTabPagesCount = useMemo(() => {
+    if (!isMobile) return 1;
+    const activePageName = activePageId.split("-")[0];
+    const page = pages.find((p) => p.name === activePageName);
+    if (!page) return 1;
+    return pageCounts[page.name] || 1;
+  }, [pages, activePageId, pageCounts, isMobile]);
+
   return (
     <div className="h-full flex-1 bg-[#0a0a0a] flex flex-col overflow-hidden font-sans relative">
 
@@ -366,15 +374,28 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
               scrollBehavior: 'smooth'
             }}
           >
-            <div 
-              id="pdf-export-container"
-              style={{ 
-                transform: `scale(${zoomLevel / 100})`, 
-                transformOrigin: 'top center',
-                transition: 'transform 0.15s ease-out',
-                width: "800px",
-                minWidth: "800px",
+            <Box
+              sx={isMobile ? {
+                width: `${800 * (zoomLevel / 100)}px`,
+                height: `${(activeTabPagesCount * 1131 + (activeTabPagesCount - 1) * 48 + 120) * (zoomLevel / 100)}px`,
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+              } : {
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
               }}
+            >
+              <div 
+                id="pdf-export-container"
+                style={{ 
+                  transform: `scale(${zoomLevel / 100})`, 
+                  transformOrigin: 'top center',
+                  transition: 'transform 0.15s ease-out',
+                  width: "800px",
+                  minWidth: "800px",
+                }}
               className={`flex flex-col ${isStudioMode ? "gap-12" : "gap-0"}`}
             >
               <AnimatePresence>
@@ -409,7 +430,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
                 })}
               </AnimatePresence>
             </div>
-          </div>
+          </Box>
+        </div>
         </div>
 
       </div>
