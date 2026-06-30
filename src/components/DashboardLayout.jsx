@@ -162,6 +162,18 @@ export default function DashboardLayout({ children }) {
     },
   ];
 
+  const activeTabValue = React.useMemo(() => {
+    if (navItems.some(item => item.path === pathname)) return pathname;
+    const prefixMatch = navItems.find((item) => {
+      if (item.path === "/" || item.path === "") return false;
+      return pathname.startsWith(item.path);
+    });
+    if (prefixMatch) return prefixMatch.path;
+    if (pathname.startsWith("/admin/bdo/")) return "/admin/bdms";
+    if (pathname.startsWith("/edit-proposal/")) return role === "admin" ? "/admin/proposals" : "/your-proposals";
+    return navItems[0]?.path || "";
+  }, [navItems, pathname, role]);
+
   const drawerContent = (
     <Box
       sx={{
@@ -329,18 +341,6 @@ export default function DashboardLayout({ children }) {
   if (isStudio) {
     return <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>{children}</Box>;
   }
-
-  const activeTabValue = React.useMemo(() => {
-    if (navItems.some(item => item.path === pathname)) return pathname;
-    const prefixMatch = navItems.find((item) => {
-      if (item.path === "/" || item.path === "") return false;
-      return pathname.startsWith(item.path);
-    });
-    if (prefixMatch) return prefixMatch.path;
-    if (pathname.startsWith("/admin/bdo/")) return "/admin/bdms";
-    if (pathname.startsWith("/edit-proposal/")) return role === "admin" ? "/admin/proposals" : "/your-proposals";
-    return navItems[0]?.path || "";
-  }, [navItems, pathname, role]);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#000000' }}>
