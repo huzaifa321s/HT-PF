@@ -348,6 +348,7 @@ const ProposalFormWithStepper = ({
     }
   };
   const isSmall = useMediaQuery("(max-width:1325px)");
+  const isMobile = useMediaQuery("(max-width:768px)");
   // Add this state at the top of your component
   const formatNumberDisplay = (value) => {
     if (!value) return "";

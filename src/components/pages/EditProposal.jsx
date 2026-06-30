@@ -23,6 +23,8 @@ import {
   Tooltip,
   InputAdornment,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 import {
@@ -117,6 +119,8 @@ const getEmailErrorMessage = (email) => {
 const EditProposal = () => {
   const { id } = useParams();
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
   const { reset, control, trigger, formState: { errors: hookErrors } } = useForm({
     mode: "onChange",
