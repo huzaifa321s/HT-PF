@@ -126,6 +126,7 @@ const Home = ({ onNavigate }) => {
         py: { xs: 2, md: 4 },
         width: "100%",
         position: "relative",
+        overflowX: "hidden",
       }}
     >
       <Container maxWidth="lg">
@@ -136,8 +137,8 @@ const Home = ({ onNavigate }) => {
           elevation={0}
           sx={{
             ...cardStyle,
-            p: { xs: 4, md: 6 },
-            mb: 5,
+            p: { xs: 2.5, md: 6 },
+            mb: { xs: 3, md: 5 },
             position: "relative",
             overflow: "hidden",
             background: "#0a0a0a",
@@ -161,7 +162,7 @@ const Home = ({ onNavigate }) => {
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
               alignItems: { xs: "center", md: "center" },
-              gap: 4,
+              gap: { xs: 2.5, md: 4 },
               position: "relative",
               zIndex: 1,
             }}
@@ -204,7 +205,7 @@ const Home = ({ onNavigate }) => {
         </Paper>
 
         {/* Stats Section */}
-        <Grid container spacing={4} sx={{ mb: 6 }} component={motion.div} variants={containerVariants}>
+        <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ mb: 4 }} component={motion.div} variants={containerVariants}>
           {/* Total Proposals Stat */}
           <Grid item xs={12} sm={6} md={4}>
             <Paper
@@ -213,7 +214,7 @@ const Home = ({ onNavigate }) => {
               elevation={0}
               sx={{
                 ...cardStyle,
-                p: 4,
+                p: { xs: 2.5, md: 4 },
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
@@ -268,7 +269,7 @@ const Home = ({ onNavigate }) => {
               elevation={0}
               sx={{
                 ...cardStyle,
-                p: 4,
+                p: { xs: 2.5, md: 4 },
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
@@ -326,7 +327,7 @@ const Home = ({ onNavigate }) => {
           sx={{
             fontWeight: 800,
             color: "#f8fafc",
-            mb: 4,
+            mb: { xs: 2.5, md: 4 },
             display: "flex",
             alignItems: "center",
             gap: 1,
@@ -335,10 +336,10 @@ const Home = ({ onNavigate }) => {
           Quick Actions
         </Typography>
 
-        <Grid container spacing={3} component={motion.div} variants={containerVariants}>
+        <Grid container spacing={{ xs: 2.5, md: 3 }} component={motion.div} variants={containerVariants}>
           <Grid item xs={12} sm={6} md={4}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: 5 }}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
                 <Box
                   sx={{
                     width: 60,
@@ -393,7 +394,7 @@ const Home = ({ onNavigate }) => {
 
           <Grid item xs={12} sm={6} md={4}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: 5 }}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
                 <Box
                   sx={{
                     width: 60,
@@ -448,7 +449,7 @@ const Home = ({ onNavigate }) => {
 
           <Grid item xs={12} sm={6} md={4}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: 5 }}>
+              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 } }}>
                 <Box
                   sx={{
                     width: 60,
