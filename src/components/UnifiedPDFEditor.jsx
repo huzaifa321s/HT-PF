@@ -377,7 +377,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
           <div
             id="canvas-area"
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "p-4 pb-28" : "p-8"} flex flex-col items-center custom-scrollbar`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "p-4" : "p-8"} flex flex-col items-center custom-scrollbar`}
             style={{
               scrollBehavior: 'smooth'
             }}
@@ -389,6 +389,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
                 position: "relative",
                 display: "flex",
                 justifyContent: "center",
+                margin: "auto",
               } : {
                 width: "100%",
                 display: "flex",
@@ -439,6 +440,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
               </AnimatePresence>
             </div>
           </Box>
+          {isMobile && <Box sx={{ height: 80, flexShrink: 0 }} />}
         </div>
         </div>
 
