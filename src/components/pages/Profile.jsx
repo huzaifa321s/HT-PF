@@ -26,11 +26,9 @@ import { Edit, Save, Cancel, Lock, Person, Email, CalendarMonth } from "@mui/ico
 const Profile = () => {
   const dispatch = useDispatch();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: "Loading...",
-    email: "loading@inhouse.com",
-    updatedAt: null,
-  });
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [profileData, setProfileData] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -121,32 +119,34 @@ const Profile = () => {
   };
 
   // Fetch profile data role-wise
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const userSession = JSON.parse(sessionStorage.getItem("user") || "null");
-        setIsAdmin(userSession?.role === "admin");
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setFetchError(false);
+      const userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+      setIsAdmin(userSession?.role === "admin");
 
-        const endpoint = "/api/get-creds";
-        const res = await axiosInstance.get(endpoint);
+      const endpoint = "/api/get-creds";
+      const res = await axiosInstance.get(endpoint);
 
-        if (res.data && res.data.success && res.data.data) {
-          setProfileData({
-            name: res.data.data.name || "User",
-            email: res.data.data.email || "user@inhouse.com",
-            updatedAt: res.data.data.updatedAt || new Date().toISOString(),
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
+      if (res.data && res.data.success && res.data.data) {
         setProfileData({
-          name: "User",
-          email: "user@inhouse.com",
-          updatedAt: new Date().toISOString(),
+          name: res.data.data.name || "User",
+          email: res.data.data.email || "",
+          updatedAt: res.data.data.updatedAt || null,
         });
+      } else {
+        setFetchError(true);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -229,9 +229,123 @@ const Profile = () => {
     }
   };
 
-  const formattedDate = profileData.updatedAt
+  const formattedDate = profileData?.updatedAt
     ? format(new Date(profileData.updatedAt), "dd MMMM yyyy, h:mm a")
     : "Not available";
+
+  // ── Loading Skeleton ──────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          py: { xs: 4, md: 8 },
+          minHeight: "100%",
+          width: "100%",
+        }}
+      >
+        <Container maxWidth="md">
+          <Paper
+            elevation={0}
+            sx={{
+              width: "100%",
+              maxWidth: 650,
+              mx: "auto",
+              p: { xs: 4, sm: 5, md: 6 },
+              borderRadius: 5,
+              textAlign: "center",
+              background: "rgba(20, 20, 20, 0.8)",
+              border: "1px solid rgba(243, 168, 51, 0.2)",
+              position: "relative",
+              overflow: "hidden",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "6px",
+                background: colorScheme.gradient,
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <CircularProgress size={56} sx={{ color: colorScheme.primary, mb: 1 }} />
+              <Typography variant="h6" fontWeight={700} color="#f8fafc">Loading Profile...</Typography>
+              <Typography variant="body2" color="#94a3b8">Fetching your account details</Typography>
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
+
+  // ── Error State ───────────────────────────────────────────────────────────
+  if (fetchError) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          py: { xs: 4, md: 8 },
+          minHeight: "100%",
+          width: "100%",
+        }}
+      >
+        <Container maxWidth="md">
+          <Paper
+            elevation={0}
+            sx={{
+              width: "100%",
+              maxWidth: 650,
+              mx: "auto",
+              p: { xs: 4, sm: 5, md: 6 },
+              borderRadius: 5,
+              textAlign: "center",
+              background: "rgba(20, 20, 20, 0.8)",
+              border: "1px solid rgba(244, 67, 54, 0.2)",
+              position: "relative",
+              overflow: "hidden",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "6px",
+                background: "linear-gradient(135deg, #f44336 0%, #e53935 100%)",
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <Avatar sx={{ width: 72, height: 72, bgcolor: "rgba(244,67,54,0.1)", color: "#f44336", fontSize: 36 }}>!</Avatar>
+              <Typography variant="h6" fontWeight={700} color="#f8fafc">Failed to Load Profile</Typography>
+              <Typography variant="body2" color="#94a3b8" sx={{ maxWidth: 320 }}>
+                Could not fetch your account data. This may be a network issue or your session may have expired.
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={fetchProfile}
+                sx={{
+                  mt: 1,
+                  background: colorScheme.gradient,
+                  color: "#000",
+                  fontWeight: 700,
+                  borderRadius: 3,
+                  px: 4,
+                  textTransform: "none",
+                  "&:hover": { background: colorScheme.hoverGradient },
+                }}
+              >
+                Retry
+              </Button>
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box
