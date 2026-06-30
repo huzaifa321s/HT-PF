@@ -27,6 +27,7 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
     setIsResizing(true);
   };
 
+
   useEffect(() => {
     if (!isResizing) return;
     const handleMouseMove = (e) => {
