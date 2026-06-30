@@ -1,7 +1,15 @@
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 
 const LoaderOverlay = ({ isLoading }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   if (!isLoading) return null;
+
+  const size = isMobile ? '64px' : '120px';
+  const logoSize = isMobile ? '44px' : '80px';
+  const borderThickness = isMobile ? '3px' : '4px';
+  const paddingSize = isMobile ? '5px' : '10px';
 
   return (
     <Box
@@ -21,8 +29,8 @@ const LoaderOverlay = ({ isLoading }) => {
       <Box
         sx={{
           position: 'relative',
-          width: '120px',
-          height: '120px',
+          width: size,
+          height: size,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -35,7 +43,7 @@ const LoaderOverlay = ({ isLoading }) => {
             width: '100%',
             height: '100%',
             borderRadius: '50%',
-            border: '4px solid transparent',
+            border: `${borderThickness} solid transparent`,
             borderTopColor: '#f3a833',
             borderRightColor: '#FFD700',
             animation: 'spin 1s linear infinite',
@@ -52,12 +60,12 @@ const LoaderOverlay = ({ isLoading }) => {
           src="/download.jpg"
           alt="Loading"
           sx={{
-            width: '80px',
-            height: '80px',
+            width: logoSize,
+            height: logoSize,
             borderRadius: '50%',
             objectFit: 'contain',
             background: '#000',
-            padding: '10px',
+            padding: paddingSize,
             zIndex: 1,
           }}
         />
