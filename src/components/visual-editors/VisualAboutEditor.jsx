@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, IconButton, Tooltip, Button, Alert, Chip } from "@mui/material";
+import { Box, Typography, IconButton, Tooltip, Button, Alert, Chip, useMediaQuery, useTheme } from "@mui/material";
 import { Add, Delete, Edit, Image as ImageIcon, Link as LinkIcon } from "@mui/icons-material";
 import { updateTitle, updateSubtitle, editElementContent, addElement, deleteElement, restoreElement } from "../../utils/page3Slice";
 import { showToast } from "../../utils/toastSlice";
@@ -117,6 +117,8 @@ const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) =
 
 const VisualAboutEditor = ({ isStudioMode = true }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const currentMode = useSelector((state) => state.page3.currentMode || "create");
   const page3 = useSelector((state) => state.page3[currentMode] || state.page3);
   const elements = page3.elements || [];
@@ -367,7 +369,19 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
         </Box>
         {/* Floating Add buttons on the right side of the page container */}
         {isStudioMode && (
-          <Box sx={{ position: "absolute", bottom: "120px", left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: isMobile ? "-50px" : "120px",
+              left: isMobile ? "50%" : "100%",
+              transform: isMobile ? "translateX(-50%)" : "none",
+              ml: isMobile ? "0px" : "20px",
+              display: "flex",
+              flexDirection: isMobile ? "row" : "column",
+              gap: "10px",
+              zIndex: 100,
+            }}
+          >
             {textElementsCount < 2 && (
               <Button
                 variant="outlined"

@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, Button, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
+import { Box, Typography, Button, IconButton, Menu, MenuItem, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { Add, Delete, Edit, ColorLens, Settings } from "@mui/icons-material";
 import {
   updatePageTitle,
@@ -337,6 +337,8 @@ const PackageVisualBox = ({
 
 const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Pricing" }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const currentMode = useSelector((state) => state.pricing.currentMode || "create");
   const pricingData = useSelector((state) => state.pricing[currentMode] || state.pricing);
   const elements = pricingData.elements || [];
@@ -708,7 +710,17 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
               {/* Floating Add Content Block button on the right side of the last page */}
               {isStudioMode && !isThumbnail && pageIdx === pages.length - 1 && (
-                <Box sx={{ position: "absolute", bottom: "80px", left: "100%", ml: "20px", zIndex: 100, pointerEvents: "auto" }}>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: isMobile ? "-45px" : "80px",
+                    left: isMobile ? "50%" : "100%",
+                    transform: isMobile ? "translateX(-50%)" : "none",
+                    ml: isMobile ? "0px" : "20px",
+                    zIndex: 100,
+                    pointerEvents: "auto",
+                  }}
+                >
                   <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
                     Add Content Block
                   </Button>

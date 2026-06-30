@@ -5,6 +5,7 @@ import {
   Box, Typography, IconButton, Tooltip, Button, Menu, MenuItem,
   ToggleButtonGroup, ToggleButton, TextField, Divider,
   Dialog, DialogTitle, DialogContent, DialogActions, Chip, Stack,
+  useMediaQuery, useTheme,
 } from "@mui/material";
 import {
   Add, Delete, Edit, FormatListNumbered, FormatListBulleted,
@@ -1697,6 +1698,8 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
 // ─── Main Editor ───────────────────────────────────────────────────────────
 const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Additional Info" }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const currentMode = useSelector((state) => state.page2.currentMode || "create");
   const page2 = useSelector((state) => state.page2[currentMode] || state.page2);
   const orderedSections = page2.orderedSections || [];
@@ -1931,7 +1934,21 @@ const VisualAdditionalInfoEditor = ({ isStudioMode = true, isThumbnail = false, 
 
         {/* Add Button */}
         {isStudioMode && !isThumbnail && (
-          <Box sx={{ position: "absolute", top: `${(totalPages - 1) * CYCLE + PAGE_HEIGHT - 180}px`, left: "100%", ml: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: 100 }}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: isMobile
+                ? `${(totalPages - 1) * CYCLE + PAGE_HEIGHT + 15}px`
+                : `${(totalPages - 1) * CYCLE + PAGE_HEIGHT - 180}px`,
+              left: isMobile ? "50%" : "100%",
+              transform: isMobile ? "translateX(-50%)" : "none",
+              ml: isMobile ? "0px" : "20px",
+              display: "flex",
+              flexDirection: isMobile ? "row" : "column",
+              gap: "10px",
+              zIndex: 100
+            }}
+          >
             <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)}
               sx={{ color: "#f3a833", borderColor: "#f3a833", borderStyle: "dashed", bgcolor: "#141414", whiteSpace: "nowrap" }}>
               Add Section or Table

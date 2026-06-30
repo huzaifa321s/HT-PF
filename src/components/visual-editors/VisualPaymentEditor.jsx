@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, Button, IconButton } from "@mui/material";
+import { Box, Typography, Button, IconButton, useMediaQuery, useTheme } from "@mui/material";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { updateTitle, addTerm, updateTerm, deleteTerm, restoreTerm } from "../../utils/paymentTermsPageSlice";
 import { showToast } from "../../utils/toastSlice";
@@ -46,6 +46,8 @@ const splitTermsByHeight = (terms) => {
 
 const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageCountChange, pageIdPrefix = "Payment Terms" }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const currentMode = useSelector((state) => state.paymentTerms.currentMode || "create");
   const paymentData = useSelector((state) => state.paymentTerms[currentMode] || state.paymentTerms);
   const terms = paymentData.terms || [];
@@ -193,7 +195,16 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
 
             {/* Floating Add Term button on the right side of the last page */}
             {isStudioMode && pageIdx === pages.length - 1 && (
-              <Box sx={{ position: "absolute", bottom: "90px", left: "100%", ml: "20px", zIndex: 100 }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: isMobile ? "-45px" : "90px",
+                  left: isMobile ? "50%" : "100%",
+                  transform: isMobile ? "translateX(-50%)" : "none",
+                  ml: isMobile ? "0px" : "20px",
+                  zIndex: 100,
+                }}
+              >
                 <Button variant="outlined" startIcon={<Add />} onClick={handleAddTerm} sx={{ color: "#FF8C00", borderColor: "#FF8C00", borderStyle: "dashed", whiteSpace: "nowrap", bgcolor: "#141414" }}>
                   Add Term
                 </Button>
