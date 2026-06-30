@@ -295,11 +295,14 @@ const Login = () => {
                     boxShadow: "0 6px 20px rgba(243, 168, 51, 0.5)",
                     transform: "translateY(-2px)",
                   },
-                  "&:disabled": { background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)" },
+                  "&.Mui-disabled": {
+                    background: "rgba(243, 168, 51, 0.2) !important",
+                    color: "#f3a833 !important",
+                  },
                   transition: "all 0.3s ease",
                 }}
               >
-                {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Sign In"}
+                {loading ? <CircularProgress size={24} sx={{ color: "#f3a833" }} /> : "Sign In"}
               </Button>
 
               {isAdminLogin && (
