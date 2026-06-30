@@ -9,6 +9,12 @@ import {
   useTheme,
   Tabs,
   Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   Settings,
@@ -85,6 +91,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
   const [loading, setLoading] = useState(true);
   const [isNavigatingToEdit, setIsNavigatingToEdit] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [visibilityDialogOpen, setVisibilityDialogOpen] = useState(false);
 
   const formDataRT = useSelector((state) => state.proposal);
   const isEditMode = mode === "edit-doc";
@@ -449,8 +456,30 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
             zIndex: 1000,
             backdropFilter: "blur(20px)",
             boxShadow: "0 -5px 25px rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            px: 1,
           }}
         >
+          <Tooltip title="Page Visibility" arrow>
+            <IconButton
+              onClick={() => setVisibilityDialogOpen(true)}
+              sx={{
+                color: "#f3a833",
+                bgcolor: "rgba(243, 168, 51, 0.05)",
+                borderRadius: "10px",
+                p: 1.2,
+                mr: 1,
+                border: "1px solid rgba(243, 168, 51, 0.2)",
+                "&:hover": {
+                  bgcolor: "rgba(243, 168, 51, 0.1)",
+                }
+              }}
+            >
+              <Settings className="w-5 h-5" />
+            </IconButton>
+          </Tooltip>
+
           <Tabs
             value={activePageIndex}
             onChange={(e, newIdx) => {
@@ -462,6 +491,8 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
             variant="scrollable"
             scrollButtons="auto"
             sx={{
+              flex: 1,
+              minWidth: 0,
               "& .MuiTab-root": {
                 color: "#94a3b8",
                 textTransform: "none",
@@ -486,6 +517,71 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
             ))}
           </Tabs>
         </Box>
+      )}
+
+      {/* Page Visibility Dialog for Mobile View */}
+      {isMobile && isStudioMode && (
+        <Dialog
+          open={visibilityDialogOpen}
+          onClose={() => setVisibilityDialogOpen(false)}
+          PaperProps={{
+            sx: {
+              bgcolor: "#111",
+              border: "1px solid rgba(243, 168, 51, 0.2)",
+              borderRadius: "16px",
+              color: "#f8fafc",
+              p: 1.5,
+              minWidth: { xs: "90vw", sm: "380px" },
+            }
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 700, fontSize: "1.1rem", borderBottom: "1px solid rgba(255,255,255,0.08)", pb: 1.5 }}>
+            Page Visibility
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2, pb: 1 }}>
+            <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mb: 2 }}>
+              Toggle which pages to include in the generated PDF:
+            </Typography>
+            <div className="space-y-4">
+              {pageSettings.map((ps) => (
+                <div key={ps.name} className="flex items-center justify-between p-2.5 rounded-xl bg-[#181818] border border-white/5">
+                  <span className="text-sm font-semibold text-slate-300">{ps.name}</span>
+                  <Switch
+                    size="small"
+                    checked={ps.state ?? true}
+                    onChange={() => dispatch(ps.action())}
+                    sx={{
+                      "& .MuiSwitch-switchBase": { color: "#cbd5e1" },
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: "#f3a833",
+                        "& + .MuiSwitch-track": { backgroundColor: "#f3a833", opacity: 0.5 },
+                      },
+                      "& .MuiSwitch-track": { backgroundColor: "#e2e8f0" }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pt: 1, pb: 2 }}>
+            <Button
+              onClick={() => setVisibilityDialogOpen(false)}
+              sx={{
+                color: "#000",
+                bgcolor: "#f3a833",
+                fontWeight: 700,
+                textTransform: "none",
+                borderRadius: "8px",
+                px: 3,
+                "&:hover": {
+                  bgcolor: "#d98f1f",
+                }
+              }}
+            >
+              Done
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   );
