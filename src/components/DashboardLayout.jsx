@@ -345,7 +345,7 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#000000' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#000000', width: '100%', overflowX: 'hidden' }}>
       {/* Sidebar / Drawer */}
       {!isMobile && (
         <Box component="nav" sx={{ width: currentDrawerWidth, flexShrink: 0, transition: "width 0.3s ease" }}>
@@ -368,6 +368,8 @@ export default function DashboardLayout({ children }) {
         sx={{
           flexGrow: 1,
           width: isMobile ? "100%" : `calc(100% - ${currentDrawerWidth}px)`,
+          maxWidth: isMobile ? "100%" : `calc(100% - ${currentDrawerWidth}px)`,
+          overflowX: "hidden",
           transition: "width 0.3s ease",
           display: 'flex',
           flexDirection: 'column',
