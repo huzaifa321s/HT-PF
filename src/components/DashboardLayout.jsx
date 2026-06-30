@@ -575,46 +575,33 @@ export default function DashboardLayout({ children }) {
               <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Proposals</Typography>
             </Box>
 
-            {/* Tab 3: Highlighted Center Create Button (TikTok + style) */}
+            {/* Tab 3: Highlighted Center Create Button (Branded Gold Style) */}
             <Box
               onClick={() => handleNav("/create-proposal")}
               sx={{
-                position: "relative",
                 display: "flex",
-                justifyContent: "center",
+                flexDirection: "column",
                 alignItems: "center",
-                width: 44,
-                height: 30,
-                borderRadius: "8px",
-                bgcolor: "#fff",
+                justifyContent: "center",
                 cursor: "pointer",
-                transition: "transform 0.15s ease",
                 "&:active": { transform: "scale(0.9)" },
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: -3,
-                  width: "100%",
-                  height: "100%",
-                  bgcolor: "#00f2fe", // Cyan/Teal border
-                  borderRadius: "8px",
-                  zIndex: -1,
-                },
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  right: -3,
-                  width: "100%",
-                  height: "100%",
-                  bgcolor: "#fe0979", // Pink/Magenta border
-                  borderRadius: "8px",
-                  zIndex: -2,
-                }
+                transition: "transform 0.15s ease",
               }}
             >
-              <AddIcon sx={{ color: "#000", fontSize: "1.3rem", fontWeight: "bold" }} />
+              <Box
+                sx={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: "14px",
+                  background: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+                  boxShadow: "0 4px 14px rgba(243, 168, 51, 0.55)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AddIcon sx={{ color: "#000", fontSize: "1.5rem", fontWeight: "bold" }} />
+              </Box>
             </Box>
 
             {/* Tab 4: Notifications (Inbox) */}
