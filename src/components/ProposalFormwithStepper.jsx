@@ -868,7 +868,17 @@ const ProposalFormWithStepper = ({
           position: "relative",
         }}
       >
-        <Box sx={{ position: "absolute", top: { xs: 8, sm: 16 }, right: { xs: 8, sm: 16 }, zIndex: 10 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: { xs: 2, sm: 0 },
+            position: { xs: "relative", sm: "absolute" },
+            top: { sm: 16 },
+            right: { sm: 16 },
+            zIndex: 10,
+          }}
+        >
           <Button
             variant="outlined"
             onClick={() => window.open('/docs', '_blank')}
