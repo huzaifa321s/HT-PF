@@ -258,9 +258,15 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
     
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    const el = document.getElementById(`page-${uniqueId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isMobile) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    } else {
+      const el = document.getElementById(`page-${uniqueId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     // Re-enable observer after smooth scroll animation completes
