@@ -517,6 +517,7 @@ const ProposalDetails = () => {
                             )}
                         </Paper>
                     </motion.div>
+                </motion.div>
             </Container>
         </Box>
     );
