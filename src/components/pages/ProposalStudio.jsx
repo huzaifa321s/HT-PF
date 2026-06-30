@@ -27,10 +27,15 @@ export default function ProposalStudio() {
   // Auto-fit zoom on mount and window resize for mobile screens
   useEffect(() => {
     const handleResize = () => {
-      const isMobileScreen = window.innerWidth < 768;
+      const isMobileScreen = window.innerWidth < 900;
       if (isMobileScreen) {
-        // Collapsed sidebar is 80px, layout margins/paddings around 32px
-        const availableWidth = window.innerWidth - 80 - 32;
+        // No sidebar is shown on mobile. Available width is window.innerWidth minus canvas margins/paddings (~32px)
+        const availableWidth = window.innerWidth - 32;
+        const calculatedZoom = Math.min(100, Math.max(30, Math.floor((availableWidth / 800) * 100)));
+        setZoomLevel(calculatedZoom);
+      } else {
+        // Desktop: Sidebar is 300px wide, and margins are roughly 64px
+        const availableWidth = window.innerWidth - 300 - 64;
         const calculatedZoom = Math.min(100, Math.max(30, Math.floor((availableWidth / 800) * 100)));
         setZoomLevel(calculatedZoom);
       }

@@ -365,9 +365,11 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
               style={{ 
                 transform: `scale(${zoomLevel / 100})`, 
                 transformOrigin: 'top center',
-                transition: 'transform 0.15s ease-out'
+                transition: 'transform 0.15s ease-out',
+                width: "800px",
+                minWidth: "800px",
               }}
-              className={`flex flex-col w-full max-w-[800px] ${isStudioMode ? "gap-12" : "gap-0"}`}
+              className={`flex flex-col ${isStudioMode ? "gap-12" : "gap-0"}`}
             >
               <AnimatePresence>
                 {visiblePages.map((page, index) => {
