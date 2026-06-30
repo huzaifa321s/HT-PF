@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  Grid,
   Paper,
   Typography,
   Button,
-  Divider,
   Card,
   CardContent,
   CardActions,
@@ -193,16 +191,29 @@ const Home = ({ onNavigate }) => {
         </Paper>
 
         {/* Stats Section */}
-        <Grid container spacing={{ xs: 2.5, md: 4 }} sx={{ mb: 4 }} component={motion.div} variants={containerVariants}>
-          {/* Total Proposals Stat */}
-          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+        <Box
+          component={motion.div}
+          variants={containerVariants}
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2.5,
+            mb: 4,
+            width: "100%",
+          }}
+        >
+          {[
+            { value: totalProposals, label: "Total Proposals" },
+            { value: totalBDMs, label: "Total BDOs" },
+          ].map((stat) => (
             <Paper
+              key={stat.label}
               component={motion.div}
               variants={itemVariants}
               elevation={0}
               sx={{
                 ...cardStyle,
-                p: { xs: 2.5, md: 4 },
+                p: { xs: 3, md: 4 },
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
@@ -210,7 +221,9 @@ const Home = ({ onNavigate }) => {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                flexGrow: 1,
+                flex: 1,
+                minWidth: 0,
+                minHeight: { xs: 120, md: 160 },
                 "&::before": {
                   content: '""',
                   position: "absolute",
@@ -223,11 +236,7 @@ const Home = ({ onNavigate }) => {
               }}
             >
               {statsLoading ? (
-                <CircularProgress
-                  size={40}
-                  thickness={5}
-                  sx={{ color: colorScheme.primary }}
-                />
+                <CircularProgress size={36} thickness={5} sx={{ color: colorScheme.primary }} />
               ) : (
                 <>
                   <Typography
@@ -237,85 +246,21 @@ const Home = ({ onNavigate }) => {
                       background: colorScheme.gradient,
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
-                      mb: 1,
+                      mb: 0.5,
+                      lineHeight: 1.1,
+                      fontSize: { xs: "2.5rem", md: "3.5rem" },
                     }}
                   >
-                    {totalProposals}
+                    {stat.value}
                   </Typography>
-                  <Typography
-                    variant="h6"
-                    color="#94a3b8"
-                    fontWeight="600"
-                  >
-                    Total Proposals
+                  <Typography variant="subtitle1" color="#94a3b8" fontWeight="600" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                    {stat.label}
                   </Typography>
                 </>
               )}
             </Paper>
-          </Grid>
-
-          {/* Total BDMs Stat */}
-          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-            <Paper
-              component={motion.div}
-              variants={itemVariants}
-              elevation={0}
-              sx={{
-                ...cardStyle,
-                p: { xs: 2.5, md: 4 },
-                textAlign: "center",
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                flexGrow: 1,
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: "4px",
-                  background: colorScheme.gradient,
-                },
-              }}
-            >
-              {statsLoading ? (
-                <CircularProgress
-                  size={40}
-                  thickness={5}
-                  sx={{ color: colorScheme.primary }}
-                />
-              ) : (
-                <>
-                  <Typography
-                    variant="h2"
-                    fontWeight="800"
-                    sx={{
-                      background: colorScheme.gradient,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      mb: 1,
-                    }}
-                  >
-                    {totalBDMs}
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    color="#94a3b8"
-                    fontWeight="600"
-                  >
-                    Total BDOs
-                  </Typography>
-                </>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
-
-
+          ))}
+        </Box>
 
         {/* Quick Actions Section */}
         <Typography
@@ -334,172 +279,123 @@ const Home = ({ onNavigate }) => {
           Quick Actions
         </Typography>
 
-        <Grid container spacing={{ xs: 2.5, md: 3 }} component={motion.div} variants={containerVariants}>
-          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    bgcolor: "rgba(243, 168, 51, 0.1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 3,
-                  }}
-                >
-                  <AddCircleOutlineIcon
-                    sx={{ fontSize: 32, color: colorScheme.primary }}
-                  />
-                </Box>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  sx={{ color: "#f8fafc", mb: 1 }}
-                >
-                  Create New Proposal
-                </Typography>
-                <Typography variant="body2" color="#94a3b8">
-                  Start a new client proposal from scratch.
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
-                <Button
-                  variant="contained"
-                  sx={{
-                    borderRadius: 10,
-                    px: 4,
-                    py: 1,
-                    background: colorScheme.gradient,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    boxShadow: "0 4px 12px rgba(243, 168, 51, 0.3)",
-                    "&:hover": {
-                      background: colorScheme.hoverGradient,
-                      boxShadow: "0 8px 20px rgba(243, 168, 51, 0.4)",
-                    },
-                  }}
-                  onClick={() => handleNav("/create-proposal")}
-                >
-                  Create Now
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    bgcolor: "rgba(243, 168, 51, 0.1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 3,
-                  }}
-                >
-                  <DescriptionIcon
-                    sx={{ fontSize: 32, color: colorScheme.primary }}
-                  />
-                </Box>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  sx={{ color: "#f8fafc", mb: 1 }}
-                >
-                  View All Proposals
-                </Typography>
-                <Typography variant="body2" color="#94a3b8">
-                  Review, edit, or download past submissions.
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 10,
-                    px: 4,
-                    py: 1,
-                    borderColor: colorScheme.primary,
-                    color: colorScheme.primary,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    "&:hover": {
-                      borderColor: colorScheme.secondary,
-                      bgcolor: "rgba(243, 168, 51, 0.05)",
-                    },
-                  }}
-                  onClick={() => handleNav("/admin/proposals")}
-                >
-                  View All
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-            <Card elevation={0} sx={{ ...cardStyle, display: "flex", flexDirection: "column", flexGrow: 1 }} component={motion.div} variants={itemVariants}>
-              <CardContent sx={{ textAlign: "center", py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    bgcolor: "rgba(243, 168, 51, 0.1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 3,
-                  }}
-                >
-                  <AssessmentIcon
-                    sx={{ fontSize: 32, color: colorScheme.primary }}
-                  />
-                </Box>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  sx={{ color: "#f8fafc", mb: 1 }}
-                >
-                  BDOs Management
-                </Typography>
-                <Typography variant="body2" color="#94a3b8">
-                  Manage Business Development Officers.
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: "center", pb: 4 }}>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 10,
-                    px: 4,
-                    py: 1,
-                    borderColor: colorScheme.primary,
-                    color: colorScheme.primary,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    "&:hover": {
-                      borderColor: colorScheme.secondary,
-                      bgcolor: "rgba(243, 168, 51, 0.05)",
-                    },
-                  }}
-                  onClick={() => handleNav("/admin/bdms")}
-                >
-                  Manage
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        </Grid>
+        <Box
+          component={motion.div}
+          variants={containerVariants}
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            flexWrap: { xs: "nowrap", sm: "wrap", md: "nowrap" },
+            gap: 2.5,
+            width: "100%",
+          }}
+        >
+          {[
+            {
+              icon: <AddCircleOutlineIcon sx={{ fontSize: 32, color: colorScheme.primary }} />,
+              title: "Create New Proposal",
+              desc: "Start a new client proposal from scratch.",
+              btnLabel: "Create Now",
+              btnVariant: "contained",
+              path: "/create-proposal",
+            },
+            {
+              icon: <DescriptionIcon sx={{ fontSize: 32, color: colorScheme.primary }} />,
+              title: "View All Proposals",
+              desc: "Review, edit, or download past submissions.",
+              btnLabel: "View All",
+              btnVariant: "outlined",
+              path: "/admin/proposals",
+            },
+            {
+              icon: <AssessmentIcon sx={{ fontSize: 32, color: colorScheme.primary }} />,
+              title: "BDOs Management",
+              desc: "Manage Business Development Officers.",
+              btnLabel: "Manage",
+              btnVariant: "outlined",
+              path: "/admin/bdms",
+            },
+          ].map((action) => (
+            <Box
+              key={action.title}
+              component={motion.div}
+              variants={itemVariants}
+              sx={{
+                flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 10px)", md: "1 1 0" },
+                minWidth: 0,
+                display: "flex",
+              }}
+            >
+              <Card
+                elevation={0}
+                sx={{
+                  ...cardStyle,
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                }}
+              >
+                <CardContent sx={{ textAlign: "center", py: { xs: 3.5, md: 5 }, px: { xs: 2.5, md: 3 }, flexGrow: 1 }}>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      bgcolor: "rgba(243, 168, 51, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mx: "auto",
+                      mb: 2.5,
+                    }}
+                  >
+                    {action.icon}
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: "#f8fafc", mb: 1 }}>
+                    {action.title}
+                  </Typography>
+                  <Typography variant="body2" color="#94a3b8">
+                    {action.desc}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: "center", pb: 3.5 }}>
+                  <Button
+                    variant={action.btnVariant}
+                    sx={{
+                      borderRadius: 10,
+                      px: 4,
+                      py: 1,
+                      ...(action.btnVariant === "contained"
+                        ? {
+                            background: colorScheme.gradient,
+                            textTransform: "none",
+                            fontWeight: 600,
+                            boxShadow: "0 4px 12px rgba(243, 168, 51, 0.3)",
+                            "&:hover": {
+                              background: colorScheme.hoverGradient,
+                              boxShadow: "0 8px 20px rgba(243, 168, 51, 0.4)",
+                            },
+                          }
+                        : {
+                            borderColor: colorScheme.primary,
+                            color: colorScheme.primary,
+                            textTransform: "none",
+                            fontWeight: 600,
+                            "&:hover": {
+                              borderColor: colorScheme.secondary,
+                              bgcolor: "rgba(243, 168, 51, 0.05)",
+                            },
+                          }),
+                    }}
+                    onClick={() => handleNav(action.path)}
+                  >
+                    {action.btnLabel}
+                  </Button>
+                </CardActions>
+              </Card>
+            </Box>
+          ))}
+        </Box>
       </Container>
     </Box>
   );
