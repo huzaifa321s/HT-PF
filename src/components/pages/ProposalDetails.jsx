@@ -215,7 +215,7 @@ const ProposalDetails = () => {
     // ✅ Open the saved Drive PDF link in a new tab (no re-generation)
     const handleViewPdf = () => {
         if (!pdfUrl) return;
-        window.open(getDrivePreviewUrl(pdfUrl), "_blank", "noopener,noreferrer");
+        window.open(pdfUrl, "_blank", "noopener,noreferrer");
     };
 
     const handleDownloadClick = () => {

@@ -383,7 +383,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
             }}
           >
             <Box
-              sx={isMobile ? {
+              sx={(isMobile && isStudioMode) ? {
                 width: `${800 * (zoomLevel / 100)}px`,
                 height: `${(activeTabPagesCount * 1131 + (activeTabPagesCount - 1) * 48 + 120) * (zoomLevel / 100)}px`,
                 position: "relative",
