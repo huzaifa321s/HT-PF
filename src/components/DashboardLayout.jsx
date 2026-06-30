@@ -40,6 +40,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddIcon from "@mui/icons-material/Add";
 import { usePathname, useRouter } from "next/navigation";
 import axiosInstance from "../utils/axiosInstance";
 
@@ -62,6 +63,7 @@ export default function DashboardLayout({ children }) {
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
 
   const fetchUnreadCount = async () => {
     try {
@@ -516,65 +518,328 @@ export default function DashboardLayout({ children }) {
         </Box>
       </Box>
 
-      {/* Bottom Tabs Navigation for Mobile View */}
+      {/* TikTok / Instagram style Bottom Navigation Bar for Mobile View */}
       {isMobile && mounted && (
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            bgcolor: "rgba(10, 10, 10, 0.95)",
-            borderTop: "1px solid rgba(243, 168, 51, 0.2)",
-            zIndex: 1000,
-            backdropFilter: "blur(20px)",
-            boxShadow: "0 -5px 25px rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <Tabs
-            value={activeTabValue}
-            onChange={(e, newValue) => {
-              handleNav(newValue);
-            }}
-            variant="scrollable"
-            scrollButtons="auto"
+        <>
+          <Box
             sx={{
-              "& .MuiTab-root": {
-                color: "#94a3b8",
-                textTransform: "none",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                py: 1,
-                minWidth: 80,
-                minHeight: 56,
-                "& .MuiSvgIcon-root": {
-                  fontSize: "1.2rem",
-                  mb: 0.5,
-                }
-              },
-              "& .Mui-selected": {
-                color: "#f3a833 !important",
-                "& .MuiSvgIcon-root": {
-                  color: "#f3a833",
-                }
-              },
-              "& .MuiTabs-indicator": {
-                backgroundColor: "#f3a833",
-                height: 3,
-                borderRadius: "3px 3px 0 0",
-              },
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 64,
+              bgcolor: "#090909",
+              borderTop: "1px solid rgba(243, 168, 51, 0.15)",
+              zIndex: 1000,
+              boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.4)",
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+              px: 2,
+              pb: "safe-area-inset-bottom", // Mobile Notch safe area
             }}
           >
-            {navItems.map((tab) => (
-              <Tab
-                key={tab.path}
-                value={tab.path}
-                label={tab.label}
-                icon={tab.icon}
+            {/* Tab 1: Home */}
+            <Box
+              onClick={() => handleNav(role === "admin" ? "/dashboard" : "/agent-dashboard")}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                cursor: "pointer",
+                color: pathname === (role === "admin" ? "/dashboard" : "/agent-dashboard") ? "#f3a833" : "#94a3b8",
+                transition: "color 0.2s",
+                "&:active": { transform: "scale(0.95)" },
+              }}
+            >
+              <DashboardIcon sx={{ fontSize: "1.4rem" }} />
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Home</Typography>
+            </Box>
+
+            {/* Tab 2: Proposals */}
+            <Box
+              onClick={() => handleNav(role === "admin" ? "/admin/proposals" : "/your-proposals")}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                cursor: "pointer",
+                color: pathname === (role === "admin" ? "/admin/proposals" : "/your-proposals") ? "#f3a833" : "#94a3b8",
+                transition: "color 0.2s",
+                "&:active": { transform: "scale(0.95)" },
+              }}
+            >
+              <DescriptionIcon sx={{ fontSize: "1.4rem" }} />
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Proposals</Typography>
+            </Box>
+
+            {/* Tab 3: Highlighted Center Create Button (TikTok + style) */}
+            <Box
+              onClick={() => handleNav("/create-proposal")}
+              sx={{
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: 44,
+                height: 30,
+                borderRadius: "8px",
+                bgcolor: "#fff",
+                cursor: "pointer",
+                transition: "transform 0.15s ease",
+                "&:active": { transform: "scale(0.9)" },
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: -3,
+                  width: "100%",
+                  height: "100%",
+                  bgcolor: "#00f2fe", // Cyan/Teal border
+                  borderRadius: "8px",
+                  zIndex: -1,
+                },
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  right: -3,
+                  width: "100%",
+                  height: "100%",
+                  bgcolor: "#fe0979", // Pink/Magenta border
+                  borderRadius: "8px",
+                  zIndex: -2,
+                }
+              }}
+            >
+              <AddIcon sx={{ color: "#000", fontSize: "1.3rem", fontWeight: "bold" }} />
+            </Box>
+
+            {/* Tab 4: Notifications (Inbox) */}
+            <Box
+              onClick={() => handleNav(role === "admin" ? "/admin/notifications" : "/docs")}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                cursor: "pointer",
+                color: pathname === (role === "admin" ? "/admin/notifications" : "/docs") ? "#f3a833" : "#94a3b8",
+                transition: "color 0.2s",
+                "&:active": { transform: "scale(0.95)" },
+              }}
+            >
+              {role === "admin" ? (
+                <Badge badgeContent={unreadCount} color="error" variant="dot">
+                  <NotificationsIcon sx={{ fontSize: "1.4rem" }} />
+                </Badge>
+              ) : (
+                <MenuBookIcon sx={{ fontSize: "1.4rem" }} />
+              )}
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>
+                {role === "admin" ? "Inbox" : "Docs"}
+              </Typography>
+            </Box>
+
+            {/* Tab 5: Menu/More */}
+            <Box
+              onClick={() => setMenuDrawerOpen(true)}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                cursor: "pointer",
+                color: menuDrawerOpen ? "#f3a833" : "#94a3b8",
+                transition: "color 0.2s",
+                "&:active": { transform: "scale(0.95)" },
+              }}
+            >
+              <MenuIcon sx={{ fontSize: "1.4rem" }} />
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Menu</Typography>
+            </Box>
+          </Box>
+
+          {/* TikTok style Bottom sheet for the Menu */}
+          <Drawer
+            anchor="bottom"
+            open={menuDrawerOpen}
+            onClose={() => setMenuDrawerOpen(false)}
+            PaperProps={{
+              sx: {
+                bgcolor: "#121212",
+                color: "#f8fafc",
+                borderTopLeftRadius: "20px",
+                borderTopRightRadius: "20px",
+                borderTop: "1px solid rgba(243, 168, 51, 0.2)",
+                boxShadow: "0 -10px 40px rgba(0,0,0,0.8)",
+                px: 2.5,
+                pb: 4,
+                pt: 1,
+              }
+            }}
+          >
+            {/* Pull Bar */}
+            <Box
+              sx={{
+                width: 36,
+                height: 4,
+                bgcolor: "rgba(255, 255, 255, 0.2)",
+                borderRadius: 2,
+                mx: "auto",
+                my: 1.5,
+              }}
+            />
+
+            {/* User Header Info */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2, mt: 1 }}>
+              <Avatar
+                src="/download.jpg"
+                sx={{
+                  width: 48,
+                  height: 48,
+                  border: "2px solid #f3a833",
+                  bgcolor: "#000",
+                }}
               />
-            ))}
-          </Tabs>
-        </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: "0.95rem" }}>
+                  {user?.name || "Humantek Team"}
+                </Typography>
+                <Typography sx={{ color: "#94a3b8", fontSize: "0.8rem" }}>
+                  {user?.email || "humantek@gmail.com"}
+                </Typography>
+              </Box>
+              <Chip
+                label={role}
+                size="small"
+                sx={{
+                  ml: "auto",
+                  bgcolor: "rgba(243, 168, 51, 0.15)",
+                  color: "#f3a833",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  height: 20,
+                  border: "1px solid rgba(243, 168, 51, 0.3)",
+                }}
+              />
+            </Box>
+
+            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.08)", mb: 2 }} />
+
+            {/* Bottom Sheet Menu Options */}
+            <List sx={{ p: 0 }}>
+              {role === "admin" && (
+                <ListItemButton
+                  onClick={() => {
+                    handleNav("/admin/bdms");
+                    setMenuDrawerOpen(false);
+                  }}
+                  sx={{
+                    borderRadius: "12px",
+                    py: 1.5,
+                    mb: 1,
+                    "&:hover": { bgcolor: "rgba(243, 168, 51, 0.08)" },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: "#f3a833", minWidth: 40 }}>
+                    <AssessmentIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="BDOs Management"
+                    primaryTypographyProps={{ sx: { fontSize: "0.9rem", fontWeight: 600 } }}
+                  />
+                </ListItemButton>
+              )}
+
+              <ListItemButton
+                onClick={() => {
+                  handleNav("/trash");
+                  setMenuDrawerOpen(false);
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  py: 1.5,
+                  mb: 1,
+                  "&:hover": { bgcolor: "rgba(243, 168, 51, 0.08)" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "#ef4444", minWidth: 40 }}>
+                  <DeleteOutlineIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Trash"
+                  primaryTypographyProps={{ sx: { fontSize: "0.9rem", fontWeight: 600 } }}
+                />
+              </ListItemButton>
+
+              <ListItemButton
+                onClick={() => {
+                  handleNav("/profile");
+                  setMenuDrawerOpen(false);
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  py: 1.5,
+                  mb: 1,
+                  "&:hover": { bgcolor: "rgba(243, 168, 51, 0.08)" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "#94a3b8", minWidth: 40 }}>
+                  <AccountCircleIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Profile settings"
+                  primaryTypographyProps={{ sx: { fontSize: "0.9rem", fontWeight: 600 } }}
+                />
+              </ListItemButton>
+
+              <ListItemButton
+                onClick={() => {
+                  handleNav("/docs");
+                  setMenuDrawerOpen(false);
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  py: 1.5,
+                  mb: 1,
+                  "&:hover": { bgcolor: "rgba(243, 168, 51, 0.08)" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "#c084fc", minWidth: 40 }}>
+                  <MenuBookIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Documentation"
+                  primaryTypographyProps={{ sx: { fontSize: "0.9rem", fontWeight: 600 } }}
+                />
+              </ListItemButton>
+
+              <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.08)", my: 1.5 }} />
+
+              <ListItemButton
+                onClick={() => {
+                  handleLogout();
+                  setMenuDrawerOpen(false);
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  py: 1.5,
+                  bgcolor: "rgba(239, 68, 68, 0.05)",
+                  border: "1px solid rgba(239, 68, 68, 0.15)",
+                  "&:hover": { bgcolor: "rgba(239, 68, 68, 0.12)" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "#ef4444", minWidth: 40 }}>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Logout"
+                  primaryTypographyProps={{ sx: { fontSize: "0.9rem", fontWeight: 700, color: "#ef4444" } }}
+                />
+              </ListItemButton>
+            </List>
+          </Drawer>
+        </>
       )}
     </Box>
   );
