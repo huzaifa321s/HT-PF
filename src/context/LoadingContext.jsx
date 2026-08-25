@@ -19,6 +19,9 @@ export const LoadingProvider = ({ children }) => {
   const showLoader = () => {
     setRequestCount((prev) => prev + 1);
     setIsLoading(true);
+    if (typeof window !== 'undefined' && window.__startTopLoader) {
+      window.__startTopLoader();
+    }
   };
 
   const hideLoader = () => {
@@ -26,6 +29,9 @@ export const LoadingProvider = ({ children }) => {
       const newCount = Math.max(0, prev - 1);
       if (newCount === 0) {
         setIsLoading(false);
+        if (typeof window !== 'undefined' && window.__finishTopLoader) {
+          window.__finishTopLoader();
+        }
       }
       return newCount;
     });
