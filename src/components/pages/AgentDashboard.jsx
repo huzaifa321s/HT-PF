@@ -188,7 +188,7 @@ const AgentDashboard = ({ onNavigate }) => {
 
         <Grid container spacing={3} component={motion.div} variants={containerVariants}>
           {/* Create Proposal */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
               <CardContent sx={{ textAlign: "center", py: 5 }}>
                 <Box
@@ -248,7 +248,7 @@ const AgentDashboard = ({ onNavigate }) => {
           </Grid>
 
           {/* View Proposals */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
               <CardContent sx={{ textAlign: "center", py: 5 }}>
                 <Box
@@ -308,7 +308,7 @@ const AgentDashboard = ({ onNavigate }) => {
           </Grid>
 
           {/* Profile */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card elevation={0} sx={cardStyle} component={motion.div} variants={itemVariants}>
               <CardContent sx={{ textAlign: "center", py: 5 }}>
                 <Box

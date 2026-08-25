@@ -214,7 +214,7 @@ const Footer = () => {
       <Container maxWidth="lg">
         <Grid container spacing={{ xs: 4, md: 6 }} alignItems="flex-start" component={motion.div} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }}>
           {/* Left - Brand */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box
               sx={{
                 display: "flex",
@@ -341,7 +341,7 @@ const Footer = () => {
           </Grid>
 
           {/* Center - Quick Links */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography
               variant="subtitle1"
               sx={{
@@ -413,7 +413,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <Grid container spacing={2} alignItems="center">
           {/* Left Section - Copyright */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography
               variant="body2"
               sx={{
@@ -428,7 +428,7 @@ const Footer = () => {
           </Grid>
 
           {/* Center Section - Socials (Optional) */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Stack
               direction="row"
               spacing={1}
@@ -451,7 +451,7 @@ const Footer = () => {
           </Grid>
 
           {/* Right Section - Status Indicator */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box
               sx={{
                 display: "flex",

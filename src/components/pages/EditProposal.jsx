@@ -150,7 +150,6 @@ const EditProposal = () => {
     projectTitle: "",
     advancePercent: "",
     additionalCosts: "",
-    callOutcome: "",
     yourName: "Your Name",
     yourEmail: "your@email.com",
     date: new Date().toISOString().split("T")[0],
@@ -173,7 +172,6 @@ const EditProposal = () => {
     projectCategory: formData.projectCategory === "Other" && formData.customProjectCategory ? formData.customProjectCategory : formData.projectCategory,
     advancePercent: formData.advancePercent,
     additionalCosts: formData.additionalCosts,
-    callOutcome: formData.callOutcome,
     date: formData.date,
   };
 
@@ -208,7 +206,6 @@ const EditProposal = () => {
           projectTitle: data.projectTitle || "",
           advancePercent: data.advancePercent || "",
           additionalCosts: data.additionalCosts || "",
-          callOutcome: data.callOutcome || "",
           date: data.date
             ? data.date.split("T")[0]
             : new Date().toISOString().split("T")[0],

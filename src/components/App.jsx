@@ -54,7 +54,6 @@ export default function App() {
       recommended_services: [],
       timelineMilestones: "",
       terms: "",
-      callOutcome: "Interested",
       yourName: "",
       yourEmail: "",
       date: "",

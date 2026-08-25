@@ -336,21 +336,6 @@ const ProposalDetails = () => {
                                                     }}
                                                 />
                                             )}
-                                            <Chip
-                                                label={proposal?.callOutcome || "N/A"}
-                                                sx={{
-                                                    fontWeight: 700,
-                                                    fontSize: "0.85rem",
-                                                    bgcolor:
-                                                        proposal?.callOutcome === "Interested"
-                                                            ? "#22c55e"
-                                                            : proposal?.callOutcome === "No Fit"
-                                                            ? "#ef4444"
-                                                            : "rgba(255,255,255,0.25)",
-                                                    color: "#fff",
-                                                    border: "1px solid rgba(255,255,255,0.2)",
-                                                }}
-                                            />
                                             {proposal?.createdAt && (
                                                 <Chip
                                                     icon={<CalendarToday sx={{ color: "#fff !important", fontSize: "16px !important" }} />}
@@ -396,7 +381,7 @@ const ProposalDetails = () => {
                     {/* 3. Two Equal Information Cards (Side-by-Side on Desktop) */}
                     <Grid container spacing={3.5} sx={{ mb: 4.5 }}>
                         {/* Client Info */}
-                        <Grid item xs={12} md={6}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <motion.div variants={itemVariants} style={{ height: "100%" }}>
                                 <SectionCard title="Client Information" icon={<Business />}>
                                     <Stack spacing={0.5}>
@@ -411,7 +396,7 @@ const ProposalDetails = () => {
                         </Grid>
 
                         {/* Agent Info */}
-                        <Grid item xs={12} md={6}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <motion.div variants={itemVariants} style={{ height: "100%" }}>
                                 <SectionCard
                                     title={user?.role === "admin" && user?.id === proposal?.createdBy?._id ? "Your Contact Info" : "Agent Contact Info"}

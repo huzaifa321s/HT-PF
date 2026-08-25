@@ -141,7 +141,7 @@ export default function DocsPage() {
               </Typography>
 
               <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                       <AddCircleOutlineIcon /> 1. Client Information
@@ -156,7 +156,7 @@ export default function DocsPage() {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                       <AddCircleOutlineIcon /> 2. Project Details
@@ -170,7 +170,7 @@ export default function DocsPage() {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                       <AddCircleOutlineIcon /> 3. Costs & Pricing
@@ -186,13 +186,13 @@ export default function DocsPage() {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                       <AddCircleOutlineIcon /> 4. Additional Details & Review
                     </Typography>
                     <Typography variant="body2" sx={{ color: "#cbd5e1", mb: 2, lineHeight: 1.7 }}>
-                      Finally, select the <b>Call Outcome</b> (e.g., Interested, Follow-up) and set the Date. Once completed, click <b>Save & Continue to Studio</b> to open the visual editor.
+                      Review your inputs and set the proposal Date. Once completed, click <b>Save & Continue to Studio</b> to open the visual editor.
                     </Typography>
                   </Box>
                 </Grid>
@@ -252,7 +252,7 @@ export default function DocsPage() {
 
               <Grid container spacing={4}>
                 {/* Cover Page */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       1. Branded Cover Page
@@ -268,7 +268,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* Custom Content / Overview */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       2. Project Overview & Solution
@@ -284,7 +284,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* Additional Info / Features */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       3. Features & Roadmap (Additional Info)
@@ -301,7 +301,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* Pricing */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       4. Pricing Table & Packages
@@ -317,7 +317,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* About Humantek */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       5. About Humantek
@@ -333,7 +333,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* Payment Terms */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(255,255,255,0.03)", p: 3, borderRadius: 3, border: "1px solid rgba(255,255,255,0.05)", height: "100%" }}>
                     <Typography variant="h6" sx={{ color: colorScheme.primary, mb: 1 }}>
                       6. Payment Terms & Conditions
@@ -358,7 +358,7 @@ export default function DocsPage() {
               
               <Grid container spacing={6}>
                 {/* Creation Flow */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(0,0,0,0.4)", p: 4, borderRadius: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
                     <Typography variant="h6" sx={{ color: "#fff", mb: 4, textAlign: "center", fontWeight: 700 }}>
                       Proposal Creation Flow
@@ -366,7 +366,7 @@ export default function DocsPage() {
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <FlowNode title="1. Dashboard" desc="Click 'Create New Proposal'" delay={0.1} />
                       <FlowArrow />
-                      <FlowNode title="2. Stepper Form" desc="Fill Client Info, Project Details, Costs, and Outcome" delay={0.3} />
+                      <FlowNode title="2. Stepper Form" desc="Fill Client Info, Project Details, Costs, and Schedule" delay={0.3} />
                       <FlowArrow />
                       <FlowNode title="3. Form Submission" desc="Data is saved to database. Redirected to Visual Editor." delay={0.5} />
                       <FlowArrow />
@@ -376,7 +376,7 @@ export default function DocsPage() {
                 </Grid>
 
                 {/* Edit Flow */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ background: "rgba(0,0,0,0.4)", p: 4, borderRadius: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
                     <Typography variant="h6" sx={{ color: "#fff", mb: 4, textAlign: "center", fontWeight: 700 }}>
                       Studio Editing Flow

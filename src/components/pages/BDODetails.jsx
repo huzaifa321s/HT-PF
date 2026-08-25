@@ -451,7 +451,7 @@ const BDODetails = () => {
               {/* ── Info Cards Grid ────────────────────────────────────────── */}
               <Grid container spacing={4} sx={{ mb: 4 }}>
                 {/* BDO Profile Info */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <motion.div variants={itemVariants} style={{ height: "100%" }}>
                     <SectionCard title="BDO Profile" icon={<Badge />}>
                       <Stack spacing={1}>
@@ -466,7 +466,7 @@ const BDODetails = () => {
                 </Grid>
 
                 {/* Performance Stats */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <motion.div variants={itemVariants} style={{ height: "100%" }}>
                     <SectionCard title="Performance Overview" icon={<Assessment />}>
                       <Stack spacing={1}>
