@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, Description, AttachMoney, CalendarMonth, Business, AutoAwesome, ContentCopy } from "@mui/icons-material";
+import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, AutoAwesome, ContentCopy } from "@mui/icons-material";
 import { Drawer, IconButton, Divider, List, ListItem, ListItemIcon, ListItemText, Stack, Chip } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
 import UnifiedPdfEditor from "../UnifiedPDFEditor";
@@ -44,7 +44,6 @@ export default function ProposalStudio() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   // Toast notifications handled globally via Redux showToast
 
@@ -437,7 +436,6 @@ export default function ProposalStudio() {
     } finally {
       setIsStudioMode(true);
       setSaving(false);
-      setDrawerOpen(false); // Close drawer after generating
     }
   };
 
@@ -543,9 +541,9 @@ export default function ProposalStudio() {
 
           <Button
             variant="contained"
-            onClick={() => setDrawerOpen(true)}
+            onClick={saveWithNewPdf}
             disabled={saving || loading}
-            startIcon={<Download />}
+            startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Download />}
             sx={{
               bgcolor: "#10b981",
               "&.Mui-disabled": { bgcolor: "rgba(16, 185, 129, 0.2)", color: "rgba(255, 255, 255, 0.3)" },
@@ -554,15 +552,21 @@ export default function ProposalStudio() {
               textTransform: "none",
               ml: { xs: 0, sm: 2 },
               borderRadius: 10,
-              px: { xs: 1, sm: 2 }
+              px: { xs: 1.5, sm: 2.5 }
             }}
           >
-            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-              Review & Generate
-            </Box>
-            <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
-              Generate
-            </Box>
+            {saving ? (
+              <span>Generating...</span>
+            ) : (
+              <>
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                  Generate Proposal
+                </Box>
+                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                  Generate
+                </Box>
+              </>
+            )}
           </Button>
         </Box>
       </Box>
@@ -593,100 +597,7 @@ export default function ProposalStudio() {
         )}
       </Box>
 
-      {/* Right Drawer for PDF Generation */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => !saving && setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            width: { xs: "100%", sm: 400 },
-            bgcolor: "#111111", // Deep dark background
-            borderLeft: "1px solid rgba(243, 168, 51, 0.15)",
-            color: "#f8fafc",
-          }
-        }}
-      >
-        <Box sx={{ p: 3, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#f3a833" }}>
-            Generate PDF
-          </Typography>
-          <IconButton onClick={() => setDrawerOpen(false)} disabled={saving} sx={{ color: "#94a3b8" }}>
-            <Close />
-          </IconButton>
-        </Box>
 
-        <Box sx={{ p: 3, flex: 1, overflowY: "auto" }}>
-          <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
-            Review the details below before generating the final PDF document. These details are pulled from your form.
-          </Typography>
-
-          <Stack spacing={2} sx={{ mb: 4 }}>
-            {/* Client Info */}
-            <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
-              <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                Client
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                {reduxProposal?.clientName || formData?.clientName || "Unknown Client"}
-              </Typography>
-              {(formData?.clientEmail || reduxProposal?.clientEmail) && (
-                <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5 }}>
-                  {formData?.clientEmail || reduxProposal?.clientEmail}
-                </Typography>
-              )}
-            </Box>
-
-            {/* Brand / Project */}
-            <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
-              <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                Brand / Project
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                {page1?.brandName !== "Brand Name" && page1?.brandName ? page1.brandName : (formData?.brandName || formData?.projectTitle || "Untitled Project")}
-              </Typography>
-              {(page1?.brandTagline !== "Crafting Legacies That Last" && page1?.brandTagline ? page1.brandTagline : formData?.brandTagline) && (
-                <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5, fontStyle: "italic" }}>
-                  "{page1?.brandTagline !== "Crafting Legacies That Last" && page1?.brandTagline ? page1.brandTagline : formData?.brandTagline}"
-                </Typography>
-              )}
-            </Box>
-
-
-            {/* Date */}
-            <Box sx={{ p: 2, bgcolor: "#1a1a1a", borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
-              <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
-                Proposal Date
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                {reduxProposal?.date || formData?.date || new Date().toISOString().split('T')[0]}
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
-
-        <Box sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.05)", bgcolor: "rgba(0,0,0,0.2)" }}>
-          <Button
-            fullWidth
-            size="large"
-            variant="contained"
-            onClick={saveWithNewPdf}
-            disabled={saving}
-            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Download />}
-            sx={{
-              bgcolor: "#f3a833",
-              color: "#000",
-              "&:hover": { bgcolor: "#f59e0b" },
-              fontWeight: 800,
-              textTransform: "none",
-              py: 1.5,
-              borderRadius: 10
-            }}
-          >
-            {saving ? "Generating & Saving..." : "Generate Final PDF"}
-          </Button>
-        </Box>
-      </Drawer>
 
       {/* Right Drawer for AI Response Recovery */}
       <Drawer

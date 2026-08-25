@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -58,6 +58,15 @@ export default function RootLayout({ children }) {
                     window.location.reload();
                   }
                 });
+
+                // Unregister any stale legacy service workers (e.g. Firebase Messaging)
+                if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (var i = 0; i < registrations.length; i++) {
+                      registrations[i].unregister();
+                    }
+                  }).catch(function() {});
+                }
               })();
             `
           }}

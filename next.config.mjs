@@ -12,10 +12,14 @@ const nextConfig = {
 
   // 👇 ADD THIS REWRITES BLOCK 👇
   async rewrites() {
+    const backendUrl =
+      process.env.BACKEND_API_URL ||
+      process.env.NEXT_PUBLIC_APP_BASE_URL ||
+      'http://localhost:5000';
     return [
       {
         source: '/backend-api/:path*',
-        destination: 'https://proposal.web3guys.com/:path*', 
+        destination: `${backendUrl}/:path*`, 
       },
     ];
   },
