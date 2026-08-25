@@ -1,6 +1,7 @@
 import "./globals.css";
 import Providers from "@/lib/Providers";
 import LayoutShell from "@/lib/LayoutShell";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata = {
   title: "Proposal Maker | Humantek",
@@ -73,6 +74,19 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <NextTopLoader
+          color="#f3a833"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 12px rgba(243, 168, 51, 0.8), 0 0 6px #f3a833"
+          zIndex={999999}
+          showAtBottom={false}
+        />
         <Providers>
           <LayoutShell>{children}</LayoutShell>
         </Providers>
