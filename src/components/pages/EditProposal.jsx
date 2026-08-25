@@ -50,6 +50,7 @@ import { setDBTerms, setMode4 } from "../../utils/paymentTermsPageSlice";
 import { setDBData, setMode1 } from "../../utils/page1Slice";
 import { showToast } from "../../utils/toastSlice";
 import { setFullFormData } from "../../utils/proposalSlice";
+import AiAssistantModal from "../modals/AiAssistantModal";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
@@ -131,6 +132,7 @@ const EditProposal = () => {
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   // Toast notifications handled globally via Redux showToast
 
@@ -462,52 +464,18 @@ const EditProposal = () => {
     }
   };
 
-  const handleGenerateAI = async () => {
-    const brief = (formData.projectBrief || "").trim();
-    const charCount = brief.length;
-    const MIN_CHARS = 50;
-    const MAX_CHARS = 5000;
+  const handleGenerateAI = () => {
+    setAiModalOpen(true);
+  };
 
-    if (charCount === 0) {
-      dispatch(showToast({ message: "Project Brief is required to generate AI content.", severity: "warning" }));
-      return;
-    }
-    if (charCount < MIN_CHARS) {
-      dispatch(showToast({ message: `Brief is too short — add at least ${MIN_CHARS - charCount} more character${MIN_CHARS - charCount === 1 ? '' : 's'} for the AI to produce quality output.`, severity: "warning" }));
-      return;
-    }
-    if (charCount > MAX_CHARS) {
-      dispatch(showToast({ message: `Brief exceeds the ${MAX_CHARS}-character limit. Please shorten it by ${charCount - MAX_CHARS} character${charCount - MAX_CHARS === 1 ? '' : 's'}.`, severity: "error" }));
-      return;
-    }
-    
-    setIsGeneratingAI(true);
-    try {
-      const response = await axiosInstance.post('api/ai/generate-proposal', {
-        projectBrief: brief,
-        companyName: "Humantek"
-      });
-
-      const data = response.data;
-      if (data && data.sections && data.tables) {
-        dispatch(replacePage2Content(data));
-        dispatch(setOriginalAiResponse(data.sections));
-        dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
-        await handleSubmit();
-      } else {
-        throw new Error("Invalid format received from AI.");
+  const handleApplyAiData = async (data, updatedBrief) => {
+    if (data && data.sections) {
+      dispatch(replacePage2Content(data));
+      dispatch(setOriginalAiResponse(data.sections));
+      if (updatedBrief) {
+        setFormData((prev) => ({ ...prev, projectBrief: updatedBrief }));
       }
-    } catch (error) {
-      console.error("AI Generation Error:", error);
-      let errorMsg = "Failed to generate proposal using AI.";
-      if (error.response?.status === 429 || error.response?.data?.errorType === "quota_exceeded") {
-        errorMsg = "AI usage limit has been reached. Please contact your administrator or try again later.";
-      } else if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      }
-      dispatch(showToast({ message: errorMsg, severity: "error" }));
-    } finally {
-      setIsGeneratingAI(false);
+      await handleSubmit();
     }
   };
 
@@ -1215,6 +1183,13 @@ const EditProposal = () => {
           </>
         )}
       </Box>
+
+      <AiAssistantModal
+        open={aiModalOpen}
+        handleClose={() => setAiModalOpen(false)}
+        initialBrief={formData.projectBrief}
+        onApply={handleApplyAiData}
+      />
     </Box>
   );
 };

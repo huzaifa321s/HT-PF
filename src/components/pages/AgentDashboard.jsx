@@ -18,13 +18,10 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import axiosInstance from "../../utils/axiosInstance";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 const AgentDashboard = ({ onNavigate }) => {
-  const [isHovered, setIsHovered] = useState({});
   const router = useRouter();
 
 

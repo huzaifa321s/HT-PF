@@ -11,8 +11,10 @@ import { motion } from "framer-motion";
 import { Provider, useSelector, useDispatch } from "react-redux";
 import { store } from "../../utils/store";
 import { updateField, setFullFormData } from "../../utils/proposalSlice";
+import { replacePage2Content, setOriginalAiResponse } from "../../utils/page2Slice";
 import { historyManager } from "../../utils/historyManager";
 import { showToast } from "../../utils/toastSlice";
+import AiAssistantModal from "../modals/AiAssistantModal";
 
 export default function ProposalStudio() {
   const router = useRouter();
@@ -45,6 +47,7 @@ export default function ProposalStudio() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   // Toast notifications handled globally via Redux showToast
 
   // Redux Data to compile PDF
@@ -62,6 +65,15 @@ export default function ProposalStudio() {
   // Live-edited client info from Redux (updated by VisualCoverEditor)
   const reduxProposal = useSelector((s) => s.proposal);
   const dispatch = useDispatch();
+
+  const handleApplyAiData = (data) => {
+    if (data && data.sections) {
+      historyManager.snapshot(store.getState());
+      dispatch(replacePage2Content(data));
+      dispatch(setOriginalAiResponse(data.sections));
+      dispatch(showToast({ message: "Proposal updated with new AI content!", severity: "success" }));
+    }
+  };
 
   // Undo / Redo Keyboard Listener
   useEffect(() => {
@@ -627,7 +639,32 @@ export default function ProposalStudio() {
         </Box>
 
         <Box sx={{ p: 3, flex: 1, overflowY: "auto" }}>
-          <Typography variant="body2" sx={{ color: "#94a3b8", mb: 4 }}>
+          <Box sx={{ mb: 3, p: 2, bgcolor: "rgba(192, 132, 252, 0.08)", borderRadius: 2, border: "1px solid rgba(192, 132, 252, 0.2)" }}>
+            <Typography variant="subtitle2" sx={{ color: "#c084fc", fontWeight: 700, mb: 1 }}>
+              Need to generate or paste new AI content?
+            </Typography>
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<AutoAwesome />}
+              onClick={() => {
+                setAiDrawerOpen(false);
+                setAiModalOpen(true);
+              }}
+              sx={{
+                bgcolor: "#f3a833",
+                color: "#000",
+                fontWeight: 700,
+                textTransform: "none",
+                borderRadius: 2,
+                "&:hover": { bgcolor: "#d99322" },
+              }}
+            >
+              Open AI Generator & Paste Tool
+            </Button>
+          </Box>
+
+          <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
             Here is the raw AI response that was initially generated. If you deleted a section from the visual editor, you can copy its original content from here and recreate it.
           </Typography>
 
@@ -695,6 +732,13 @@ export default function ProposalStudio() {
           )}
         </Box>
       </Drawer>
+
+      <AiAssistantModal
+        open={aiModalOpen}
+        handleClose={() => setAiModalOpen(false)}
+        initialBrief={formData?.projectBrief || ""}
+        onApply={handleApplyAiData}
+      />
 
       {/* Toast notifications handled globally by GlobalToast via Redux */}
     </Box>

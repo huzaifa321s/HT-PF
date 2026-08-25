@@ -50,6 +50,7 @@ import { useDebounce } from "use-debounce";
 import { store } from "../utils/store";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
+import AiAssistantModal from "./modals/AiAssistantModal";
 
 const ProposalFormWithStepper = ({
   control,
@@ -68,6 +69,7 @@ const ProposalFormWithStepper = ({
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [existingProposalsCount, setExistingProposalsCount] = useState(0); // Added for multiple proposals limit
   const [limitExceeded, setLimitExceeded] = useState(false); // Added for multiple proposals limit
   const existingProposalRef = useRef({ id: null, owner: null }); // Backup ref to survive React 18 strict mode state-loss
@@ -264,52 +266,18 @@ const ProposalFormWithStepper = ({
     await handleSubmitForm(submitData);
   };
 
-  const handleGenerateAI = async () => {
-    const brief = watch("projectBrief")?.trim() || "";
-    const charCount = brief.length;
-    const MIN_CHARS = 50;
-    const MAX_CHARS = 5000;
+  const handleGenerateAI = () => {
+    setAiModalOpen(true);
+  };
 
-    if (charCount === 0) {
-      dispatch(showToast({ message: "Project Brief is required to generate AI content.", severity: "warning" }));
-      return;
-    }
-    if (charCount < MIN_CHARS) {
-      dispatch(showToast({ message: `Brief is too short — add at least ${MIN_CHARS - charCount} more character${MIN_CHARS - charCount === 1 ? '' : 's'} for the AI to produce quality output.`, severity: "warning" }));
-      return;
-    }
-    if (charCount > MAX_CHARS) {
-      dispatch(showToast({ message: `Brief exceeds the ${MAX_CHARS}-character limit. Please shorten it by ${charCount - MAX_CHARS} character${charCount - MAX_CHARS === 1 ? '' : 's'}.`, severity: "error" }));
-      return;
-    }
-    
-    setIsGeneratingAI(true);
-    try {
-      const response = await axiosInstance.post('api/ai/generate-proposal', {
-        projectBrief: brief,
-        companyName: "Humantek"
-      });
-
-      const data = response.data;
-      if (data && data.sections && data.tables) {
-        dispatch(replacePage2Content(data));
-        dispatch(setOriginalAiResponse(data.sections));
-        dispatch(showToast({ message: "Proposal content generated successfully!", severity: "success" }));
-        handleSubmit(handleSubmitData, onInvalid)();
-      } else {
-        throw new Error("Invalid format received from AI.");
+  const handleApplyAiData = (data, updatedBrief) => {
+    if (data && data.sections) {
+      dispatch(replacePage2Content(data));
+      dispatch(setOriginalAiResponse(data.sections));
+      if (updatedBrief) {
+        setValue("projectBrief", updatedBrief);
       }
-    } catch (error) {
-      console.error("AI Generation Error:", error);
-      let errorMsg = "Failed to generate proposal using AI.";
-      if (error.response?.status === 429 || error.response?.data?.errorType === "quota_exceeded") {
-        errorMsg = "AI usage limit has been reached. Please contact your administrator or try again later.";
-      } else if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      }
-      dispatch(showToast({ message: errorMsg, severity: "error" }));
-    } finally {
-      setIsGeneratingAI(false);
+      handleSubmit(handleSubmitData, onInvalid)();
     }
   };
 
@@ -1081,6 +1049,12 @@ const ProposalFormWithStepper = ({
           ))}
         </Stepper>
 
+        <AiAssistantModal
+          open={aiModalOpen}
+          handleClose={() => setAiModalOpen(false)}
+          initialBrief={watch("projectBrief")}
+          onApply={handleApplyAiData}
+        />
       </Box>
     </>
   );
