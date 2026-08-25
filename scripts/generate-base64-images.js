@@ -11,17 +11,17 @@ const OUTPUT_FILE = path.join(__dirname, "..", "src", "utils", "pdfImageAssets.j
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
 
 const IMAGE_FILES = [
-  { varName: "COVER_BG", filename: "newBg.jpg", embed: false },
-  { varName: "LOGO", filename: "ht-logo.png", embed: true },
-  { varName: "HEADER_IMG", filename: "header.png", embed: true },
-  { varName: "FOOTER_IMG", filename: "footer.png", embed: true },
-  { varName: "CONTACT_PAGE", filename: "proposal-contact.jpg", embed: false },
-  { varName: "HT_LOGO", filename: "ht-logo.png", embed: true },
-  { varName: "ARTBOARD_1", filename: "Artboard1.jpg", embed: false },
-  { varName: "ARTBOARD_2", filename: "Artboard 2.jpg", embed: false },
-  { varName: "ARTBOARD_3", filename: "Artboard 3.jpg", embed: false },
-  { varName: "ARTBOARD_4", filename: "Artboard 4.jpg", embed: false },
-  { varName: "ARTBOARD_5", filename: "Artboard 5.jpg", embed: false },
+  { varName: "COVER_BG", filename: "newBg.webp", embed: false },
+  { varName: "LOGO", filename: "ht-logo.webp", embed: true },
+  { varName: "HEADER_IMG", filename: "header.webp", embed: true },
+  { varName: "FOOTER_IMG", filename: "footer.webp", embed: true },
+  { varName: "CONTACT_PAGE", filename: "proposal-contact.webp", embed: false },
+  { varName: "HT_LOGO", filename: "ht-logo.webp", embed: true },
+  { varName: "ARTBOARD_1", filename: "Artboard1.webp", embed: false },
+  { varName: "ARTBOARD_2", filename: "Artboard 2.webp", embed: false },
+  { varName: "ARTBOARD_3", filename: "Artboard 3.webp", embed: false },
+  { varName: "ARTBOARD_4", filename: "Artboard 4.webp", embed: false },
+  { varName: "ARTBOARD_5", filename: "Artboard 5.webp", embed: false },
 ];
 
 const MIME_MAP = {

@@ -125,7 +125,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box
             component="img"
-            src="/download.jpg"
+            src="/download.webp"
             alt="Humantek Logo"
             sx={{
               width: 48,
@@ -302,7 +302,7 @@ const Navbar = ({ onNavigate, currentPath }) => {
               }}
             >
               <img
-                src="/download.jpg"
+                src="/download.webp"
                 alt="icon"
                 style={{
                   width: "24px",

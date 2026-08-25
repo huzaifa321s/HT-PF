@@ -152,7 +152,7 @@ const Footer = () => {
                 }}
               >
                 <img
-                  src="/download.jpg"
+                  src="/download.webp"
                   alt="icon"
                   style={{
                     width: "32px",
@@ -248,7 +248,7 @@ const Footer = () => {
                   }}
                 >
                   <img
-                    src="/download.jpg"
+                    src="/download.webp"
                     alt="icon"
                     style={{
                       width: "28px",

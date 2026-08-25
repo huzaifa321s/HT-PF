@@ -112,7 +112,7 @@ export default function EditorSidebar({
           </div>
         ) : (
           <img
-            src="/download.jpg"
+            src="/download.webp"
             alt="Humantek Logo"
             className="w-10 h-10 rounded-full object-cover shrink-0 transition-all duration-300 border-2 border-[#f3a833]/50 shadow-[0_4px_12px_rgba(243,168,51,0.2)]"
           />

@@ -57,7 +57,7 @@ const LoaderOverlay = ({ isLoading }) => {
         {/* Static logo */}
         <Box
           component="img"
-          src="/download.jpg"
+          src="/download.webp"
           alt="Loading"
           sx={{
             width: logoSize,

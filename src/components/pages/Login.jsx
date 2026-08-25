@@ -118,7 +118,7 @@ const Login = () => {
           <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center" }}>
             <Box
               component="img"
-              src="/ht-logo-cropped.png"
+              src="/ht-logo-cropped.webp"
               alt="Humantek Logo"
               sx={{
                 width: "100%",
@@ -170,7 +170,7 @@ const Login = () => {
             <Box sx={{ display: "flex", justifyContent: "center", mb: 6, width: "100%" }}>
               <Box
                 component="img"
-                src="/ht-logo-cropped.png"
+                src="/ht-logo-cropped.webp"
                 alt="Humantek Logo"
                 sx={{
                   width: "100%",

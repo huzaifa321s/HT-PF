@@ -196,7 +196,7 @@ export default function DashboardLayout({ children }) {
           {isCollapsed ? (
             <Box
               component="img"
-              src="/download.jpg"
+              src="/download.webp"
               alt="Humantek Logo"
               sx={{
                 width: 40,
@@ -211,7 +211,7 @@ export default function DashboardLayout({ children }) {
           ) : (
             <Box
               component="img"
-              src="/ht-logo-cropped.png"
+              src="/ht-logo-cropped.webp"
               alt="Humantek Logo"
               sx={{
                 width: "100%",
@@ -393,7 +393,7 @@ export default function DashboardLayout({ children }) {
               {isMobile && (
                 <Box
                   component="img"
-                  src="/download.jpg"
+                  src="/download.webp"
                   alt="Humantek Logo"
                   sx={{
                     width: 32,
@@ -681,7 +681,7 @@ export default function DashboardLayout({ children }) {
             {/* User Header Info */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2, mt: 1 }}>
               <Avatar
-                src="/download.jpg"
+                src="/download.webp"
                 sx={{
                   width: 48,
                   height: 48,

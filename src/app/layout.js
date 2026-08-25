@@ -8,7 +8,7 @@ export const metadata = {
   description:
     "AI-powered proposal creation tool for agents and admins — live transcription, PDF generation, and business intelligence.",
   icons: {
-    icon: "/download.png",
+    icon: "/download.webp",
   },
 };
 
