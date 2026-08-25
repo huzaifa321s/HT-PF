@@ -254,6 +254,7 @@ const NotificationsPage = () => {
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
+                            disableTypography
                             primary={
                               <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap">
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ color: "#f8fafc" }}>
