@@ -81,14 +81,14 @@ export default function AiAssistantModal({
       setCopiedPlatform(platform);
       dispatch(
         showToast({
-          message: `Prompt copied to clipboard! Paste it into ${platform.toUpperCase()} (Ctrl + V).`,
+          message: `Prompt sent to ${platform.toUpperCase()} & copied to clipboard!`,
           severity: "success",
         })
       );
     } catch (err) {
       dispatch(
         showToast({
-          message: "Could not copy to clipboard. Please copy manually.",
+          message: "Could not launch AI platform. Please try again.",
           severity: "error",
         })
       );
@@ -165,10 +165,10 @@ export default function AiAssistantModal({
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: "#f8fafc", fontSize: "1.1rem" }}>
-              AI Proposal Generator
+              AI Proposal Generator (Auto-Pasted to ChatGPT)
             </Typography>
             <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
-              100% Free • Works with ChatGPT, Claude, DeepSeek & Gemini
+              100% Free • No API keys needed • Auto-submits directly in ChatGPT
             </Typography>
           </Box>
         </Box>
@@ -178,7 +178,23 @@ export default function AiAssistantModal({
       </DialogTitle>
 
       <DialogContent sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#111111" }}>
-        {/* Step 1 Box */}
+        {/* Status notification */}
+        <Alert
+          severity="info"
+          icon={<CheckCircle fontSize="inherit" />}
+          sx={{
+            mb: 3,
+            bgcolor: "rgba(16, 185, 129, 0.1)",
+            color: "#34d399",
+            border: "1px solid rgba(16, 185, 129, 0.3)",
+            fontSize: "13px",
+            "& .MuiAlert-icon": { color: "#10b981" },
+          }}
+        >
+          <strong>ChatGPT is running in your new tab!</strong> Once it finishes generating the proposal, simply <strong>copy the JSON code block</strong> and paste it below.
+        </Alert>
+
+        {/* Step 2 Box: Paste AI JSON */}
         <Paper
           elevation={0}
           sx={{
@@ -186,137 +202,24 @@ export default function AiAssistantModal({
             mb: 3,
             bgcolor: "rgba(20, 20, 20, 0.8)",
             borderRadius: 2.5,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#f3a833", display: "flex", alignItems: "center", gap: 1 }}>
-              <Box component="span" sx={{ width: 22, height: 22, borderRadius: "50%", bgcolor: "#f3a833", color: "#000", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800 }}>
-                1
-              </Box>
-              Project Brief & AI Launch
-            </Typography>
-            <Typography variant="caption" sx={{ color: "#64748b" }}>
-              {brief.length} characters
-            </Typography>
-          </Box>
-
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            value={brief}
-            onChange={(e) => setBrief(e.target.value)}
-            placeholder="e.g. Social media marketing and branding proposal for ABC Tech. Scope includes Instagram management, LinkedIn ads, content creation, and monthly reporting..."
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                bgcolor: "#0a0a0a",
-                color: "#f8fafc",
-                borderRadius: 2,
-                fontSize: "14px",
-                "& fieldset": { borderColor: "rgba(255, 255, 255, 0.1)" },
-                "&:hover fieldset": { borderColor: "rgba(243, 168, 51, 0.4)" },
-                "&.Mui-focused fieldset": { borderColor: "#f3a833" },
-              },
-            }}
-          />
-
-          <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1.5, alignItems: "center" }}>
-            <Button
-              variant="contained"
-              onClick={() => handleCopyAndLaunch("chatgpt")}
-              startIcon={<OpenInNew />}
-              sx={{
-                bgcolor: "#10a37f",
-                "&:hover": { bgcolor: "#0d8c6d" },
-                color: "#fff",
-                fontWeight: 700,
-                textTransform: "none",
-                borderRadius: 2,
-                px: 2,
-              }}
-            >
-              Copy Prompt & Open ChatGPT
-            </Button>
-
-            <Button
-              variant="outlined"
-              onClick={() => handleCopyAndLaunch("claude")}
-              startIcon={<OpenInNew />}
-              sx={{
-                borderColor: "rgba(217, 119, 6, 0.5)",
-                color: "#f59e0b",
-                "&:hover": { borderColor: "#f59e0b", bgcolor: "rgba(217, 119, 6, 0.1)" },
-                fontWeight: 700,
-                textTransform: "none",
-                borderRadius: 2,
-                px: 2,
-              }}
-            >
-              Open Claude
-            </Button>
-
-            <Button
-              variant="outlined"
-              onClick={() => handleCopyAndLaunch("deepseek")}
-              startIcon={<OpenInNew />}
-              sx={{
-                borderColor: "rgba(59, 130, 246, 0.5)",
-                color: "#60a5fa",
-                "&:hover": { borderColor: "#60a5fa", bgcolor: "rgba(59, 130, 246, 0.1)" },
-                fontWeight: 700,
-                textTransform: "none",
-                borderRadius: 2,
-                px: 2,
-              }}
-            >
-              Open DeepSeek
-            </Button>
-          </Box>
-
-          {copiedPlatform && (
-            <Alert
-              severity="success"
-              icon={<CheckCircle fontSize="inherit" />}
-              sx={{
-                mt: 2,
-                bgcolor: "rgba(16, 185, 129, 0.1)",
-                color: "#34d399",
-                border: "1px solid rgba(16, 185, 129, 0.3)",
-                fontSize: "13px",
-                py: 0.5,
-              }}
-            >
-              Prompt copied! Just press <strong>Ctrl + V</strong> in {copiedPlatform.toUpperCase()}, wait for it to generate the JSON, then copy and paste it below.
-            </Alert>
-          )}
-        </Paper>
-
-        {/* Step 2 Box */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            bgcolor: "rgba(20, 20, 20, 0.8)",
-            borderRadius: 2.5,
             border: parseResult?.success
-              ? "1px solid rgba(16, 185, 129, 0.5)"
+              ? "1px solid rgba(16, 185, 129, 0.6)"
               : parseResult && !parseResult.success
               ? "1px solid rgba(244, 63, 94, 0.5)"
-              : "1px solid rgba(255, 255, 255, 0.08)",
+              : "1px solid rgba(243, 168, 51, 0.3)",
             transition: "border-color 0.3s ease",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#f8fafc", display: "flex", alignItems: "center", gap: 1 }}>
-              <Box component="span" sx={{ width: 22, height: 22, borderRadius: "50%", bgcolor: "#a855f7", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800 }}>
-                2
+              <Box component="span" sx={{ width: 22, height: 22, borderRadius: "50%", bgcolor: "#f3a833", color: "#000", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800 }}>
+                1
               </Box>
-              Paste AI Response (JSON)
+              Paste ChatGPT's JSON Response
             </Typography>
             {parseResult?.success && (
               <Chip
-                label={`${parseResult.data.sections.length} Sections Ready`}
+                label={`${parseResult.data.sections.length} Sections Recognized`}
                 color="success"
                 size="small"
                 sx={{ fontWeight: 700, fontSize: "11px" }}
@@ -327,10 +230,11 @@ export default function AiAssistantModal({
           <TextField
             fullWidth
             multiline
-            rows={5}
+            autoFocus
+            rows={6}
             value={jsonInput}
             onChange={(e) => setJsonInput(e.target.value)}
-            placeholder='Paste the AI response here... { "sections": [ ... ], "tables": [] }'
+            placeholder='Paste the JSON here... { "sections": [ ... ], "tables": [] }'
             sx={{
               "& .MuiOutlinedInput-root": {
                 bgcolor: "#0a0a0a",
@@ -339,8 +243,8 @@ export default function AiAssistantModal({
                 fontSize: "12px",
                 borderRadius: 2,
                 "& fieldset": { borderColor: "rgba(255, 255, 255, 0.1)" },
-                "&:hover fieldset": { borderColor: "rgba(168, 85, 247, 0.4)" },
-                "&.Mui-focused fieldset": { borderColor: "#a855f7" },
+                "&:hover fieldset": { borderColor: "rgba(243, 168, 51, 0.4)" },
+                "&.Mui-focused fieldset": { borderColor: "#f3a833" },
               },
             }}
           />
@@ -349,7 +253,7 @@ export default function AiAssistantModal({
           {parseResult?.success && (
             <Box sx={{ mt: 2, p: 1.5, bgcolor: "rgba(16, 185, 129, 0.08)", borderRadius: 1.5, border: "1px solid rgba(16, 185, 129, 0.2)" }}>
               <Typography variant="caption" sx={{ color: "#34d399", fontWeight: 700, display: "block", mb: 1 }}>
-                ✓ Successfully parsed the following sections:
+                ✓ Ready to auto-fill into proposal:
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
                 {parseResult.data.sections.map((sec, i) => (
@@ -374,6 +278,73 @@ export default function AiAssistantModal({
               {parseResult.error}
             </Alert>
           )}
+        </Paper>
+
+        {/* Re-Launch / Manual Platform Bar */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            bgcolor: "rgba(20, 20, 20, 0.5)",
+            borderRadius: 2,
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+          }}
+        >
+          <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mb: 1 }}>
+            Need to re-send prompt or use another AI?
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleCopyAndLaunch("chatgpt")}
+              startIcon={<OpenInNew />}
+              sx={{
+                borderColor: "rgba(16, 163, 127, 0.5)",
+                color: "#10a37f",
+                "&:hover": { borderColor: "#10a37f", bgcolor: "rgba(16, 163, 127, 0.1)" },
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 1.5,
+              }}
+            >
+              Re-Launch ChatGPT
+            </Button>
+
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleCopyAndLaunch("claude")}
+              startIcon={<OpenInNew />}
+              sx={{
+                borderColor: "rgba(217, 119, 6, 0.5)",
+                color: "#f59e0b",
+                "&:hover": { borderColor: "#f59e0b", bgcolor: "rgba(217, 119, 6, 0.1)" },
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 1.5,
+              }}
+            >
+              Open Claude
+            </Button>
+
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleCopyAndLaunch("deepseek")}
+              startIcon={<OpenInNew />}
+              sx={{
+                borderColor: "rgba(59, 130, 246, 0.5)",
+                color: "#60a5fa",
+                "&:hover": { borderColor: "#60a5fa", bgcolor: "rgba(59, 130, 246, 0.1)" },
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 1.5,
+              }}
+            >
+              Open DeepSeek
+            </Button>
+          </Box>
         </Paper>
       </DialogContent>
 
@@ -407,7 +378,7 @@ export default function AiAssistantModal({
             "&.Mui-disabled": { bgcolor: "rgba(243, 168, 51, 0.2)", color: "rgba(0,0,0,0.4)" },
           }}
         >
-          Apply to Proposal & Auto-Fill
+          Apply to Proposal & Auto-Fill All Pages
         </Button>
       </DialogActions>
     </Dialog>

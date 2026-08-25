@@ -298,9 +298,9 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                 isStudioMode={isStudioMode}
                 onInput={handleTitleInput}
                 sx={{
-                  fontSize: 28, fontWeight: "bold", color: "#1a1a1a", mb: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
+                  fontSize: 28, fontWeight: "bold", color: "#1a1a1a", mb: "5px", outline: "none",
                   textAlign: "center",
-                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                  "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {}
                 }}
               />
             </Box>
@@ -311,8 +311,8 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                 isStudioMode={isStudioMode}
                 onInput={handleSubtitleInput}
                 sx={{
-                  fontSize: 20, fontWeight: "bold", color: "#1a1a1a", mb: "20px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                  "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                  fontSize: 20, fontWeight: "bold", color: "#1a1a1a", mb: "20px", outline: "none",
+                  "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {}
                 }}
               />
             )}
@@ -345,8 +345,7 @@ const VisualAboutEditor = ({ isStudioMode = true }) => {
                       onInput={(e) => debouncedUpdateElement(element.id, e.currentTarget.textContent)}
                       sx={{
                         fontSize: 14, color: "#4a4a4a", lineHeight: 1.8, outline: "none", minHeight: "20px", whiteSpace: "pre-wrap",
-                        border: isStudioMode ? "1px dashed transparent" : "none",
-                        "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243, 168, 51,0.05)", borderRadius: '10px' } : {}
+                        "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {}
                       }}
                     />
                   )}

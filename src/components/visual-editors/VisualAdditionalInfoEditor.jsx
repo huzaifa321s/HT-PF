@@ -172,8 +172,7 @@ const EditCell = ({ value, onChange, isHeader, isStudioMode }) => {
         minWidth: 40,
         width: "100%",
         wordBreak: "break-word",
-        borderBottom: isStudioMode ? "1px dashed transparent" : "none",
-        "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed rgba(243,168,51,0.5)", bgcolor: "rgba(243,168,51,0.06)", borderRadius: '10px' } : {},
+        "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "1px", borderRadius: "3px" } : {},
       }}
     />
   );
@@ -1145,6 +1144,39 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
 
   return (
     <Box ref={blockRef} sx={{ position: "absolute", top: `${calculatedMargin !== undefined ? calculatedMargin : 24}px`, left: "60px", right: "60px", "&:hover .tbl-del": { opacity: 1 } }}>
+
+      {/* ── Right-gutter AI badge for tables ── */}
+      {isStudioMode && !isThumbnail && table.isAiGenerated && (
+        <Box
+          sx={{
+            position: "absolute",
+            right: "-78px",
+            top: "2px",
+            display: "flex",
+            alignItems: "center",
+            gap: 0,
+            zIndex: 40,
+            pointerEvents: "none",
+          }}
+        >
+          <Box sx={{ width: "20px", height: "1px", borderTop: "1px dashed rgba(167,139,250,0.4)", flexShrink: 0 }} />
+          <Chip
+            icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
+            label="AI Generated"
+            size="small"
+            sx={{
+              bgcolor: "rgba(167,139,250,0.12)",
+              color: "#a78bfa",
+              fontWeight: 600,
+              fontSize: "10px",
+              height: 22,
+              border: "1px solid rgba(167,139,250,0.3)",
+              pointerEvents: "auto",
+              "& .MuiChip-icon": { fontSize: 12 },
+            }}
+          />
+        </Box>
+      )}
       {/* Table Title */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
         <Box
@@ -1153,20 +1185,11 @@ const TableBlock = React.memo(({ table, isStudioMode, isThumbnail, dispatch, onH
           onBlur={(e) => dispatch(addTableTitle({ id: table.id, title: e.currentTarget.innerText }))}
           sx={{
             fontSize: 17, fontWeight: 700, color: "#1a1a1a", outline: "none", flex: 1,
-            borderBottom: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { borderBottom: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
+            "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {},
           }}
         >
           {table.title || "Table Title"}
         </Box>
-        {isStudioMode && table.isAiGenerated && (
-          <Chip
-            icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
-            label="AI Generated"
-            size="small"
-            sx={{ bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", height: 24 }}
-          />
-        )}
         {isStudioMode && !isThumbnail && (
           <Box className="tbl-actions" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <Tooltip title="Add Row">
@@ -1405,21 +1428,51 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
     >
       {isStudioMode && !isThumbnail && (
         <>
+          {/* ── Right-gutter badge: outside the page, zero layout impact ── */}
           {section.isAiGenerated && (
-            <Chip
-              icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
-              label="AI Generated"
-              size="small"
-              sx={{ position: "absolute", right: 20, top: isHeading ? -10 : -15, bgcolor: "rgba(167,139,250,0.1)", color: "#a78bfa", fontWeight: 600, border: "1px solid rgba(167,139,250,0.2)", zIndex: 2 }}
-            />
+            <Box
+              sx={{
+                position: "absolute",
+                right: "-138px",
+                top: "2px",
+                display: "flex",
+                alignItems: "center",
+                gap: 0,
+                zIndex: 40,
+                pointerEvents: "none",
+              }}
+            >
+              {/* Dashed connector line from page edge to badge */}
+              <Box sx={{
+                width: "20px",
+                height: "1px",
+                borderTop: "1px dashed rgba(167,139,250,0.4)",
+                flexShrink: 0,
+              }} />
+              <Chip
+                icon={<AutoFixHigh fontSize="small" sx={{ color: "#a78bfa !important" }} />}
+                label="AI Generated"
+                size="small"
+                sx={{
+                  bgcolor: "rgba(167,139,250,0.12)",
+                  color: "#a78bfa",
+                  fontWeight: 600,
+                  fontSize: "10px",
+                  height: 22,
+                  border: "1px solid rgba(167,139,250,0.3)",
+                  pointerEvents: "auto",
+                  "& .MuiChip-icon": { fontSize: 12 },
+                }}
+              />
+            </Box>
           )}
 
-          {/* Action Buttons Container */}
+          {/* Action Buttons Container in left gutter */}
           <Box
             className={`action-btns ${Boolean(typeAnchor) || Boolean(alignAnchor) || Boolean(colorAnchor) ? 'menu-open' : ''}`}
             sx={{
               position: "absolute",
-              left: "28px",
+              left: "14px",
               top: isHeading ? "-38px" : "4px",
               display: "flex",
               flexDirection: isHeading ? "row" : "column",
@@ -1600,8 +1653,6 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
               ))}
             </Box>
           </Menu>
-
-          {!isHeading && <SectionToolbar contentRef={contentRef} />}
         </>
       )}
 
@@ -1619,8 +1670,7 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
             sx={{
               fontSize: 28, fontWeight: "bold", color: section.color || "#1a1a1a",
               textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word",
-              border: isStudioMode ? "1px dashed transparent" : "none",
-              "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
+              "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {},
             }}
           />
         </Box>
@@ -1635,8 +1685,7 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
           sx={{
             fontSize: 20, fontWeight: "bold", color: "#1a1a1a",
             textAlign: section.titleAlign || "left", outline: "none", wordBreak: "break-word", mb: "8px",
-            border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
+            "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {},
           }}
         />
       )}
@@ -1650,8 +1699,7 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
           sx={{
             fontSize: 16, fontWeight: 600, color: "#555",
             textAlign: "left", outline: "none", wordBreak: "break-word", mb: "6px",
-            border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
+            "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {},
           }}
         />
       )}
@@ -1668,8 +1716,7 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
           sx={{
             fontSize: 15, lineHeight: 1.8, color: "#4a4a4a", textAlign: section.contentAlign || "left",
             outline: "none", minHeight: "20px", wordBreak: "break-word",
-            border: isStudioMode ? "1px dashed transparent" : "none",
-            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #f3a833", bgcolor: "rgba(243,168,51,0.05)", borderRadius: '10px' } : {},
+            "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {},
             // Proper HTML rendering for bullet lists, headings inside content
             "& ul": { paddingLeft: "20px", margin: "4px 0" },
             "& ol": { paddingLeft: "20px", margin: "4px 0" },
@@ -1683,7 +1730,7 @@ const SectionItem = React.memo(({ section, index, isLast, nextSectionType, isStu
         />
       )}
 
-      {!isLast && !isHeading && nextSectionType !== "heading" && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "28px" }} />}
+      {!isLast && !isHeading && nextSectionType !== "heading" && <Box sx={{ width: "100%", height: "1px", backgroundColor: "#eee", mt: "24px" }} />}
     </Box>
   );
 }, (prev, next) =>

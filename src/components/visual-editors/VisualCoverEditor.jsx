@@ -190,11 +190,11 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                 fontWeight: 700,
                 fontFamily: "'Unbounded', sans-serif",
                 outline: "none",
-                borderBottom: isStudioMode ? "1px dashed transparent" : "none",
                 whiteSpace: "nowrap",
                 "&:hover, &:focus": isStudioMode ? {
-                  borderBottom: "1px dashed rgba(243, 168, 51, 0.2)",
-                  bgcolor: "rgba(255,255,255,0.05)"
+                  outline: "1px dashed rgba(243, 168, 51, 0.5)",
+                  outlineOffset: "2px",
+                  borderRadius: "4px",
                 } : {}
               }}
             />
@@ -224,10 +224,10 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
               lineHeight: 1.1,
               fontFamily: "'Unbounded', sans-serif",
               outline: "none",
-              border: isStudioMode ? "1px dashed transparent" : "none",
               "&:hover, &:focus": isStudioMode ? {
-                border: "1px dashed rgba(243,168,51,0.5)",
-                bgcolor: "rgba(243,168,51,0.05)"
+                outline: "1px dashed rgba(243,168,51,0.5)",
+                outlineOffset: "2px",
+                borderRadius: "4px",
               } : {}
             }}
           >

@@ -405,7 +405,7 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
                   width: "800px",
                   minWidth: "800px",
                 }}
-              className={`flex flex-col ${isStudioMode ? "gap-12" : "gap-0"}`}
+              className={`flex flex-col ${isStudioMode ? "gap-10" : "gap-0"}`}
             >
               <AnimatePresence>
                 {visiblePages.map((page, index) => {

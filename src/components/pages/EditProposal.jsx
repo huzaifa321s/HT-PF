@@ -51,6 +51,7 @@ import { setDBData, setMode1 } from "../../utils/page1Slice";
 import { showToast } from "../../utils/toastSlice";
 import { setFullFormData } from "../../utils/proposalSlice";
 import AiAssistantModal from "../modals/AiAssistantModal";
+import { copyPromptAndOpenAI } from "../../utils/aiPromptHelper";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
@@ -464,8 +465,15 @@ const EditProposal = () => {
     }
   };
 
-  const handleGenerateAI = () => {
+  const handleGenerateAI = async () => {
+    const brief = (formData.projectBrief || "").trim();
+    if (!brief) {
+      dispatch(showToast({ message: "Please enter your Project Brief first.", severity: "warning" }));
+      return;
+    }
+    await copyPromptAndOpenAI(brief, "chatgpt", "Humantek");
     setAiModalOpen(true);
+    dispatch(showToast({ message: "Prompt auto-copied & launched in ChatGPT! Paste the JSON result below.", severity: "success" }));
   };
 
   const handleApplyAiData = async (data, updatedBrief) => {

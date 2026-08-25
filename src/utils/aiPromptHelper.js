@@ -70,22 +70,27 @@ ${projectBrief}
 export const copyPromptAndOpenAI = async (projectBrief, platform = "chatgpt", companyName = "Humantek") => {
   const prompt = buildProposalPrompt(projectBrief, companyName);
 
-  // Copy prompt to clipboard
+  // 1. Auto-copy prompt to clipboard (backup for instant manual pasting)
   try {
-    await navigator.clipboard.writeText(prompt);
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(prompt);
+    }
   } catch (err) {
     console.warn("Clipboard write failed, using fallback:", err);
-    const textarea = document.createElement("textarea");
-    textarea.value = prompt;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = prompt;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    } catch (e) {}
   }
 
-  // URLs for AI platforms
+  // 2. Auto-paste into ChatGPT URL query parameter (?q=...) so it pre-fills and auto-executes
+  const encodedPrompt = encodeURIComponent(prompt);
   const platformUrls = {
-    chatgpt: "https://chatgpt.com",
+    chatgpt: `https://chatgpt.com/?q=${encodedPrompt}`,
     claude: "https://claude.ai/new",
     deepseek: "https://chat.deepseek.com",
     gemini: "https://gemini.google.com/app",

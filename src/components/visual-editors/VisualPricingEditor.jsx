@@ -268,7 +268,7 @@ const PackageVisualBox = ({
             fallback="Package Title"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("title", e)}
-            sx={{ fontSize: titleSize, fontWeight: "bold", color: "#1a1a1a", textAlign: "center", mb: totalPkgs >= 3 ? 0.5 : 1, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: titleSize, fontWeight: "bold", color: "#1a1a1a", textAlign: "center", mb: totalPkgs >= 3 ? 0.5 : 1, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
           />
 
           <Box sx={{ height: headerBarHeight, backgroundColor: pkg.color || "#000", mb: totalPkgs >= 3 ? 1 : 1.5 }} />
@@ -278,7 +278,7 @@ const PackageVisualBox = ({
             fallback="Subtitle"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("subtitle", e)}
-            sx={{ fontSize: subtitleSize, textAlign: "start", color: pkg.color || "#000", fontWeight: "bold", mb: totalPkgs >= 3 ? 1 : 1.5, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: subtitleSize, textAlign: "start", color: pkg.color || "#000", fontWeight: "bold", mb: totalPkgs >= 3 ? 1 : 1.5, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
           />
 
           <EditableText
@@ -286,7 +286,7 @@ const PackageVisualBox = ({
             fallback="0 / Month"
             isStudioMode={isStudioMode}
             onInput={(e) => handleFieldInput("price", e)}
-            sx={{ fontSize: priceSize, fontWeight: "bold", color: "#000", textAlign: "start", mb: totalPkgs >= 3 ? 1 : 2, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+            sx={{ fontSize: priceSize, fontWeight: "bold", color: "#000", textAlign: "start", mb: totalPkgs >= 3 ? 1 : 2, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
           />
         </>
       )}
@@ -306,7 +306,7 @@ const PackageVisualBox = ({
               fallback="Feature"
               isStudioMode={isStudioMode}
               onInput={(e) => onUpdateItem(i, e.currentTarget.textContent)}
-              sx={{ flexGrow: 1, fontSize: itemSize, textAlign: "left", outline: "none", color: "#333", borderBottom: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { borderBottom: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+              sx={{ flexGrow: 1, fontSize: itemSize, textAlign: "left", outline: "none", color: "#333", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "1px", borderRadius: "3px" } : {} }}
             />
             {isStudioMode && (
               <Box className="item-actions" sx={{ position: "absolute", top: -30, left: 0, opacity: 0, transition: "opacity 0.2s", zIndex: 10, bgcolor: "#141414", boxShadow: 1, borderRadius: '10px', display: "flex", gap: 0.5, p: 0.5 }}>
@@ -480,7 +480,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Pricing Plans"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updatePageTitle, e)}
-                    sx={{ fontSize: pageTitleSize, fontWeight: "bold", color: "#333333", mb: pageTitleMb, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontSize: pageTitleSize, fontWeight: "bold", color: "#333333", mb: pageTitleMb, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
                   />
 
                   <EditableText
@@ -488,7 +488,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Choose Your Perfect Plan"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updateHeading, e)}
-                    sx={{ fontWeight: "bold", color: "#000", textAlign: "center", fontSize: headingSize, mt: headingMt, mb: headingMb, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontWeight: "bold", color: "#000", textAlign: "center", fontSize: headingSize, mt: headingMt, mb: headingMb, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
                   />
 
                   <EditableText
@@ -496,7 +496,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     fallback="Flexible options designed for your needs"
                     isStudioMode={isStudioMode}
                     onInput={(e) => handleInput(updateSubheading, e)}
-                    sx={{ fontSize: subheadingSize, color: "#000", textAlign: "center", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                    sx={{ fontSize: subheadingSize, color: "#000", textAlign: "center", lineHeight: 1.6, outline: "none", "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
                   />
 
                   <Box sx={{ height: "1px", backgroundColor: "#000", my: dividerMy }} />
@@ -507,7 +507,7 @@ const VisualPricingEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                         value={el.content}
                         isStudioMode={isStudioMode}
                         onInput={(e) => debouncedUpdateContent(el.id, e.currentTarget.textContent)}
-                        sx={{ fontSize: el.type === "mainHeading" ? mainHeadingSize : textFontSize, fontWeight: el.type === "mainHeading" ? "bold" : "normal", textAlign: el.type === "mainHeading" ? "center" : "left", color: "#333333", lineHeight: 1.6, outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20, "&:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)" } : {} }}
+                        sx={{ fontSize: el.type === "mainHeading" ? mainHeadingSize : textFontSize, fontWeight: el.type === "mainHeading" ? "bold" : "normal", textAlign: el.type === "mainHeading" ? "center" : "left", color: "#333333", lineHeight: 1.6, outline: "none", minHeight: 20, "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {} }}
                       />
                       {isStudioMode && (
                         <Box className="text-actions" sx={{ position: "absolute", right: -30, top: 0, opacity: 0 }}>

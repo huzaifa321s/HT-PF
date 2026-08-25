@@ -137,8 +137,8 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                     isStudioMode={isStudioMode}
                     onInput={handleTitleInput}
                     sx={{
-                      fontSize: 30, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none",
-                      "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                      fontSize: 30, fontWeight: "bold", color: "#000", textAlign: "center", mb: "30px", outline: "none",
+                      "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {}
                     }}
                   />
                 ) : (
@@ -160,8 +160,8 @@ const VisualPaymentEditor = ({ isStudioMode = true, isThumbnail = false, onPageC
                           isStudioMode={isStudioMode}
                           onInput={(e) => debouncedUpdateTerm(item.globalIndex, e.currentTarget.textContent)}
                           sx={{
-                            flex: 1, fontSize: 14, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", border: isStudioMode ? "1px dashed transparent" : "none", minHeight: 20,
-                            "&:hover, &:focus": isStudioMode ? { border: "1px dashed #FF8C00", bgcolor: "rgba(255,140,0,0.05)", borderRadius: '10px' } : {}
+                            flex: 1, fontSize: 14, lineHeight: 1.8, color: "#333333", textAlign: "justify", ml: "5px", outline: "none", minHeight: 20,
+                            "&:hover, &:focus": isStudioMode ? { outline: "1px dashed rgba(243,168,51,0.6)", outlineOffset: "2px", borderRadius: "4px" } : {}
                           }}
                         />
                       </Box>
