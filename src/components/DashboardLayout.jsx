@@ -576,33 +576,65 @@ export default function DashboardLayout({ children }) {
             </Box>
 
             {/* Tab 3: Highlighted Center Create Button (Branded Gold Style) */}
-            <Box
-              onClick={() => handleNav("/create-proposal")}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                "&:active": { transform: "scale(0.9)" },
-                transition: "transform 0.15s ease",
-              }}
-            >
-              <Box
-                sx={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: "14px",
-                  background: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
-                  boxShadow: "0 4px 14px rgba(243, 168, 51, 0.55)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <AddIcon sx={{ color: "#000", fontSize: "1.5rem", fontWeight: "bold" }} />
-              </Box>
-            </Box>
+            {(() => {
+              const isCreateOrEdit = isEditor || isStudio;
+              return (
+                <Box
+                  onClick={isCreateOrEdit ? undefined : () => handleNav("/create-proposal")}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: isCreateOrEdit ? "default" : "pointer",
+                    "&:active": { transform: isCreateOrEdit ? "none" : "scale(0.9)" },
+                    transition: "transform 0.15s ease",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: "14px",
+                      background: isCreateOrEdit
+                        ? "linear-gradient(135deg, rgba(243, 168, 51, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%)"
+                        : "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
+                      boxShadow: isCreateOrEdit
+                        ? "0 0 16px rgba(243, 168, 51, 0.45), inset 0 0 8px rgba(243, 168, 51, 0.2)"
+                        : "0 4px 14px rgba(243, 168, 51, 0.55)",
+                      border: isCreateOrEdit ? "2px solid #f3a833" : "2px solid transparent",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.25s ease",
+                    }}
+                  >
+                    <AddIcon
+                      sx={{
+                        color: isCreateOrEdit ? "#f3a833" : "#000",
+                        fontSize: "1.5rem",
+                        fontWeight: "bold",
+                        opacity: isCreateOrEdit ? 0.9 : 1,
+                      }}
+                    />
+                  </Box>
+                  {isCreateOrEdit && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        bottom: -6,
+                        width: 4,
+                        height: 4,
+                        borderRadius: "50%",
+                        bgcolor: "#f3a833",
+                        boxShadow: "0 0 6px #f3a833",
+                      }}
+                    />
+                  )}
+                </Box>
+              );
+            })()}
 
             {/* Tab 4: Notifications (Inbox) */}
             <Box
