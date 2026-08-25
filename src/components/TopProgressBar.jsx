@@ -1,61 +1,72 @@
 "use client";
 
-import React, { useEffect, useState, useRef, Suspense } from "react";
+import React, { useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 function ProgressIndicator() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(false);
+  const containerRef = useRef(null);
+  const barRef = useRef(null);
+  const pegRef = useRef(null);
   const timerRef = useRef(null);
-  const finishTimerRef = useRef(null);
+  const finishTimeoutRef = useRef(null);
   const isFirstMount = useRef(true);
+  const currentProgress = useRef(0);
 
-  const startProgress = () => {
-    if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
+  const setBarWidth = (percent) => {
+    currentProgress.current = percent;
+    if (barRef.current) {
+      barRef.current.style.width = `${percent}%`;
+    }
+    if (pegRef.current) {
+      pegRef.current.style.right = `${100 - percent}%`;
+      pegRef.current.style.opacity = percent < 100 ? "0.9" : "0";
+    }
+  };
+
+  const start = () => {
+    if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    setVisible(true);
-    setProgress(15);
+    if (containerRef.current) {
+      containerRef.current.style.opacity = "1";
+    }
+    setBarWidth(15);
 
     timerRef.current = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 60) return prev + Math.random() * 12 + 4;
-        if (prev < 85) return prev + Math.random() * 5 + 1;
-        if (prev < 95) return prev + 0.5;
-        return prev;
-      });
+      const cur = currentProgress.current;
+      if (cur < 60) {
+        setBarWidth(cur + Math.random() * 10 + 4);
+      } else if (cur < 85) {
+        setBarWidth(cur + Math.random() * 4 + 1);
+      } else if (cur < 96) {
+        setBarWidth(cur + 0.3);
+      }
     }, 150);
   };
 
-  const finishProgress = () => {
+  const finish = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    setProgress(100);
+    setBarWidth(100);
 
-    finishTimerRef.current = setTimeout(() => {
-      setVisible(false);
-      setTimeout(() => setProgress(0), 300);
-    }, 250);
+    finishTimeoutRef.current = setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.style.opacity = "0";
+      }
+      setTimeout(() => {
+        setBarWidth(0);
+      }, 300);
+    }, 200);
   };
 
-  // Expose global controller for manual triggers (e.g. from axios or custom actions)
-  useEffect(() => {
-    window.__startTopLoader = startProgress;
-    window.__finishTopLoader = finishProgress;
-    return () => {
-      delete window.__startTopLoader;
-      delete window.__finishTopLoader;
-    };
-  }, []);
-
-  // Finish progress when route finishes rendering
+  // Route change completion listener (runs asynchronously after route has mounted/rendered)
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
       return;
     }
-    finishProgress();
+    finish();
   }, [pathname, searchParams]);
 
   // Intercept all link clicks and history pushState/replaceState
@@ -65,37 +76,42 @@ function ProgressIndicator() {
         const target = e.target.closest("a");
         if (!target) return;
         const href = target.getAttribute("href");
-        if (!href || href.startsWith("#") || href.startsWith("javascript:") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+        if (
+          !href ||
+          href.startsWith("#") ||
+          href.startsWith("javascript:") ||
+          href.startsWith("mailto:") ||
+          href.startsWith("tel:")
+        )
+          return;
         if (target.target === "_blank" || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
 
         const currentUrl = new URL(window.location.href);
         const nextUrl = new URL(href, window.location.href);
 
-        // If navigating to a different pathname/search
         if (currentUrl.pathname !== nextUrl.pathname || currentUrl.search !== nextUrl.search) {
-          startProgress();
+          start();
         }
       } catch (err) {
         // Ignore invalid URLs
       }
     };
 
-    // Monkey-patch pushState & replaceState so router.push() triggers the loader instantly
     const originalPushState = window.history.pushState;
     const originalReplaceState = window.history.replaceState;
 
     window.history.pushState = function (...args) {
-      startProgress();
+      start();
       return originalPushState.apply(this, args);
     };
 
     window.history.replaceState = function (...args) {
-      startProgress();
+      start();
       return originalReplaceState.apply(this, args);
     };
 
     const handlePopState = () => {
-      startProgress();
+      start();
     };
 
     document.addEventListener("click", handleAnchorClick, true);
@@ -107,14 +123,13 @@ function ProgressIndicator() {
       window.history.pushState = originalPushState;
       window.history.replaceState = originalReplaceState;
       if (timerRef.current) clearInterval(timerRef.current);
-      if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
+      if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
     };
   }, []);
 
-  if (!visible && progress === 0) return null;
-
   return (
     <div
+      ref={containerRef}
       style={{
         position: "fixed",
         top: 0,
@@ -123,37 +138,38 @@ function ProgressIndicator() {
         height: "3px",
         zIndex: 99999999,
         pointerEvents: "none",
-        backgroundColor: "transparent",
+        opacity: 0,
+        transition: "opacity 0.25s ease-out",
       }}
     >
-      {/* Active Glowing Progress Bar */}
+      {/* Active Glowing Progress Line */}
       <div
+        ref={barRef}
         style={{
           height: "100%",
-          width: `${progress}%`,
+          width: "0%",
           background: "linear-gradient(90deg, #f3a833 0%, #ffd700 60%, #f59e0b 100%)",
           boxShadow: "0 0 14px rgba(243, 168, 51, 0.9), 0 0 6px #f3a833",
-          transition: progress === 100 ? "width 0.2s ease-out, opacity 0.3s ease-out" : "width 0.3s cubic-bezier(0.1, 0.05, 0.25, 1)",
-          opacity: visible ? 1 : 0,
+          transition: "width 0.25s cubic-bezier(0.1, 0.05, 0.25, 1)",
           borderRadius: "0 2px 2px 0",
         }}
       />
       {/* Trailing Glow Peg */}
-      {visible && progress < 100 && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: `${100 - progress}%`,
-            width: "100px",
-            height: "100%",
-            boxShadow: "0 0 16px #f3a833, 0 0 8px #ffd700",
-            opacity: 0.8,
-            transform: "rotate(3deg) translate(0px, -4px)",
-            pointerEvents: "none",
-          }}
-        />
-      )}
+      <div
+        ref={pegRef}
+        style={{
+          position: "absolute",
+          top: 0,
+          right: "100%",
+          width: "100px",
+          height: "100%",
+          boxShadow: "0 0 16px #f3a833, 0 0 8px #ffd700",
+          opacity: 0,
+          transform: "rotate(3deg) translate(0px, -4px)",
+          pointerEvents: "none",
+          transition: "opacity 0.2s ease",
+        }}
+      />
     </div>
   );
 }
