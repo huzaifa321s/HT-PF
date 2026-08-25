@@ -24,26 +24,26 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   const proposalBrandName = formDataRT?.brandName || "";
 
 
-  const [localName, setLocalName] = useState(page1.brandName || "Your Brand");
-  const [localTagline, setLocalTagline] = useState(page1.brandTagline || "Your Tagline Here");
-  const [localClientName, setLocalClientName] = useState(clientName);
-  const [localDate, setLocalDate] = useState(date);
-
   const nameRef = useRef(null);
   const taglineRef = useRef(null);
   const clientNameRef = useRef(null);
   const dateRef = useRef(null);
 
-  // Sync brandName and tagline via state (safe — those fields use EditableText pattern)
+  // Sync tagline directly to DOM ref (avoid React re-render cursor jumping/reversing bug)
   useEffect(() => {
-    if (page1.brandTagline && page1.brandTagline !== localTagline && document.activeElement !== taglineRef.current) {
-      setLocalTagline(page1.brandTagline);
+    const tag = page1.brandTagline || "Crafting Legacies That Last";
+    if (taglineRef.current && document.activeElement !== taglineRef.current) {
+      if (tag.trim().toLowerCase() === "crafting legacies that last") {
+        taglineRef.current.innerHTML = `<span style="color: #F3A833; display: block; white-space: nowrap;">Crafting Legacies</span><span style="color: #FFFFFF; display: block; font-size: 0.75em; margin-top: 8px;">That Last</span>`;
+      } else {
+        taglineRef.current.textContent = tag;
+      }
     }
   }, [page1.brandTagline]);
 
   // Sync brand name directly to DOM ref (from proposal form field)
   useEffect(() => {
-    const name = proposalBrandName || page1.brandName;
+    const name = proposalBrandName || page1.brandName || "Your Brand";
     if (name && nameRef.current && document.activeElement !== nameRef.current) {
       nameRef.current.textContent = name;
       // Also keep page1Slice in sync
@@ -51,7 +51,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
         dispatch(setBrandName(proposalBrandName));
       }
     }
-  }, [proposalBrandName, page1.brandName]);
+  }, [proposalBrandName, page1.brandName, dispatch]);
 
   // Sync clientName directly to DOM ref to avoid React re-render cursor bug
   useEffect(() => {
@@ -88,14 +88,13 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
   );
 
   const handleNameInput = (e) => {
-    const val = e.currentTarget.textContent;
-    setLocalName(val);
-    debouncedSaveName(val);
+    // Do NOT set React state on each keystroke — preserves cursor position
+    debouncedSaveName(e.currentTarget.textContent);
   };
 
   const handleTaglineInput = (e) => {
-    const val = e.currentTarget.textContent;
-    setLocalTagline(val);
+    // Do NOT set React state on each keystroke — preserves cursor position
+    const val = e.currentTarget.innerText || e.currentTarget.textContent;
     debouncedSaveTagline(val);
   };
 
@@ -230,20 +229,7 @@ const VisualCoverEditor = ({ isStudioMode = true }) => {
                 borderRadius: "4px",
               } : {}
             }}
-          >
-            {localTagline?.trim().toLowerCase() === "crafting legacies that last" ? (
-              <>
-                <Box component="span" sx={{ color: "#F3A833", display: "block", whiteSpace: "nowrap" }}>
-                  Crafting Legacies
-                </Box>
-                <Box component="span" sx={{ color: "#FFFFFF", display: "block", fontSize: "0.75em", mt: 1 }}>
-                  That Last
-                </Box>
-              </>
-            ) : (
-              localTagline
-            )}
-          </Box>
+          />
         </Box>
 
         {/* Proposal By */}
