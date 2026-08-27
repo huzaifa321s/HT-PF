@@ -9,6 +9,7 @@ const nextConfig = {
   ],
   // Add empty turbopack config to silence the warning since we use a custom webpack config
   turbopack: {},
+  devIndicators: false,
 
   // 👇 ADD THIS REWRITES BLOCK 👇
   async rewrites() {

@@ -478,7 +478,7 @@ export default function DashboardLayout({ children }) {
           sx={{
             flexGrow: 1,
             p: isEditor ? 0 : { xs: 1.5, sm: 2.5, md: 4 },
-            pb: isMobile ? "80px" : undefined,
+            pb: isEditor ? 0 : { xs: "104px", sm: "112px", md: 4 },
             display: 'flex',
             flexDirection: 'column'
           }}
@@ -504,7 +504,7 @@ export default function DashboardLayout({ children }) {
               display: "flex",
               justifyContent: "space-around",
               alignItems: "center",
-              px: 2,
+              px: { xs: 0.5, sm: 2 },
               pb: "safe-area-inset-bottom", // Mobile Notch safe area
             }}
           >
@@ -512,6 +512,8 @@ export default function DashboardLayout({ children }) {
             <Box
               onClick={() => handleNav(role === "admin" ? "/dashboard" : "/agent-dashboard")}
               sx={{
+                flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -521,14 +523,16 @@ export default function DashboardLayout({ children }) {
                 "&:active": { transform: "scale(0.95)" },
               }}
             >
-              <DashboardIcon sx={{ fontSize: "1.4rem" }} />
-              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Home</Typography>
+              <DashboardIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
+              <Typography sx={{ fontSize: { xs: "9px", sm: "10px" }, fontWeight: 700, mt: 0.25, whiteSpace: "nowrap" }}>Home</Typography>
             </Box>
 
             {/* Tab 2: Proposals */}
             <Box
               onClick={() => handleNav(role === "admin" ? "/admin/proposals" : "/your-proposals")}
               sx={{
+                flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -538,8 +542,8 @@ export default function DashboardLayout({ children }) {
                 "&:active": { transform: "scale(0.95)" },
               }}
             >
-              <DescriptionIcon sx={{ fontSize: "1.4rem" }} />
-              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Proposals</Typography>
+              <DescriptionIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
+              <Typography sx={{ fontSize: { xs: "9px", sm: "10px" }, fontWeight: 700, mt: 0.25, whiteSpace: "nowrap" }}>Proposals</Typography>
             </Box>
 
             {/* Tab 3: Highlighted Center Create Button (Branded Gold Style) */}
@@ -549,6 +553,8 @@ export default function DashboardLayout({ children }) {
                 <Box
                   onClick={isCreateOrEdit ? undefined : () => handleNav("/create-proposal")}
                   sx={{
+                    flex: 1,
+                    minWidth: 0,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -561,9 +567,9 @@ export default function DashboardLayout({ children }) {
                 >
                   <Box
                     sx={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: "14px",
+                      width: { xs: 40, sm: 46 },
+                      height: { xs: 40, sm: 46 },
+                      borderRadius: "13px",
                       background: isCreateOrEdit
                         ? "linear-gradient(135deg, rgba(243, 168, 51, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%)"
                         : "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
@@ -580,7 +586,7 @@ export default function DashboardLayout({ children }) {
                     <AddIcon
                       sx={{
                         color: isCreateOrEdit ? "#f3a833" : "#000",
-                        fontSize: "1.5rem",
+                        fontSize: { xs: "1.3rem", sm: "1.5rem" },
                         fontWeight: "bold",
                         opacity: isCreateOrEdit ? 0.9 : 1,
                       }}
@@ -607,6 +613,8 @@ export default function DashboardLayout({ children }) {
             <Box
               onClick={() => handleNav(role === "admin" ? "/admin/notifications" : "/docs")}
               sx={{
+                flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -618,12 +626,12 @@ export default function DashboardLayout({ children }) {
             >
               {role === "admin" ? (
                 <Badge badgeContent={unreadCount} color="error" variant="dot">
-                  <NotificationsIcon sx={{ fontSize: "1.4rem" }} />
+                  <NotificationsIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
                 </Badge>
               ) : (
-                <MenuBookIcon sx={{ fontSize: "1.4rem" }} />
+                <MenuBookIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
               )}
-              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>
+              <Typography sx={{ fontSize: { xs: "9px", sm: "10px" }, fontWeight: 700, mt: 0.25, whiteSpace: "nowrap" }}>
                 {role === "admin" ? "Inbox" : "Docs"}
               </Typography>
             </Box>
@@ -632,6 +640,8 @@ export default function DashboardLayout({ children }) {
             <Box
               onClick={() => setMenuDrawerOpen(true)}
               sx={{
+                flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -641,8 +651,8 @@ export default function DashboardLayout({ children }) {
                 "&:active": { transform: "scale(0.95)" },
               }}
             >
-              <MenuIcon sx={{ fontSize: "1.4rem" }} />
-              <Typography sx={{ fontSize: "10px", fontWeight: 700, mt: 0.5 }}>Menu</Typography>
+              <MenuIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
+              <Typography sx={{ fontSize: { xs: "9px", sm: "10px" }, fontWeight: 700, mt: 0.25, whiteSpace: "nowrap" }}>Menu</Typography>
             </Box>
           </Box>
 

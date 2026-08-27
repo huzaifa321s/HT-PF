@@ -150,7 +150,7 @@ const NotificationsPage = () => {
     >
       <Box sx={{ maxWidth: 1000, mx: "auto", px: { xs: 2, md: 4 } }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: { xs: 2.5, sm: 3.5, md: 4 }, gap: { xs: 1.5, sm: 2 } }}>
           <Box
             sx={{
               display: "flex",
@@ -158,15 +158,16 @@ const NotificationsPage = () => {
               justifyContent: "center",
               bgcolor: "rgba(243, 168, 51, 0.15)",
               borderRadius: "50%",
-              width: 56,
-              height: 56,
-              mr: 2,
+              width: { xs: 44, sm: 54, md: 56 },
+              height: { xs: 44, sm: 54, md: 56 },
+              minWidth: { xs: 44, sm: 54, md: 56 },
               boxShadow: "0 4px 20px rgba(243, 168, 51, 0.3)",
+              flexShrink: 0,
             }}
           >
-            <NotificationsIcon sx={{ fontSize: 30, color: "#f3a833" }} />
+            <NotificationsIcon sx={{ fontSize: { xs: 22, sm: 28, md: 30 }, color: "#f3a833" }} />
           </Box>
-          <Box>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography
               variant="h4"
               sx={{
@@ -175,12 +176,13 @@ const NotificationsPage = () => {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 letterSpacing: "-0.5px",
-                fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                fontSize: { xs: "1.3rem", sm: "1.65rem", md: "2.125rem" },
+                lineHeight: 1.2,
               }}
             >
               Activity Notifications
             </Typography>
-            <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5 }}>
+            <Typography variant="body2" sx={{ color: "#94a3b8", mt: { xs: 0.25, md: 0.5 }, fontSize: { xs: "0.78rem", sm: "0.85rem" } }}>
               Track proposal changes and agent actions across the portal in real-time.
             </Typography>
           </Box>
@@ -188,7 +190,7 @@ const NotificationsPage = () => {
 
         <Card
           sx={{
-            borderRadius: 4,
+            borderRadius: { xs: 3, md: 4 },
             background: "rgba(20, 20, 20, 0.8)",
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(243, 168, 51, 0.2)",
@@ -206,18 +208,18 @@ const NotificationsPage = () => {
             },
           }}
         >
-          <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+          <CardContent sx={{ p: { xs: 1.5, sm: 3, md: 4 }, "&:last-child": { pb: { xs: 2, sm: 3, md: 4 } } }}>
             {loading && notifications.length === 0 ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
                 <CircularProgress size={45} sx={{ color: "#f3a833" }} />
               </Box>
             ) : notifications.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 8 }}>
-                <NotificationsIcon sx={{ fontSize: 60, color: "rgba(243,168,51,0.25)", mb: 2 }} />
-                <Typography variant="h6" sx={{ color: "#94a3b8", fontWeight: 600 }}>
+              <Box sx={{ textAlign: "center", py: 8, px: 2 }}>
+                <NotificationsIcon sx={{ fontSize: { xs: 44, sm: 60 }, color: "rgba(243,168,51,0.25)", mb: 2 }} />
+                <Typography variant="h6" sx={{ color: "#94a3b8", fontWeight: 600, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
                   All Caught Up!
                 </Typography>
-                <Typography variant="body2" sx={{ color: "#64748b", mt: 1 }}>
+                <Typography variant="body2" sx={{ color: "#64748b", mt: 1, fontSize: { xs: "0.78rem", sm: "0.875rem" } }}>
                   No activities recorded yet. When agents create or manage proposals, you will see notifications here.
                 </Typography>
               </Box>
@@ -238,79 +240,110 @@ const NotificationsPage = () => {
                           transition={{ delay: index * 0.05 }}
                           alignItems="flex-start"
                           sx={{
-                            py: 2.5,
-                            px: { xs: 1.5, sm: 3 },
+                            py: { xs: 2, sm: 2.5 },
+                            px: { xs: 1.25, sm: 2.5, md: 3 },
                             transition: "all 0.25s ease",
                             borderLeft: isNew ? "4px solid #f3a833" : "4px solid transparent",
                             bgcolor: isNew ? "rgba(243, 168, 51, 0.03)" : "transparent",
+                            flexDirection: { xs: "column", sm: "row" },
+                            alignItems: { xs: "stretch", sm: "flex-start" },
+                            gap: { xs: 1.5, sm: 0 },
                             "&:hover": {
                               bgcolor: "rgba(255, 255, 255, 0.02)",
                             },
                           }}
                         >
-                          <ListItemAvatar sx={{ mt: 0.5 }}>
-                            <Avatar sx={{ bgcolor: config.bg, width: 44, height: 44 }}>
-                              {config.icon}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            disableTypography
-                            primary={
-                              <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap">
-                                <Typography variant="subtitle1" fontWeight={700} sx={{ color: "#f8fafc" }}>
-                                  {notif.title}
-                                </Typography>
-                                {isNew && (
-                                  <Chip
-                                    label="NEW"
-                                    size="small"
-                                    sx={{
-                                      height: 18,
-                                      fontSize: "0.65rem",
-                                      fontWeight: 800,
-                                      bgcolor: "#f3a833",
-                                      color: "#000",
-                                    }}
-                                  />
-                                )}
-                              </Stack>
-                            }
-                            secondary={
-                              <Stack spacing={1} sx={{ mt: 0.8 }}>
-                                <Typography variant="body2" sx={{ color: "#cbd5e1", lineHeight: 1.5 }}>
-                                  {notif.message}
-                                </Typography>
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                  <Typography variant="caption" sx={{ color: "#f3a833", fontWeight: 600 }}>
-                                    {timeAgo(notif.createdAt)}
+                          <Box sx={{ display: "flex", alignItems: "flex-start", gap: { xs: 1.25, sm: 2 }, flex: 1, minWidth: 0 }}>
+                            <ListItemAvatar sx={{ mt: 0.25, minWidth: 0, mr: { xs: 0, sm: 0.5 } }}>
+                              <Avatar
+                                sx={{
+                                  bgcolor: config.bg,
+                                  width: { xs: 36, sm: 44 },
+                                  height: { xs: 36, sm: 44 },
+                                  "& .MuiSvgIcon-root": {
+                                    fontSize: { xs: 18, sm: 22 },
+                                  },
+                                }}
+                              >
+                                {config.icon}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              disableTypography
+                              sx={{ my: 0, minWidth: 0, flex: 1 }}
+                              primary={
+                                <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+                                  <Typography
+                                    variant="subtitle1"
+                                    fontWeight={700}
+                                    sx={{ color: "#f8fafc", fontSize: { xs: "0.92rem", sm: "1.05rem" }, wordBreak: "break-word" }}
+                                  >
+                                    {notif.title}
                                   </Typography>
-                                  {notif.triggeredBy && (
-                                    <>
-                                      <Box sx={{ width: 4, height: 4, borderRadius: "50%", bgcolor: "#475569" }} />
-                                      <Typography variant="caption" sx={{ color: "#94a3b8" }}>
-                                        By: {notif.triggeredBy.name || notif.triggeredBy.email}
-                                      </Typography>
-                                    </>
+                                  {isNew && (
+                                    <Chip
+                                      label="NEW"
+                                      size="small"
+                                      sx={{
+                                        height: 16,
+                                        fontSize: "0.6rem",
+                                        fontWeight: 800,
+                                        bgcolor: "#f3a833",
+                                        color: "#000",
+                                      }}
+                                    />
                                   )}
                                 </Stack>
-                              </Stack>
-                            }
-                          />
+                              }
+                              secondary={
+                                <Stack spacing={0.8} sx={{ mt: 0.5 }}>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ color: "#cbd5e1", lineHeight: 1.45, fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+                                  >
+                                    {notif.message}
+                                  </Typography>
+                                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                                    <Typography
+                                      variant="caption"
+                                      sx={{ color: "#f3a833", fontWeight: 700, fontSize: { xs: "0.72rem", sm: "0.75rem" } }}
+                                    >
+                                      {timeAgo(notif.createdAt)}
+                                    </Typography>
+                                    {notif.triggeredBy && (
+                                      <>
+                                        <Box sx={{ width: 3, height: 3, borderRadius: "50%", bgcolor: "#475569" }} />
+                                        <Typography
+                                          variant="caption"
+                                          sx={{ color: "#94a3b8", fontSize: { xs: "0.72rem", sm: "0.75rem" } }}
+                                        >
+                                          By: {notif.triggeredBy.name || notif.triggeredBy.email}
+                                        </Typography>
+                                      </>
+                                    )}
+                                  </Stack>
+                                </Stack>
+                              }
+                            />
+                          </Box>
                           {notif.proposalId && notif.type !== "proposal_deleted" && (
                             <Button
                               variant="outlined"
                               size="small"
-                              endIcon={<ArrowForwardIcon />}
+                              endIcon={<ArrowForwardIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
                               onClick={() => router.push(`/admin/proposals/${notif.proposalId._id || notif.proposalId}`)}
                               sx={{
-                                mt: 1,
-                                ml: 2,
-                                alignSelf: { xs: "flex-start", sm: "center" },
+                                mt: { xs: 0.5, sm: 0.5 },
+                                ml: { xs: 0, sm: 2 },
+                                width: { xs: "100%", sm: "auto" },
+                                alignSelf: { xs: "stretch", sm: "center" },
                                 textTransform: "none",
                                 borderColor: "rgba(243, 168, 51, 0.4)",
                                 color: "#f3a833",
                                 borderRadius: 2,
-                                px: 2,
+                                py: { xs: 0.6, sm: 0.75 },
+                                px: 1.5,
+                                fontSize: { xs: "0.78rem", sm: "0.85rem" },
                                 "&:hover": {
                                   borderColor: "#f3a833",
                                   bgcolor: "rgba(243, 168, 51, 0.05)",
