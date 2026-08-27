@@ -1,5 +1,4 @@
 // src/components/FixedImagePdfPage.jsx
-import React from "react";
 import { Page, Image, StyleSheet } from "@react-pdf/renderer";
 import { CONTACT_PAGE } from "../utils/pdfImageAssets";
 

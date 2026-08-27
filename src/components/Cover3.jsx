@@ -1,17 +1,8 @@
 "use client";
 // src/components/pdf-pages/PdfPageDocument2.pdf.jsx
 
-import React from "react";
-import {
-  Page,
-  Text,
-  View,
-  Document,
-  StyleSheet,
-  Image,
-} from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
-import { parseMixedContent, parseSmartTable, parseInlineBold } from "../utils/pdfParsers";
 import { RichTextRenderer } from "../utils/RichTextRenderer";
 import { useDispatch, useSelector } from "react-redux";
 import { setPageCount } from "../utils/page2Slice";

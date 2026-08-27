@@ -1,34 +1,7 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import {
-  Box,
-  CircularProgress,
-  Switch,
-  Typography,
-  useMediaQuery,
-  useTheme,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Tooltip,
-  Button,
-} from "@mui/material";
-import {
-  Settings,
-  ArrowBack,
-  ZoomIn,
-  ZoomOut,
-  Save,
-  Download,
-  MenuOpen,
-  PictureAsPdf,
-  ArrowUpward,
-  ArrowDownward,
-} from "@mui/icons-material";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Box, Switch, Typography, useMediaQuery, useTheme, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip, Button } from "@mui/material";
+import { Settings, ArrowUpward, ArrowDownward } from "@mui/icons-material";
 import { useRouter, usePathname } from "next/navigation";
 
 // IMPORT YOUR EDITORS
@@ -49,10 +22,7 @@ import {
   toggleInclusion as togglePage2Inclusion,
 } from "../utils/page2Slice";
 
-import { pdf } from "@react-pdf/renderer";
-import CombinedPdfDocument from "./CombinedPdf";
 
-import axiosInstance from "../utils/axiosInstance";
 import {
   setDBDataP3,
   setMode2,
@@ -69,8 +39,6 @@ import {
   togglePaymentPageInclusion,
 } from "../utils/paymentTermsPageSlice";
 import { setDBData, setMode1 } from "../utils/page1Slice";
-import { Provider } from "react-redux";
-import { store } from "../utils/store";
 import { motion, AnimatePresence } from "framer-motion";
 
 const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, date: propDate, isStudioMode = true, zoomLevel = 100 }) => {

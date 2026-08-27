@@ -1,47 +1,19 @@
 "use client";
 // src/components/Navbar.jsx
-import React, { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Box,
-  Button,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Tooltip,
-  useTheme,
-  Badge,
-  Chip,
-  alpha,
-  useMediaQuery,
-} from "@mui/material";
+import { useState } from "react";
+import { AppBar, Toolbar, IconButton, Typography, Box, Button, Avatar, Menu, MenuItem, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Tooltip, useTheme, Chip, alpha, useMediaQuery } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import GroupIcon from "@mui/icons-material/Group";
-import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import BusinessIcon from "@mui/icons-material/Business";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PersonIcon from "@mui/icons-material/Person";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const Navbar = ({ onNavigate, currentPath }) => {
   const theme = useTheme();

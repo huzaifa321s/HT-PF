@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Typography } from "@mui/material";
 
 /**

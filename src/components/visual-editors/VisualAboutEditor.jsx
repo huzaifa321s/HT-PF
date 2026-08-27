@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useRef, useEffect, useState } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, IconButton, Tooltip, Button, Alert, Chip, useMediaQuery, useTheme } from "@mui/material";
 import { Add, Delete, Edit, Image as ImageIcon, Link as LinkIcon } from "@mui/icons-material";
@@ -9,7 +9,6 @@ import debounce from "lodash.debounce";
 import EditableText from "../EditableText";
 import { HEADER_IMG, FOOTER_IMG } from "../../utils/pdfImageAssets";
 import { resolveImageUrl } from "../../utils/resolveImageUrl";
-import { uploadImageFile } from "../../utils/uploadImage";
 
 const ImageResizer = ({ element, isStudioMode, onDimensionsChange, onUpload }) => {
   const [localWidth, setLocalWidth] = useState(parseInt(element.dimensions?.width || "90"));

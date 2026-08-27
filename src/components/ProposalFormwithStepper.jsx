@@ -1,29 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Button,
-  CardContent,
-  Chip,
-  Grid,
-  TextField,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  LinearProgress,
-  IconButton,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
-  Card,
-  InputAdornment,
-  useMediaQuery,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, CardContent, TextField, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText, Stepper, Step, StepLabel, StepContent, Card, useMediaQuery } from "@mui/material";
 import {
   Timeline,
   CheckCircle,
@@ -38,7 +15,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   setFullFormData,
 } from "../utils/proposalSlice";
@@ -47,7 +24,6 @@ import { replacePage2Content, setOriginalAiResponse } from "../utils/page2Slice"
 import { setBrandName } from "../utils/page1Slice";
 import { updateTitle } from "../utils/page3Slice";
 import { useDebounce } from "use-debounce";
-import { store } from "../utils/store";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import AiAssistantModal from "./modals/AiAssistantModal";

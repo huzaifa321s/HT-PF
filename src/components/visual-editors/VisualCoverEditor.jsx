@@ -1,15 +1,13 @@
 "use client";
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, Button, IconButton, Tooltip, Stack, Chip } from "@mui/material";
-import { CloudUpload, Delete, Edit, Link as LinkIcon } from "@mui/icons-material";
+import { Box, Typography, Button, IconButton, Tooltip, Chip } from "@mui/material";
+import { Delete, Edit, Link as LinkIcon } from "@mui/icons-material";
 import { setBrandName, setBrandTagline, setClientSectionVisibility } from "../../utils/page1Slice";
 import { updateField } from "../../utils/proposalSlice";
 import { showToast } from "../../utils/toastSlice";
 import debounce from "lodash.debounce";
 import { COVER_BG, LOGO } from "../../utils/pdfImageAssets";
-import { resolveImageUrl } from "../../utils/resolveImageUrl";
-import { uploadImageFile } from "../../utils/uploadImage";
 
 const VisualCoverEditor = ({ isStudioMode = true }) => {
   const dispatch = useDispatch();

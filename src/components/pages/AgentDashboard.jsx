@@ -1,20 +1,7 @@
 "use client";
 // src/pages/AgentDashboard.jsx
-import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Divider,
-  Tooltip,
-  Container,
-  CircularProgress,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, Typography, Paper, Button, Grid, Card, CardContent, CardActions, Tooltip, Container } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";

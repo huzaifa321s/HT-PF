@@ -1,4 +1,3 @@
-import React from "react";
 import { Text } from "@react-pdf/renderer";
 import { useDispatch } from "react-redux";
 import { setOffset } from "./pdfNavigationSlice";

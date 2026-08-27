@@ -1,41 +1,7 @@
 "use client";
 // src/components/pages/ProposalPage.jsx
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TableContainer,
-  IconButton,
-  Chip,
-  Button,
-  Tooltip,
-  Divider,
-  Pagination,
-  CircularProgress,
-  Stack,
-  Card,
-  CardContent,
-  Avatar,
-  Fade,
-  Zoom,
-  alpha,
-  Grid,
-  useMediaQuery,
-  useTheme,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  InputAdornment,
-  Backdrop,
-} from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, IconButton, Chip, Button, Tooltip, Divider, Pagination, CircularProgress, Stack, Card, CardContent, Avatar, Fade, alpha, Grid, useMediaQuery, useTheme, TextField, MenuItem, Select, InputLabel, FormControl, InputAdornment, Backdrop } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -538,10 +504,10 @@ const ProposalPage = () => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              alignItems: { xs: "flex-start", md: "center" },
-              mb: 5,
-              gap: 3,
+              flexDirection: "row",
+              alignItems: "center",
+              mb: { xs: 2.5, sm: 3.5, md: 5 },
+              gap: { xs: 1.5, sm: 2, md: 3 },
             }}
           >
             <Box
@@ -551,14 +517,16 @@ const ProposalPage = () => {
                 justifyContent: "center",
                 background: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
                 borderRadius: "50%",
-                width: { xs: 56, md: 72 },
-                height: { xs: 56, md: 72 },
+                width: { xs: 44, sm: 54, md: 72 },
+                height: { xs: 44, sm: 54, md: 72 },
+                minWidth: { xs: 44, sm: 54, md: 72 },
                 boxShadow: "0 8px 24px rgba(243, 168, 51, 0.4)",
+                flexShrink: 0,
               }}
             >
-              <AssessmentIcon sx={{ fontSize: { xs: 28, md: 36 }, color: "#fff" }} />
+              <AssessmentIcon sx={{ fontSize: { xs: 22, sm: 28, md: 36 }, color: "#fff" }} />
             </Box>
-            <Box>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
               <Typography
                 variant="h4"
                 sx={{
@@ -567,12 +535,21 @@ const ProposalPage = () => {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   letterSpacing: "-0.5px",
-                  fontSize: { xs: "1.75rem", md: "2.25rem" },
+                  fontSize: { xs: "1.3rem", sm: "1.65rem", md: "2.25rem" },
+                  lineHeight: 1.2,
                 }}
               >
                 {isAdmin ? "All Proposals" : "Your Proposals"}
               </Typography>
-              <Typography variant="body1" sx={{ color: "#94a3b8", mt: 1, fontSize: "1.1rem" }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#94a3b8",
+                  mt: { xs: 0.25, md: 0.75 },
+                  fontSize: { xs: "0.78rem", sm: "0.9rem", md: "1.05rem" },
+                  lineHeight: 1.35,
+                }}
+              >
                 {isAdmin
                   ? "Manage and track all business proposals across the team"
                   : "Manage and track all your business proposals"}
@@ -582,30 +559,30 @@ const ProposalPage = () => {
         </Fade>
 
         {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 5 }} component={motion.div} variants={itemVariants}>
+        <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 2.5, sm: 3.5, md: 5 } }} component={motion.div} variants={itemVariants}>
           {statsCards.map((stat, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Card
                 component={motion.div}
                 whileHover={{
-                  y: -10,
+                  y: -6,
                   boxShadow: '0 20px 40px rgba(243, 168, 51, 0.25)',
                 }}
                 sx={{
                   background: stat.bgGradient,
                   color: 'white',
-                  borderRadius: 4,
+                  borderRadius: { xs: 3, md: 4 },
                   boxShadow: '0 12px 28px rgba(0,0,0,0.8)',
                   transition: 'box-shadow 0.3s ease',
                 }}
               >
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
+                <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 }, "&:last-child": { pb: { xs: 2, sm: 2.5, md: 3 } } }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ minWidth: 0, flex: 1, mr: 1 }}>
+                      <Typography variant="body2" sx={{ opacity: 0.9, mb: { xs: 0.25, md: 0.75 }, fontWeight: 600, fontSize: { xs: "0.75rem", sm: "0.85rem" } }}>
                         {stat.title}
                       </Typography>
-                      <Typography variant="h3" fontWeight="800">
+                      <Typography variant="h3" fontWeight="800" sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" }, lineHeight: 1 }}>
                         {stat.value}
                       </Typography>
                     </Box>
@@ -613,8 +590,12 @@ const ProposalPage = () => {
                       sx={{
                         bgcolor: 'rgba(255,255,255,0.2)',
                         backdropFilter: 'blur(10px)',
-                        width: 56,
-                        height: 56,
+                        width: { xs: 44, sm: 48, md: 56 },
+                        height: { xs: 44, sm: 48, md: 56 },
+                        flexShrink: 0,
+                        "& .MuiSvgIcon-root": {
+                          fontSize: { xs: 22, sm: 26, md: 30 },
+                        },
                       }}
                     >
                       {stat.icon}
@@ -631,8 +612,8 @@ const ProposalPage = () => {
           <Paper
             elevation={0}
             sx={{
-              p: { xs: 3, md: 5 },
-              borderRadius: 4,
+              p: { xs: 1.5, sm: 2.5, md: 4, lg: 5 },
+              borderRadius: { xs: 3, md: 4 },
               background: "rgba(20, 20, 20, 0.8)",
               backdropFilter: "blur(20px)",
               boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
@@ -644,34 +625,35 @@ const ProposalPage = () => {
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                mb: 4,
-                flexWrap: "wrap",
-                gap: 2,
+                alignItems: { xs: "stretch", sm: "center" },
+                mb: { xs: 2, sm: 3, md: 4 },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 1.5, sm: 2 },
               }}
             >
               <Box>
-                <Typography variant="h5" fontWeight="700" sx={{ mb: 0.5 }}>
+                <Typography variant="h5" fontWeight="700" sx={{ mb: 0.25, fontSize: { xs: "1.15rem", sm: "1.35rem", md: "1.5rem" } }}>
                   {isAdmin ? "All Team Proposals" : "All Proposals"}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.75rem", sm: "0.85rem" } }}>
                   {totalCount} total proposals found
                 </Typography>
               </Box>
               <Button
                 component={motion.button}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => router.push("/create-proposal")}
                 sx={{
-                  borderRadius: 3,
-                  px: 4,
-                  py: 1.5,
+                  borderRadius: { xs: 2.5, md: 3 },
+                  px: { xs: 2.5, sm: 3, md: 4 },
+                  py: { xs: 1.2, md: 1.5 },
+                  width: { xs: "100%", sm: "auto" },
                   fontWeight: 700,
                   textTransform: "none",
-                  fontSize: '1rem',
+                  fontSize: { xs: "0.88rem", sm: "0.95rem", md: "1rem" },
                   background: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)",
                   boxShadow: "0 12px 32px rgba(243, 168, 51,0.3)",
                   transition: 'box-shadow 0.3s ease',
@@ -689,9 +671,9 @@ const ProposalPage = () => {
 
             <Box
               sx={{
-                mb: 4,
-                p: 3,
-                borderRadius: 4,
+                mb: { xs: 2.5, md: 4 },
+                p: { xs: 1.5, sm: 2, md: 3 },
+                borderRadius: { xs: 2.5, md: 4 },
                 background: "rgba(0, 0, 0, 0.2)",
                 border: "1px solid rgba(243, 168, 51, 0.2)",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
@@ -701,24 +683,27 @@ const ProposalPage = () => {
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: { xs: "flex-start", md: "center" },
-                  gap: 2,
-                  mb: 2,
-                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 1.5,
+                  mb: { xs: 1.5, sm: 2 },
                 }}
               >
-                <Typography sx={{ fontWeight: 800, color: "#f8fafc" }}>
+                <Typography sx={{ fontWeight: 800, color: "#f8fafc", fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" } }}>
                   Filters
                 </Typography>
                 <Button
                   variant="outlined"
-                  startIcon={<FilterAltOffIcon />}
+                  size="small"
+                  startIcon={<FilterAltOffIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
                   disabled={!hasActiveFilters}
                   onClick={handleClearFilters}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: 2,
                     textTransform: "none",
                     fontWeight: 700,
+                    fontSize: { xs: "0.72rem", sm: "0.8rem" },
+                    px: { xs: 1, sm: 2 },
+                    py: { xs: 0.4, sm: 0.6 },
                     borderColor: alpha(colorScheme.primary, 0.35),
                     color: colorScheme.primary,
                     background: "#141414",
@@ -728,25 +713,26 @@ const ProposalPage = () => {
                     },
                   }}
                 >
-                  Clear All Filters
+                  Clear Filters
                 </Button>
               </Box>
 
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", gap: { xs: 1.2, sm: 2 }, flexWrap: "wrap" }}>
                 <TextField
-                  placeholder="Search by title, client name or email..."
+                  placeholder="Search by title, client name..."
                   variant="outlined"
                   size="small"
-                  fullWidth={isMobile}
+                  fullWidth
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   sx={{
                     flex: { xs: "1 1 100%", md: 2 },
-                    minWidth: 260,
+                    minWidth: { xs: "100%", sm: 220, md: 260 },
                     "& .MuiInputBase-root": {
                       background: "#141414",
                       borderRadius: 2,
                       color: "#fff",
+                      fontSize: { xs: "0.82rem", sm: "0.875rem" },
                     },
                     "& .MuiInputLabel-root": { color: "#94a3b8" },
                     "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
@@ -754,7 +740,7 @@ const ProposalPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon sx={{ color: "#94a3b8" }} />
+                        <SearchIcon sx={{ color: "#94a3b8", fontSize: { xs: 18, sm: 20 } }} />
                       </InputAdornment>
                     ),
                   }}
@@ -765,11 +751,12 @@ const ProposalPage = () => {
                     size="small"
                     sx={{
                       flex: { xs: "1 1 100%", sm: 1 },
-                      minWidth: 180,
+                      minWidth: { xs: "100%", sm: 140, md: 180 },
                       "& .MuiInputBase-root": {
                         background: "#141414",
                         borderRadius: 2,
                         color: "#fff",
+                        fontSize: { xs: "0.82rem", sm: "0.875rem" },
                       },
                       "& .MuiInputLabel-root": { color: "#94a3b8" },
                       "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
@@ -798,11 +785,12 @@ const ProposalPage = () => {
                         size: "small",
                         sx: {
                           flex: { xs: "1 1 100%", sm: "0 1 auto" },
-                          minWidth: 180,
+                          minWidth: { xs: "100%", sm: 140, md: 180 },
                           "& .MuiInputBase-root": {
                             background: "#141414",
                             borderRadius: 2,
                             color: "#fff",
+                            fontSize: { xs: "0.82rem", sm: "0.875rem" },
                           },
                           "& .MuiInputLabel-root": { color: "#94a3b8" },
                           "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(243, 168, 51, 0.2)" },
@@ -816,7 +804,7 @@ const ProposalPage = () => {
               </Box>
             </Box>
 
-            <Divider sx={{ mb: 4, borderColor: "rgba(243, 168, 51,0.15)" }} />
+            <Divider sx={{ mb: { xs: 2.5, md: 4 }, borderColor: "rgba(243, 168, 51,0.15)" }} />
 
             {/* Loading */}
             {loading ? (

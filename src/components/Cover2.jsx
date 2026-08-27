@@ -1,13 +1,5 @@
 // src/components/PdfPage3Document.jsx
-import React from "react";
-import {
-  Page,
-  Text,
-  View,
-  Document,
-  StyleSheet,
-  Image,
-} from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
 import { resolveImageUrl } from "../utils/resolveImageUrl";

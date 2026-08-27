@@ -1,6 +1,6 @@
 "use client";
 // src/components/pdf-pages/CombinedPdfDocument.jsx
-import React, { memo } from "react";
+import { memo } from "react";
 import { Document } from "@react-pdf/renderer";
 import { PdfCoverPage } from "./Cover1";
 import PdfPage3Document from "./Cover2";

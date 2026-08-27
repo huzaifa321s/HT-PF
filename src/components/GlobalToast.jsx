@@ -1,6 +1,5 @@
 "use client";
 // src/components/GlobalToast.jsx
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Snackbar, Box, LinearProgress, Button, useMediaQuery, useTheme } from "@mui/material";
 import {

@@ -1,6 +1,6 @@
 "use client";
 // Home.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -16,7 +16,6 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import GroupIcon from "@mui/icons-material/Group";
 import axiosInstance from "../../utils/axiosInstance";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";

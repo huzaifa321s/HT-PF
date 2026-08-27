@@ -1,35 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  Button,
-  Box,
-  TextField,
-  Chip,
-  Stack,
-  Alert,
-  IconButton,
-  Tooltip,
-  Divider,
-  Paper,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Box, TextField, Chip, Alert, IconButton, Paper } from "@mui/material";
 import {
   AutoAwesome,
-  ContentCopy,
   OpenInNew,
   CheckCircle,
   Close,
-  Psychology,
-  HelpOutline,
 } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../utils/toastSlice";
 import {
-  buildProposalPrompt,
   copyPromptAndOpenAI,
   parseAiProposalJson,
 } from "../../utils/aiPromptHelper";
@@ -205,8 +185,8 @@ export default function AiAssistantModal({
             border: parseResult?.success
               ? "1px solid rgba(16, 185, 129, 0.6)"
               : parseResult && !parseResult.success
-              ? "1px solid rgba(244, 63, 94, 0.5)"
-              : "1px solid rgba(243, 168, 51, 0.3)",
+                ? "1px solid rgba(244, 63, 94, 0.5)"
+                : "1px solid rgba(243, 168, 51, 0.3)",
             transition: "border-color 0.3s ease",
           }}
         >

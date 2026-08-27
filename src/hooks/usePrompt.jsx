@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 export function usePrompt(when, message) {
 
   useEffect(() => {

@@ -4,10 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 
-/**
- * Wraps a page to require authentication.
- * allowedRoles: optional array of roles, e.g. ['admin', 'agent']
- */
 export default function ProtectedRoute({ allowedRoles, children }) {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState({ token: null, user: null });

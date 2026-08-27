@@ -1,14 +1,13 @@
 
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { ArrowBackIos, Save, Download, ZoomIn, ZoomOut, Settings, Close, AutoAwesome, ContentCopy } from "@mui/icons-material";
-import { Drawer, IconButton, Divider, List, ListItem, ListItemIcon, ListItemText, Stack, Chip } from "@mui/material";
+import { ArrowBackIos, Download, ZoomIn, ZoomOut, Settings, Close, AutoAwesome, ContentCopy } from "@mui/icons-material";
+import { Drawer, IconButton, Divider, Stack, Chip } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
 import UnifiedPdfEditor from "../UnifiedPDFEditor";
 import axiosInstance from "../../utils/axiosInstance";
-import { motion } from "framer-motion";
-import { Provider, useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { store } from "../../utils/store";
 import { updateField, setFullFormData } from "../../utils/proposalSlice";
 import { replacePage2Content, setOriginalAiResponse } from "../../utils/page2Slice";
@@ -286,7 +285,7 @@ export default function ProposalStudio() {
                   });
                 }
                 if (typeof img.decode === 'function') {
-                  try { await img.decode(); } catch (_) {}
+                  try { await img.decode(); } catch (_) { }
                 }
               })
             );

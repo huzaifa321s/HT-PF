@@ -1,16 +1,7 @@
 "use client";
 // src/components/PdfPaymentTermsCoverPage.jsx
-import React, { useEffect } from "react";
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  Svg,
-  Polygon,
-} from "@react-pdf/renderer";
+import React from "react";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { HEADER_IMG, FOOTER_IMG, HT_LOGO } from "../utils/pdfImageAssets";
 

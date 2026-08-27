@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 // Dynamic import of @react-pdf/renderer will be handled inside the component
 
 

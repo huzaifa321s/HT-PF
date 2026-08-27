@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "@/utils/store";
+import { store } from "@/utils/store";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 

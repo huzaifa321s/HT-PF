@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -32,7 +32,6 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import DescriptionIcon from "@mui/icons-material/Description";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import axiosInstance from "@/utils/axiosInstance";
 import { useDispatch } from "react-redux";
@@ -204,10 +203,10 @@ const TrashPage = () => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              alignItems: { xs: "flex-start", md: "center" },
-              mb: 4,
-              gap: 3,
+              flexDirection: "row",
+              alignItems: "center",
+              mb: { xs: 2.5, sm: 3.5, md: 4 },
+              gap: { xs: 1.5, sm: 2, md: 3 },
             }}
           >
             <Box
@@ -217,27 +216,30 @@ const TrashPage = () => {
                 justifyContent: "center",
                 background: "linear-gradient(135deg, #374151 0%, #1f2937 100%)",
                 borderRadius: "50%",
-                width: { xs: 56, md: 72 },
-                height: { xs: 56, md: 72 },
+                width: { xs: 44, sm: 54, md: 72 },
+                height: { xs: 44, sm: 54, md: 72 },
+                minWidth: { xs: 44, sm: 54, md: 72 },
                 boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
                 border: "2px solid rgba(255,255,255,0.1)",
+                flexShrink: 0,
               }}
             >
-              <DeleteOutlineIcon sx={{ fontSize: { xs: 28, md: 36 }, color: "#94a3b8" }} />
+              <DeleteOutlineIcon sx={{ fontSize: { xs: 22, sm: 28, md: 36 }, color: "#94a3b8" }} />
             </Box>
-            <Box>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 800,
                   color: "#f8fafc",
                   letterSpacing: "-0.5px",
-                  fontSize: { xs: "1.75rem", md: "2.25rem" },
+                  fontSize: { xs: "1.3rem", sm: "1.65rem", md: "2.25rem" },
+                  lineHeight: 1.2,
                 }}
               >
                 Trash
               </Typography>
-              <Typography variant="body1" sx={{ color: "#94a3b8", mt: 0.5, fontSize: "1rem" }}>
+              <Typography variant="body1" sx={{ color: "#94a3b8", mt: { xs: 0.25, md: 0.5 }, fontSize: { xs: "0.78rem", sm: "0.9rem", md: "1rem" } }}>
                 {totalCount} proposal{totalCount !== 1 ? "s" : ""} in trash
               </Typography>
             </Box>
@@ -250,16 +252,16 @@ const TrashPage = () => {
             sx={{
               display: "flex",
               alignItems: "flex-start",
-              gap: 1.5,
-              p: 2,
-              mb: 4,
+              gap: 1.2,
+              p: { xs: 1.5, sm: 2 },
+              mb: { xs: 2.5, md: 4 },
               borderRadius: 3,
               background: "rgba(243, 168, 51, 0.06)",
               border: "1px solid rgba(243, 168, 51, 0.2)",
             }}
           >
-            <InfoOutlinedIcon sx={{ color: "#f3a833", fontSize: 20, mt: 0.2, flexShrink: 0 }} />
-            <Typography variant="body2" sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
+            <InfoOutlinedIcon sx={{ color: "#f3a833", fontSize: { xs: 18, sm: 20 }, mt: 0.2, flexShrink: 0 }} />
+            <Typography variant="body2" sx={{ color: "#94a3b8", fontSize: { xs: "0.78rem", sm: "0.85rem" }, lineHeight: 1.5 }}>
               Items in the Trash are automatically <strong style={{ color: "#f3a833" }}>permanently deleted after {DAYS_UNTIL_PURGE} days</strong>. Restore a proposal to bring it back to your active proposals list.
             </Typography>
           </Box>
@@ -270,8 +272,8 @@ const TrashPage = () => {
           <Paper
             elevation={0}
             sx={{
-              p: { xs: 3, md: 5 },
-              borderRadius: 4,
+              p: { xs: 1.5, sm: 2.5, md: 4, lg: 5 },
+              borderRadius: { xs: 3, md: 4 },
               background: "rgba(20, 20, 20, 0.8)",
               backdropFilter: "blur(20px)",
               boxShadow: "0 10px 40px rgba(0,0,0,0.5)",

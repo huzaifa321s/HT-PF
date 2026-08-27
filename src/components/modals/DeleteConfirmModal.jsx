@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, forwardRef } from "react";
+import { useState, forwardRef } from "react";
 import {
   Dialog,
   DialogTitle,

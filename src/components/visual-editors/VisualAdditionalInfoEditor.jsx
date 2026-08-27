@@ -1,18 +1,8 @@
 "use client";
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Box, Typography, IconButton, Tooltip, Button, Menu, MenuItem,
-  ToggleButtonGroup, ToggleButton, TextField, Divider,
-  Dialog, DialogTitle, DialogContent, DialogActions, Chip, Stack,
-  useMediaQuery, useTheme,
-} from "@mui/material";
-import {
-  Add, Delete, Edit, FormatListNumbered, FormatListBulleted,
-  Title, TextFields, TableChart, AddCircleOutline, PlaylistAdd, ContentPaste,
-  AutoFixHigh, Article, FormatBold, FormatUnderlined,
-  FormatAlignLeft, FormatAlignCenter, FormatAlignRight, ColorLens, HorizontalRule,
-} from "@mui/icons-material";
+import { Box, Typography, IconButton, Tooltip, Button, Menu, MenuItem, TextField, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Stack, useMediaQuery, useTheme } from "@mui/material";
+import { Add, Delete, Edit, FormatListNumbered, FormatListBulleted, TableChart, AddCircleOutline, PlaylistAdd, AutoFixHigh, Article, FormatBold, FormatUnderlined, FormatAlignLeft, FormatAlignCenter, FormatAlignRight, ColorLens, HorizontalRule } from "@mui/icons-material";
 import {
   updateSection, addSection, deleteSection, restoreSection,
   addTable, addTableRow, updateTableRow, deleteTableRow,

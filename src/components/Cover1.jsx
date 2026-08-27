@@ -1,5 +1,4 @@
 // src/components/pdf-pages/PdfCoverPage.pdf.jsx
-import React from "react";
 import {
   Page,
   Text,
@@ -14,7 +13,6 @@ import {
 } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { COVER_BG, LOGO } from "../utils/pdfImageAssets";
-import { resolveImageUrl } from "../utils/resolveImageUrl";
 
 const styles = StyleSheet.create({
   page: { position: "relative", fontFamily: "Oswald" },

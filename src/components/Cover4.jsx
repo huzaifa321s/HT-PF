@@ -1,14 +1,7 @@
 "use client";
 // src/components/PdfPricingPage.jsx
-import React, { useMemo, useEffect } from "react";
-import {
-  Page,
-  Text,
-  View,
-  Document,
-  StyleSheet,
-  Image,
-} from "@react-pdf/renderer";
+import { useMemo, useEffect } from "react";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import PdfTracker from "../utils/PdfTracker";
 import { HEADER_IMG, FOOTER_IMG } from "../utils/pdfImageAssets";
 

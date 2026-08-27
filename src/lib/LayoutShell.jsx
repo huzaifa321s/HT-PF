@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalToast from "@/components/GlobalToast";
 import LoaderOverlay from "@/components/LoaderOverlay";

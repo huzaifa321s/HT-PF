@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useTransition, useRef } from "react";
-import { Switch, Typography, Box } from "@mui/material";
+import { Switch } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRight,

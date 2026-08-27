@@ -1,30 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Drawer,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Avatar,
-  Menu,
-  MenuItem,
-  Tooltip,
-  useTheme,
-  useMediaQuery,
-  Chip,
-  alpha,
-  Button,
-  Badge,
-  Tabs,
-  Tab,
-} from "@mui/material";
+import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, List, ListItemButton, ListItemIcon, ListItemText, Divider, Avatar, Menu, MenuItem, Tooltip, useTheme, useMediaQuery, Chip, Button, Badge, alpha } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -388,28 +364,28 @@ export default function DashboardLayout({ children }) {
             zIndex: theme.zIndex.drawer - 1
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, sm: 2, md: 3 }, minHeight: { xs: 56, sm: 64 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
               {isMobile && (
                 <Box
                   component="img"
                   src="/download.webp"
                   alt="Humantek Logo"
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: { xs: 28, sm: 32 },
+                    height: { xs: 28, sm: 32 },
                     borderRadius: "50%",
                     objectFit: "cover",
                     border: "1px solid rgba(243, 168, 51, 0.5)",
                   }}
                 />
               )}
-              <Typography variant="h6" fontWeight="700" sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}>
+              <Typography variant="h6" fontWeight="700" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
                 Dashboard
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
               {role === "admin" && (
                 <Tooltip title="Notifications" arrow>
                   <IconButton
@@ -417,8 +393,8 @@ export default function DashboardLayout({ children }) {
                     sx={{
                       color: "#f8fafc",
                       bgcolor: "#141414",
-                      borderRadius: 3,
-                      p: 1,
+                      borderRadius: 2.5,
+                      p: { xs: 0.75, sm: 1 },
                       border: "1px solid rgba(243, 168, 51, 0.2)",
                       boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
                       "&:hover": {
@@ -428,7 +404,7 @@ export default function DashboardLayout({ children }) {
                     }}
                   >
                     <Badge badgeContent={unreadCount} color="error">
-                      <NotificationsIcon sx={{ fontSize: 20, color: unreadCount > 0 ? "#f3a833" : "#f8fafc" }} />
+                      <NotificationsIcon sx={{ fontSize: { xs: 18, sm: 20 }, color: unreadCount > 0 ? "#f3a833" : "#f8fafc" }} />
                     </Badge>
                   </IconButton>
                 </Tooltip>
@@ -437,20 +413,21 @@ export default function DashboardLayout({ children }) {
               <Tooltip title="Account" arrow>
                 <Button
                   onClick={handleProfileOpen}
-                  endIcon={<KeyboardArrowDownIcon />}
+                  endIcon={<KeyboardArrowDownIcon sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />}
                   sx={{
                     color: '#f8fafc',
                     textTransform: 'none',
                     bgcolor: '#141414',
-                    borderRadius: 3,
-                    px: 2,
-                    py: 0.8,
+                    borderRadius: 2.5,
+                    px: { xs: 1, sm: 2 },
+                    py: { xs: 0.5, sm: 0.8 },
+                    minWidth: 0,
                     border: '1px solid rgba(243, 168, 51, 0.2)',
                     boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
                     '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
                   }}
                 >
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: '#f3a833', fontSize: '0.9rem' }}>
+                  <Avatar sx={{ width: { xs: 26, sm: 32 }, height: { xs: 26, sm: 32 }, bgcolor: '#f3a833', fontSize: { xs: '0.75rem', sm: '0.9rem' } }}>
                     {user?.name?.[0]?.toUpperCase() || "U"}
                   </Avatar>
                   {!isMobile && (
@@ -473,24 +450,14 @@ export default function DashboardLayout({ children }) {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
-                <Box sx={{ p: 3, background: "linear-gradient(135deg, #f3a833 0%, #f59e0b 100%)", color: "#fff" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                    <Avatar sx={{ width: 48, height: 48, bgcolor: "#141414", color: "#f3a833", fontWeight: 700 }}>
-                      {user?.name?.[0]?.toUpperCase() || "U"}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={700}>{user?.name || "User"}</Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.9 }}>{user?.email || "user@example.com"}</Typography>
-                    </Box>
+                <Box sx={{ p: 2, bgcolor: "#141414", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <Typography variant="subtitle2" fontWeight={700} color="#f8fafc">{user?.name || "User"}</Typography>
+                  <Typography variant="caption" color="#94a3b8" sx={{ wordBreak: "break-all" }}>{user?.email}</Typography>
+                  <Box sx={{ mt: 1 }}>
+                    <Chip label={role.toUpperCase()} size="small" sx={{ bgcolor: alpha("#f3a833", 0.15), color: "#f3a833", fontWeight: 700, fontSize: "0.65rem", height: 20 }} />
                   </Box>
-                  <Chip
-                    icon={role === "admin" ? <AdminPanelSettingsIcon sx={{ fontSize: 14 }} /> : <PersonIcon sx={{ fontSize: 14 }} />}
-                    label={role === "admin" ? "BDM" : "Agent"}
-                    size="small"
-                    sx={{ height: 24, fontSize: "0.75rem", fontWeight: 600, background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}
-                  />
                 </Box>
-                <Box sx={{ p: 1 }}>
+                <Box sx={{ p: 1, bgcolor: "#0a0a0a" }}>
                   <MenuItem onClick={() => { handleNav("/profile"); handleProfileClose(); }} sx={{ py: 1.5, px: 2, borderRadius: 2, mb: 0.5 }}>
                     <ListItemIcon sx={{ minWidth: 0, mr: 2 }}><AccountCircleIcon color="primary" fontSize="small" /></ListItemIcon>
                     <Typography variant="body2" fontWeight={600}>My Profile</Typography>
@@ -510,7 +477,7 @@ export default function DashboardLayout({ children }) {
         <Box
           sx={{
             flexGrow: 1,
-            p: isEditor ? 0 : { xs: 2, md: 4 },
+            p: isEditor ? 0 : { xs: 1.5, sm: 2.5, md: 4 },
             pb: isMobile ? "80px" : undefined,
             display: 'flex',
             flexDirection: 'column'

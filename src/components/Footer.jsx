@@ -1,6 +1,5 @@
 "use client";
 // src/components/Footer.jsx
-import React from "react";
 import {
   Box,
   Container,
@@ -19,10 +18,8 @@ import { usePathname } from "next/navigation";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import DescriptionIcon from "@mui/icons-material/Description";
 import FolderIcon from "@mui/icons-material/Folder";
-import AssessmentIcon from "@mui/icons-material/Assessment";
 import PeopleIcon from "@mui/icons-material/People";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import SecurityIcon from "@mui/icons-material/Security";
 import SpeedIcon from "@mui/icons-material/Speed";
 import { Facebook, Twitter, LinkedIn, Instagram } from "@mui/icons-material"; // Added social icons for fuller look
@@ -30,7 +27,6 @@ import { motion } from "framer-motion";
 
 const Footer = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   let user = null;
   if (typeof window !== "undefined") {
