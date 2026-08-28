@@ -1,69 +1,54 @@
-[CmdletBinding()]
-param(
-  [Parameter(Mandatory = $true)]
-  [string] $ProjectPath,
+﻿$ErrorActionPreference = 'Stop'
 
-  [string] $Branch = "main",
-  [string] $AppName = "proposal-maker"
-)
+$projectPath = 'E:\websites\proposalmaker\HT-PF'
+$sourcePath = $PSScriptRoot | Split-Path -Parent
+if (-not $sourcePath -or -not (Test-Path (Join-Path $sourcePath 'package.json'))) {
+  $sourcePath = $env:GITHUB_WORKSPACE
+}
 
-$ErrorActionPreference = "Stop"
+$pm2Home = 'C:\Users\User.WIN-P4GS0JVSN3R\.pm2'
+$pm2Path = 'C:\ProgramData\npm\pm2.cmd'
+if (-not (Test-Path $pm2Path)) {
+  $pm2Path = 'C:\Users\User.WIN-P4GS0JVSN3R\AppData\Roaming\npm\pm2.cmd'
+}
+$appName = 'ht-pf-production'
 
-function Invoke-Native {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string] $Command,
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]] $Arguments
-  )
+if (-not $sourcePath -or -not (Test-Path (Join-Path $sourcePath 'package.json'))) {
+  throw "GitHub Actions checkout was not found at '$sourcePath'."
+}
 
-  & $Command @Arguments
-  if ($LASTEXITCODE -ne 0) {
-    throw "Command failed with exit code $LASTEXITCODE`: $Command $($Arguments -join ' ')"
+Write-Host "Syncing files from $sourcePath to $projectPath..."
+Set-Location $projectPath
+
+# Copy all repository items except .git and node_modules from checkout to project directory
+Get-ChildItem -Path $sourcePath -Exclude '.git', 'node_modules', '.next' | ForEach-Object {
+  $target = Join-Path $projectPath $_.Name
+  if ($_.PSIsContainer) {
+    if (-not (Test-Path $target)) {
+      New-Item -ItemType Directory -Path $target -Force | Out-Null
+    }
+    Copy-Item -Path (Join-Path $_.FullName '*') -Destination $target -Recurse -Force
+  } else {
+    Copy-Item -Path $_.FullName -Destination $target -Force
   }
 }
 
-if (-not (Test-Path (Join-Path $ProjectPath ".git"))) {
-  throw "ProjectPath is not a Git checkout: $ProjectPath"
+Write-Host "Installing dependencies..."
+npm ci
+
+Write-Host "Building Next.js application..."
+npm run build
+
+Write-Host "Restarting PM2 app '$appName'..."
+$env:PM2_HOME = $pm2Home
+
+& $pm2Path describe $appName *> $null
+if ($LASTEXITCODE -eq 0) {
+  & $pm2Path restart $appName --update-env
+} else {
+  & $pm2Path start (Join-Path $projectPath 'server.js') --name $appName --cwd $projectPath --time --update-env
 }
 
-Set-Location $ProjectPath
+& $pm2Path save
 
-$dirtyFiles = @(git status --porcelain)
-if ($dirtyFiles.Count -gt 0) {
-  throw "Deployment stopped because the production checkout has uncommitted changes: $($dirtyFiles -join ', ')"
-}
-
-Invoke-Native git fetch origin $Branch
-$remoteCommit = (git rev-parse "origin/$Branch").Trim()
-$localCommit = (git rev-parse HEAD).Trim()
-
-if ($localCommit -ne $remoteCommit) {
-  Invoke-Native git merge --ff-only "origin/$Branch"
-}
-
-Invoke-Native npm ci
-Invoke-Native npm run build
-
-$pm2 = Get-Command pm2.cmd -ErrorAction SilentlyContinue
-if ($null -eq $pm2) {
-  $npmPrefix = (npm config get prefix).Trim()
-  $candidate = Join-Path $npmPrefix "pm2.cmd"
-  if (Test-Path $candidate) {
-    $pm2 = Get-Item $candidate
-  }
-}
-
-if ($null -eq $pm2) {
-  throw "PM2 was not found. Install it globally and register the app before deploying."
-}
-
-& $pm2.Source describe $AppName *> $null
-if ($LASTEXITCODE -ne 0) {
-  throw "PM2 app '$AppName' does not exist. Register it once with: pm2 start server.js --name $AppName"
-}
-
-Invoke-Native $pm2.Source restart $AppName --update-env
-Invoke-Native $pm2.Source save
-
-Write-Host "Deployed $remoteCommit to $ProjectPath and restarted PM2 app '$AppName'."
+Write-Host "Deployment completed successfully for $appName!"

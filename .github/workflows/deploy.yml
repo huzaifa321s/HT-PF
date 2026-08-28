@@ -1,4 +1,4 @@
-name: CI/CD
+﻿name: CI/CD
 
 on:
   push:
@@ -39,19 +39,14 @@ jobs:
     name: Deploy to Windows server
     needs: validate
     runs-on: [self-hosted, windows, x64]
-    environment: production
     steps:
-      - name: Check out deployment scripts
-        uses: actions/checkout@v4
-        with:
-          path: ci-source
-
-      - name: Pull, build, and restart production
+      - name: Configure Git safe directory
         shell: powershell
-        env:
-          PM2_HOME: C:\Users\User.WIN-P4GS0JVSN3R\.pm2
-        run: >-
-          & "$env:GITHUB_WORKSPACE\ci-source\scripts\deploy.ps1"
-          -ProjectPath "E:\websites\proposalmaker\HT-PF"
-          -Branch "main"
-          -AppName "ht-pf-production"
+        run: git config --global --add safe.directory "*"
+
+      - name: Check out latest main commit
+        uses: actions/checkout@v4
+
+      - name: Deploy latest main commit
+        shell: powershell
+        run: . "$env:GITHUB_WORKSPACE\scripts\deploy.ps1"
