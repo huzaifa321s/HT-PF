@@ -4,6 +4,7 @@ import {
   Box,
   Typography,
   Paper,
+  Card,
   Table,
   TableHead,
   TableRow,

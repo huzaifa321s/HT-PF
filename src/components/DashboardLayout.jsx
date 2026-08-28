@@ -40,6 +40,7 @@ export default function DashboardLayout({ children }) {
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const fetchUnreadCount = async () => {
     try {
@@ -70,8 +71,6 @@ export default function DashboardLayout({ children }) {
     const saved = localStorage.getItem("mainSidebarCollapsed");
     if (saved !== null) setIsCollapsed(saved === "true");
   }, []);
-
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => {

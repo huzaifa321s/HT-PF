@@ -97,10 +97,10 @@ const UnifiedPdfEditor = ({ pdfPages, mode = "doc", clientName: propClientName, 
 
   // Redux Data
   const page1 = useSelector((s) => isEditMode ? s.page1Slice.edit : s.page1Slice.create);
-  const page2 = isEditMode ? useSelector((s) => s.page3.edit) : useSelector((s) => s.page3.create);
+  const page2 = useSelector((s) => isEditMode ? s.page3.edit : s.page3.create);
   const page3 = useSelector((s) => isEditMode ? s.page2.edit : s.page2.create);
-  const pricingPage = isEditMode ? useSelector((s) => s.pricing.edit) : useSelector((s) => s.pricing.create);
-  const paymentTerms = isEditMode ? useSelector((s) => s.paymentTerms.edit) : useSelector((s) => s.paymentTerms.create);
+  const pricingPage = useSelector((s) => isEditMode ? s.pricing.edit : s.pricing.create);
+  const paymentTerms = useSelector((s) => isEditMode ? s.paymentTerms.edit : s.paymentTerms.create);
   const contactPage = useSelector((s) => s.contact);
 
   const pages = useMemo(() => [
