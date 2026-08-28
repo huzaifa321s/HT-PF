@@ -32,7 +32,7 @@ const DeleteConfirmModal = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-
+  const [checker, setChecker] = useState("")
   const handleTrash = async () => {
     try {
       setLoading(true);
@@ -54,7 +54,7 @@ const DeleteConfirmModal = ({
           if (next.length === 0) {
             try {
               fetchProposals(1);
-            } catch {}
+            } catch { }
           }
           return next;
         });

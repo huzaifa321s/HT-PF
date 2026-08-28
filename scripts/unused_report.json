@@ -1,0 +1,478 @@
+[
+  {
+    "file": "src\\components\\Cover4.jsx",
+    "line": 11,
+    "name": "PAGE_CONTENT_HEIGHT",
+    "kind": "const",
+    "init": "BinaryExpression"
+  },
+  {
+    "file": "src\\components\\Cover4.jsx",
+    "line": 12,
+    "name": "MIN_PACKAGE_HEIGHT",
+    "kind": "const",
+    "init": "NumericLiteral"
+  },
+  {
+    "file": "src\\components\\Cover4.jsx",
+    "line": 254,
+    "name": "splitPackage",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\DashboardLayout.jsx",
+    "line": 88,
+    "name": "handleDrawerToggle",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\DashboardLayout.jsx",
+    "line": 143,
+    "name": "activeTabValue",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\EditorSidebar.jsx",
+    "line": 157,
+    "name": "isCloned",
+    "kind": "const",
+    "init": "BinaryExpression"
+  },
+  {
+    "file": "src\\components\\Footer.jsx",
+    "line": 29,
+    "name": "theme",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\modals\\AiAssistantModal.jsx",
+    "line": 26,
+    "name": "copiedPlatform",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\Navbar.jsx",
+    "line": 34,
+    "name": "pathname",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\BDMRegisterPage.jsx",
+    "line": 32,
+    "name": "pathname",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\DocsPage.jsx",
+    "line": 40,
+    "name": "router",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 35,
+    "name": "isValidEmail",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 109,
+    "name": "pdfRef",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 112,
+    "name": "pdfLoading",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 112,
+    "name": "setPdfLoading",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 113,
+    "name": "setIsGeneratingAI",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 118,
+    "name": "page1",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 119,
+    "name": "page2",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 120,
+    "name": "page3",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 121,
+    "name": "pricingPage",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 122,
+    "name": "paymentTerms",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 123,
+    "name": "contactPage",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 141,
+    "name": "baseCost",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 142,
+    "name": "autoApplyAdvance",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 142,
+    "name": "setAutoApplyAdvance",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 144,
+    "name": "existingProposalOwner",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\EditProposal.jsx",
+    "line": 402,
+    "name": "formatNumberInWords",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\pages\\Home.jsx",
+    "line": 24,
+    "name": "theme",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\pages\\ProposalPage.jsx",
+    "line": 173,
+    "name": "ensureAllImagesConverted",
+    "kind": "object_destructure",
+    "init": "AwaitExpression"
+  },
+  {
+    "file": "src\\components\\pages\\ProposalStudio.jsx",
+    "line": 233,
+    "name": "ensureAllImagesConverted",
+    "kind": "object_destructure",
+    "init": "AwaitExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 45,
+    "name": "setShowAdditionalDetails",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 47,
+    "name": "existingProposalOwner",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 48,
+    "name": "setIsGeneratingAI",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 64,
+    "name": "user",
+    "kind": "const",
+    "init": "ConditionalExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 167,
+    "name": "listItemVariants",
+    "kind": "const",
+    "init": "ObjectExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 302,
+    "name": "isSmall",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 305,
+    "name": "formatNumberDisplay",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 311,
+    "name": "formatNumberInWords",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 490,
+    "name": "trustedDomains",
+    "kind": "const",
+    "init": "ArrayExpression"
+  },
+  {
+    "file": "src\\components\\ProposalFormwithStepper.jsx",
+    "line": 496,
+    "name": "domain",
+    "kind": "const",
+    "init": "OptionalCallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 45,
+    "name": "router",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 46,
+    "name": "pathname",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 60,
+    "name": "loading",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 60,
+    "name": "setLoading",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 61,
+    "name": "isNavigatingToEdit",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 61,
+    "name": "setIsNavigatingToEdit",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 62,
+    "name": "hasUnsavedChanges",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 62,
+    "name": "setHasUnsavedChanges",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 99,
+    "name": "page1",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\UnifiedPDFEditor.jsx",
+    "line": 104,
+    "name": "contactPage",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAboutEditor.jsx",
+    "line": 176,
+    "name": "debouncedUpdateWidth",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAboutEditor.jsx",
+    "line": 180,
+    "name": "handleElementInput",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAdditionalInfoEditor.jsx",
+    "line": 68,
+    "name": "toggleList",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAdditionalInfoEditor.jsx",
+    "line": 1275,
+    "name": "SectionToolbar",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAdditionalInfoEditor.jsx",
+    "line": 1389,
+    "name": "isHovered",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualAdditionalInfoEditor.jsx",
+    "line": 1389,
+    "name": "setIsHovered",
+    "kind": "array_destructure_setter",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualPricingEditor.jsx",
+    "line": 69,
+    "name": "PAGE_CONTENT_HEIGHT",
+    "kind": "const",
+    "init": "BinaryExpression"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualPricingEditor.jsx",
+    "line": 70,
+    "name": "MIN_PACKAGE_HEIGHT",
+    "kind": "const",
+    "init": "NumericLiteral"
+  },
+  {
+    "file": "src\\components\\visual-editors\\VisualPricingEditor.jsx",
+    "line": 91,
+    "name": "splitPackage",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\context\\LoadingContext.jsx",
+    "line": 17,
+    "name": "requestCount",
+    "kind": "array_destructure_state",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\lib\\LayoutShell.jsx",
+    "line": 202,
+    "name": "isEditor",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "src\\utils\\pdfParsers.js",
+    "line": 186,
+    "name": "stripHtml",
+    "kind": "const",
+    "init": "ArrowFunctionExpression"
+  },
+  {
+    "file": "src\\utils\\RichTextRenderer.jsx",
+    "line": 44,
+    "name": "Image",
+    "kind": "object_destructure",
+    "init": "Identifier"
+  },
+  {
+    "file": "src\\utils\\RichTextRenderer.jsx",
+    "line": 90,
+    "name": "contentToRender",
+    "kind": "const",
+    "init": "Identifier"
+  },
+  {
+    "file": "pdf-form-server\\src\\controllers\\proposal.js",
+    "line": 11,
+    "name": "__dirname",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "pdf-form-server\\src\\controllers\\proposal.js",
+    "line": 13,
+    "name": "upload",
+    "kind": "const",
+    "init": "CallExpression"
+  },
+  {
+    "file": "pdf-form-server\\src\\controllers\\proposal.js",
+    "line": 110,
+    "name": "status",
+    "kind": "const",
+    "init": "LogicalExpression"
+  },
+  {
+    "file": "pdf-form-server\\src\\routes\\proposal.js",
+    "line": 40,
+    "name": "__dirname",
+    "kind": "const",
+    "init": "CallExpression"
+  }
+]
