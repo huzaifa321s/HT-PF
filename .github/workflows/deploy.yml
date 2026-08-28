@@ -47,7 +47,7 @@ jobs:
           path: ci-source
 
       - name: Pull, build, and restart production
-        shell: pwsh
+        shell: powershell
         env:
           PM2_HOME: C:\Users\User.WIN-P4GS0JVSN3R\.pm2
         run: >-
