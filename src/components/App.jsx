@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { Box, Paper, Container } from "@mui/material";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { Box, Paper, Container, CircularProgress, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import { usePrompt } from "../hooks/usePrompt";
 import axiosInstance from "../utils/axiosInstance";
 import ProposalFormWithStepper from "./ProposalFormwithStepper";
 import { resetForm } from "../utils/proposalSlice";
+import { useBitrixPrefill } from "../hooks/useBitrixPrefill";
 
 export default function App() {
   const router = useRouter();
@@ -19,6 +20,15 @@ export default function App() {
   const proposalState = useSelector((s) => s.proposal);
 
   const [formData, setFormData] = useState({});
+
+  // Read userId from sessionStorage (set during login) for Bitrix prefill
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+      if (user?.id) setUserId(user.id);
+    } catch (_) {}
+  }, []);
 
   const {
     control,
@@ -59,6 +69,16 @@ export default function App() {
       date: "",
     },
   });
+
+  // ── Bitrix24 auto-prefill from URL params ─────────────────────
+  const { isPrefilling, prefillDone, dealInfo } = useBitrixPrefill({
+    userId,
+    reset,
+    getValues,
+    dispatch,
+    showToast,
+  });
+  // ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (proposalState && proposalState.isUnsavedEdit && !proposalState._id) {
@@ -151,6 +171,48 @@ export default function App() {
       }}
     >
       <Container maxWidth="lg">
+        {/* ── Bitrix24 AI Generating Banner ── */}
+        {isPrefilling && (
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+              border: "1px solid #f3a833",
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={22} sx={{ color: "#f3a833" }} />
+            <Typography sx={{ color: "#f3a833", fontWeight: 600 }}>
+              ⚡ Bitrix24 brief detected — AI is generating your proposal... Please wait.
+            </Typography>
+          </Box>
+        )}
+
+        {/* ── Bitrix24 Pre-fill Success Badge ── */}
+        {prefillDone && dealInfo && (
+          <Box
+            sx={{
+              mb: 2,
+              p: 1.5,
+              borderRadius: "10px",
+              background: "rgba(34,197,94,0.1)",
+              border: "1px solid rgba(34,197,94,0.4)",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography sx={{ color: "#22c55e", fontWeight: 600, fontSize: "0.9rem" }}>
+              ✅ Proposal auto-filled from Bitrix24 Deal #{dealInfo.bitrixDealId}.
+              Review the form below, then proceed to the PDF Studio.
+            </Typography>
+          </Box>
+        )}
+
         <Paper
           sx={{
             borderRadius: "16px",
