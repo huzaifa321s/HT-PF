@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 
 $projectPath = 'E:\websites\proposalmaker\HT-PF'
 $sourcePath = $PSScriptRoot | Split-Path -Parent
@@ -42,13 +42,29 @@ npm run build
 Write-Host "Restarting PM2 app '$appName'..."
 $env:PM2_HOME = $pm2Home
 
-& $pm2Path describe $appName *> $null
-if ($LASTEXITCODE -eq 0) {
-  & $pm2Path restart $appName --update-env
-} else {
-  & $pm2Path start (Join-Path $projectPath 'server.js') --name $appName --cwd $projectPath --time --update-env
+# Temporarily relax error action so PM2 stderr warnings (e.g. process not found) do not halt PowerShell
+$oldErrorAction = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+if (Test-Path variable:PSNativeCommandUseErrorActionPreference) {
+  $oldNativePref = $PSNativeCommandUseErrorActionPreference
+  $PSNativeCommandUseErrorActionPreference = $false
 }
 
-& $pm2Path save
+try {
+  & cmd.exe /c "`"$pm2Path`" describe $appName >nul 2>nul"
+  if ($LASTEXITCODE -eq 0) {
+    Write-Host "Restarting existing PM2 app '$appName'..."
+    & $pm2Path restart $appName --update-env
+  } else {
+    Write-Host "PM2 app '$appName' does not exist. Starting it..."
+    & $pm2Path start (Join-Path $projectPath 'server.js') --name $appName --cwd $projectPath --time --update-env
+  }
+  & $pm2Path save
+} finally {
+  $ErrorActionPreference = $oldErrorAction
+  if (Test-Path variable:PSNativeCommandUseErrorActionPreference) {
+    $PSNativeCommandUseErrorActionPreference = $oldNativePref
+  }
+}
 
 Write-Host "Deployment completed successfully for $appName!"
