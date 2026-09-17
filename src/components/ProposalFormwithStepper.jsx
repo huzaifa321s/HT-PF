@@ -27,7 +27,6 @@ import { useDebounce } from "use-debounce";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import AiAssistantModal from "./modals/AiAssistantModal";
-import { copyPromptAndOpenAI } from "../utils/aiPromptHelper";
 
 const ProposalFormWithStepper = ({
   control,
@@ -243,15 +242,8 @@ const ProposalFormWithStepper = ({
     await handleSubmitForm(submitData);
   };
 
-  const handleGenerateAI = async () => {
-    const brief = watch("projectBrief")?.trim() || "";
-    if (!brief) {
-      dispatch(showToast({ message: "Please enter your Project Brief first.", severity: "warning" }));
-      return;
-    }
-    await copyPromptAndOpenAI(brief, "chatgpt", "Humantek");
+  const handleGenerateAI = () => {
     setAiModalOpen(true);
-    dispatch(showToast({ message: "Prompt auto-copied & launched in ChatGPT! Paste the JSON result below.", severity: "success" }));
   };
 
   const handleApplyAiData = (data, updatedBrief) => {
