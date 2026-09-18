@@ -16,6 +16,7 @@ import {
   EditDocument,
   ArrowBackIos,
   Edit,
+  AutoAwesome,
 } from "@mui/icons-material";
 import { pdfDetector } from "../../utils/PdfChangeDetector";
 import { store } from "../../utils/store";
@@ -28,7 +29,6 @@ import { setDBTerms, setMode4 } from "../../utils/paymentTermsPageSlice";
 import { setDBData, setMode1 } from "../../utils/page1Slice";
 import { showToast } from "../../utils/toastSlice";
 import { setFullFormData } from "../../utils/proposalSlice";
-import AiAssistantModal from "../modals/AiAssistantModal";
 
 // ✅ Email Validation Function
 const isValidEmail = (email) => {
@@ -110,7 +110,6 @@ const EditProposal = () => {
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   // Toast notifications handled globally via Redux showToast
 
@@ -442,18 +441,67 @@ const EditProposal = () => {
     }
   };
 
-  const handleGenerateAI = () => {
-    setAiModalOpen(true);
-  };
+  const handleGenerateAI = async () => {
+    const brief = (formData.projectBrief || "").trim();
+    if (!brief) {
+      dispatch(
+        showToast({
+          message: "Please enter your Project Brief first.",
+          severity: "warning",
+        })
+      );
+      return;
+    }
 
-  const handleApplyAiData = async (data, updatedBrief) => {
-    if (data && data.sections) {
+    setIsGeneratingAI(true);
+    dispatch(
+      showToast({
+        message: "⚡ Generating proposal with Gemini AI...",
+        severity: "info",
+      })
+    );
+
+    try {
+      const response = await axiosInstance.post(
+        "/api/ai/generate-proposal",
+        {
+          projectBrief: brief,
+          companyName: "Humantek",
+        },
+        { timeout: 60000 }
+      );
+
+      const data = response.data;
+      if (!data || !data.sections || !Array.isArray(data.sections) || data.sections.length === 0) {
+        throw new Error("Invalid proposal format received from AI.");
+      }
+
       dispatch(replacePage2Content(data));
       dispatch(setOriginalAiResponse(data.sections));
-      if (updatedBrief) {
-        setFormData((prev) => ({ ...prev, projectBrief: updatedBrief }));
-      }
+      dispatch(
+        showToast({
+          message: `✨ Proposal successfully generated with ${data.sections.length} sections! Redirecting to Studio...`,
+          severity: "success",
+        })
+      );
+
       await handleSubmit();
+    } catch (err) {
+      console.error("Gemini Generation Error:", err);
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.details ||
+        err.message ||
+        "Failed to generate proposal with Gemini AI.";
+
+      dispatch(
+        showToast({
+          message: errorMsg,
+          severity: "error",
+        })
+      );
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -837,22 +885,29 @@ const EditProposal = () => {
             />
             
             <Button
-              variant="outlined"
-              color="primary"
+              variant="contained"
               onClick={handleGenerateAI}
-              disabled={isGeneratingAI || !formData.projectBrief}
+              disabled={isGeneratingAI || !formData.projectBrief || (formData.projectBrief || "").trim().length === 0}
+              startIcon={isGeneratingAI ? <CircularProgress size={18} color="inherit" /> : <AutoAwesome />}
               sx={{
                 mt: 1.5,
                 borderRadius: 10,
-                borderColor: colorScheme.primary,
-                color: colorScheme.primary,
+                bgcolor: "#f3a833",
+                color: "#000",
+                fontWeight: 700,
+                textTransform: "none",
+                px: 3,
+                py: 1,
                 "&:hover": {
-                  bgcolor: "rgba(243, 168, 51, 0.1)",
-                  borderColor: colorScheme.secondary,
+                  bgcolor: "#d99322",
+                },
+                "&.Mui-disabled": {
+                  bgcolor: "rgba(243, 168, 51, 0.2)",
+                  color: "rgba(0,0,0,0.4)",
                 }
               }}
             >
-              {isGeneratingAI ? "Generating Content..." : "Generate with AI & Continue"}
+              {isGeneratingAI ? "Generating Proposal with Gemini AI..." : "Generate with AI & Continue"}
             </Button>
           </Box>
         </>
@@ -1161,13 +1216,6 @@ const EditProposal = () => {
           </>
         )}
       </Box>
-
-      <AiAssistantModal
-        open={aiModalOpen}
-        handleClose={() => setAiModalOpen(false)}
-        initialBrief={formData.projectBrief}
-        onApply={handleApplyAiData}
-      />
     </Box>
   );
 };

@@ -13,7 +13,6 @@ import { updateField, setFullFormData } from "../../utils/proposalSlice";
 import { replacePage2Content, setOriginalAiResponse } from "../../utils/page2Slice";
 import { historyManager } from "../../utils/historyManager";
 import { showToast } from "../../utils/toastSlice";
-import AiAssistantModal from "../modals/AiAssistantModal";
 
 export default function ProposalStudio() {
   const router = useRouter();
@@ -731,13 +730,6 @@ export default function ProposalStudio() {
           )}
         </Box>
       </Drawer>
-
-      <AiAssistantModal
-        open={aiModalOpen}
-        handleClose={() => setAiModalOpen(false)}
-        initialBrief={formData?.projectBrief || ""}
-        onApply={handleApplyAiData}
-      />
 
       {/* Toast notifications handled globally by GlobalToast via Redux */}
     </Box>

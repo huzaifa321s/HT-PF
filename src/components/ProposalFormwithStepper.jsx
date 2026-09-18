@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, CardContent, TextField, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText, Stepper, Step, StepLabel, StepContent, Card, useMediaQuery } from "@mui/material";
+import { Box, Button, CardContent, TextField, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText, Stepper, Step, StepLabel, StepContent, Card, useMediaQuery, CircularProgress } from "@mui/material";
 import {
   Timeline,
   CheckCircle,
@@ -12,6 +12,7 @@ import {
   Description,
   Preview,
   Edit,
+  AutoAwesome,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
@@ -26,7 +27,6 @@ import { updateTitle } from "../utils/page3Slice";
 import { useDebounce } from "use-debounce";
 import { showToast } from "../utils/toastSlice";
 import { motion, AnimatePresence } from "framer-motion";
-import AiAssistantModal from "./modals/AiAssistantModal";
 
 const ProposalFormWithStepper = ({
   control,
@@ -45,7 +45,6 @@ const ProposalFormWithStepper = ({
   const [existingProposalId, setExistingProposalId] = useState(null); // Added state for existing proposal
   const [existingProposalOwner, setExistingProposalOwner] = useState(null); // Added state for ownership check
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [existingProposalsCount, setExistingProposalsCount] = useState(0); // Added for multiple proposals limit
   const [limitExceeded, setLimitExceeded] = useState(false); // Added for multiple proposals limit
   const existingProposalRef = useRef({ id: null, owner: null }); // Backup ref to survive React 18 strict mode state-loss
@@ -242,18 +241,68 @@ const ProposalFormWithStepper = ({
     await handleSubmitForm(submitData);
   };
 
-  const handleGenerateAI = () => {
-    setAiModalOpen(true);
-  };
+  const handleGenerateAI = async () => {
+    const brief = (watch("projectBrief") || "").trim();
+    if (!brief) {
+      dispatch(
+        showToast({
+          message: "Please enter your Project Brief first.",
+          severity: "warning",
+        })
+      );
+      return;
+    }
 
-  const handleApplyAiData = (data, updatedBrief) => {
-    if (data && data.sections) {
+    setIsGeneratingAI(true);
+    dispatch(
+      showToast({
+        message: "⚡ Generating proposal with Gemini AI...",
+        severity: "info",
+      })
+    );
+
+    try {
+      const response = await axiosInstance.post(
+        "/api/ai/generate-proposal",
+        {
+          projectBrief: brief,
+          companyName: "Humantek",
+        },
+        { timeout: 60000 }
+      );
+
+      const data = response.data;
+      if (!data || !data.sections || !Array.isArray(data.sections) || data.sections.length === 0) {
+        throw new Error("Invalid proposal format received from AI.");
+      }
+
       dispatch(replacePage2Content(data));
       dispatch(setOriginalAiResponse(data.sections));
-      if (updatedBrief) {
-        setValue("projectBrief", updatedBrief);
-      }
+      dispatch(
+        showToast({
+          message: `✨ Proposal successfully generated with ${data.sections.length} sections! Redirecting to Studio...`,
+          severity: "success",
+        })
+      );
+
+      // Auto-save and navigate directly to Studio!
       handleSubmit(handleSubmitData, onInvalid)();
+    } catch (err) {
+      console.error("Gemini Generation Error:", err);
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.details ||
+        err.message ||
+        "Failed to generate proposal with Gemini AI.";
+
+      dispatch(
+        showToast({
+          message: errorMsg,
+          severity: "error",
+        })
+      );
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -736,22 +785,29 @@ const ProposalFormWithStepper = ({
             />
             
             <Button
-              variant="outlined"
-              color="primary"
+              variant="contained"
               onClick={handleGenerateAI}
-              disabled={isGeneratingAI || !watch("projectBrief")}
+              disabled={isGeneratingAI || !watch("projectBrief") || (watch("projectBrief") || "").trim().length === 0}
+              startIcon={isGeneratingAI ? <CircularProgress size={18} color="inherit" /> : <AutoAwesome />}
               sx={{
                 mt: 1.5,
                 borderRadius: 10,
-                borderColor: colorScheme.primary,
-                color: colorScheme.primary,
+                bgcolor: "#f3a833",
+                color: "#000",
+                fontWeight: 700,
+                textTransform: "none",
+                px: 3,
+                py: 1,
                 "&:hover": {
-                  bgcolor: "rgba(243, 168, 51, 0.1)",
-                  borderColor: colorScheme.secondary,
+                  bgcolor: "#d99322",
+                },
+                "&.Mui-disabled": {
+                  bgcolor: "rgba(243, 168, 51, 0.2)",
+                  color: "rgba(0,0,0,0.4)",
                 }
               }}
             >
-              {isGeneratingAI ? "Generating Content..." : "Generate with AI & Continue"}
+              {isGeneratingAI ? "Generating Proposal with Gemini AI..." : "Generate with AI & Continue"}
             </Button>
           </Box>
 
@@ -1024,13 +1080,6 @@ const ProposalFormWithStepper = ({
             </Step>
           ))}
         </Stepper>
-
-        <AiAssistantModal
-          open={aiModalOpen}
-          handleClose={() => setAiModalOpen(false)}
-          initialBrief={watch("projectBrief")}
-          onApply={handleApplyAiData}
-        />
       </Box>
     </>
   );
